@@ -185,7 +185,8 @@ export default function EventDetails() {
         <TabsContent value="attendees" className="mt-4">
           <EventAttendeesTable 
             attendees={attendees || []} 
-            isLoading={attendeesLoading} 
+            isLoading={attendeesLoading}
+            eventId={event.id}
           />
         </TabsContent>
         <TabsContent value="services" className="mt-4">
