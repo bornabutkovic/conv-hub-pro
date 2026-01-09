@@ -1,4 +1,4 @@
-import { LayoutDashboard, Calendar, Users, Settings, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Settings, LogOut, Shield, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +22,10 @@ const navItems = [
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
 
-const adminItem = { title: 'Admin Panel', url: '/admin', icon: Shield };
+const adminItems = [
+  { title: 'Admin Panel', url: '/admin', icon: Shield },
+  { title: 'WhatsApp Inspector', url: '/admin/chats', icon: MessageCircle },
+];
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -62,21 +65,21 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               
-              {/* Admin Panel - Only visible to super_admin */}
-              {profile?.role === 'super_admin' && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip={adminItem.title}>
+              {/* Admin items - Only visible to super_admin */}
+              {profile?.role === 'super_admin' && adminItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
-                      to={adminItem.url}
+                      to={item.url}
                       className="flex items-center gap-3 rounded-md px-3 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
                       activeClassName="bg-sidebar-accent text-primary font-medium"
                     >
-                      <adminItem.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span>{adminItem.title}</span>}
+                      <item.icon className="h-5 w-5 shrink-0" />
+                      {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              )}
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

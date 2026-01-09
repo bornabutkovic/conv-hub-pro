@@ -504,7 +504,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_chat_full_view: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string | null
+          institution_name: string | null
+          message_content: string | null
+          phone_number: string | null
+          role: string | null
+          sender_type: string | null
+          user_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

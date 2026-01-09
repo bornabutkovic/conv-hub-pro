@@ -14,6 +14,7 @@ import EventDetails from "./pages/EventDetails";
 import Attendees from "./pages/Attendees";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
+import AdminChats from "./pages/AdminChats";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -83,6 +84,16 @@ const App = () => (
                 <AdminRoute>
                   <AppLayout>
                     <Admin />
+                  </AppLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/chats"
+              element={
+                <AdminRoute>
+                  <AppLayout>
+                    <AdminChats />
                   </AppLayout>
                 </AdminRoute>
               }
