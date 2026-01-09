@@ -10,6 +10,7 @@ import { AppLayout } from "@/components/AppLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Events from "./pages/Events";
+import EventDetails from "./pages/EventDetails";
 import Attendees from "./pages/Attendees";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
@@ -42,6 +43,16 @@ const App = () => (
                 <ProtectedRoute>
                   <AppLayout>
                     <Events />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/:id"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <EventDetails />
                   </AppLayout>
                 </ProtectedRoute>
               }

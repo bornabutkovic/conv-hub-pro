@@ -2,6 +2,7 @@ import { Calendar, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface EventCardProps {
   event: {
@@ -16,6 +17,8 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
+  const navigate = useNavigate();
+
   const getStatusVariant = (status: string | null) => {
     switch (status) {
       case 'active':
@@ -51,8 +54,15 @@ export function EventCard({ event }: EventCardProps) {
     }).format(price);
   };
 
+  const handleClick = () => {
+    navigate(`/events/${event.id}`);
+  };
+
   return (
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+    <Card 
+      className="hover:shadow-lg transition-shadow cursor-pointer group"
+      onClick={handleClick}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-1 flex-1 min-w-0">
