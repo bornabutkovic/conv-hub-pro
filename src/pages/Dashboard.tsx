@@ -141,10 +141,10 @@ export default function Dashboard() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          title="Total Revenue"
+          title={profile?.role === 'super_admin' ? "Total Platform Volume" : "Total Revenue"}
           value={`€${(statsData?.totalRevenue || 0).toLocaleString('de-DE', { minimumFractionDigits: 2 })}`}
           icon={<DollarSign className="h-5 w-5" />}
-          description="From all events"
+          description={profile?.role === 'super_admin' ? "GMV across all institutions" : "From all events"}
           loading={isLoading}
         />
         <StatCard
