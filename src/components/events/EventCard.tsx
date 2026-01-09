@@ -1,8 +1,9 @@
-import { Calendar, Tag } from 'lucide-react';
+import { Calendar, Tag, Building2 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EventCardProps {
   event: {
@@ -13,11 +14,14 @@ interface EventCardProps {
     price: number | null;
     currency: string | null;
     status: string | null;
+    institution_name?: string | null;
   };
 }
 
 export function EventCard({ event }: EventCardProps) {
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const isSuperAdmin = profile?.role === 'super_admin';
 
   const getStatusVariant = (status: string | null) => {
     switch (status) {
@@ -73,6 +77,12 @@ export function EventCard({ event }: EventCardProps) {
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Tag className="h-3.5 w-3.5" />
                 <span className="text-sm font-mono">{event.event_id}</span>
+              </div>
+            )}
+            {isSuperAdmin && event.institution_name && (
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Building2 className="h-3.5 w-3.5" />
+                <span className="text-sm truncate">{event.institution_name}</span>
               </div>
             )}
           </div>
