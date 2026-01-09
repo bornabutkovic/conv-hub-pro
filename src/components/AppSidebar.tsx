@@ -1,4 +1,5 @@
 import { LayoutDashboard, Calendar, Users, Settings, LogOut, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -34,12 +35,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      {/* Logo */}
-      <div className="p-4 border-b border-sidebar-border">
+      {/* Logo - clickable link to home */}
+      <Link to="/" className="block p-4 border-b border-sidebar-border hover:bg-sidebar-accent/50 transition-colors">
         <h1 className={`font-bold text-primary transition-all ${collapsed ? 'text-lg' : 'text-2xl'}`}>
           {collapsed ? 'C' : 'Conveyo'}
         </h1>
-      </div>
+      </Link>
 
       <SidebarContent>
         <SidebarGroup>
