@@ -5,12 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import { AppLayout } from "@/components/AppLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Events from "./pages/Events";
 import Attendees from "./pages/Attendees";
 import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +64,16 @@ const App = () => (
                     <Settings />
                   </AppLayout>
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AppLayout>
+                    <Admin />
+                  </AppLayout>
+                </AdminRoute>
               }
             />
             <Route path="*" element={<NotFound />} />
