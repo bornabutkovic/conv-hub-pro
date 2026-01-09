@@ -114,10 +114,12 @@ export type Database = {
           end_date: string | null
           event_id: string | null
           id: string
+          institution_uuid: string | null
           name: string
           price: number | null
           slug: string
           start_date: string | null
+          status: string | null
           vat_rate: number | null
           venue_name: string | null
         }
@@ -127,10 +129,12 @@ export type Database = {
           end_date?: string | null
           event_id?: string | null
           id?: string
+          institution_uuid?: string | null
           name: string
           price?: number | null
           slug: string
           start_date?: string | null
+          status?: string | null
           vat_rate?: number | null
           venue_name?: string | null
         }
@@ -140,14 +144,24 @@ export type Database = {
           end_date?: string | null
           event_id?: string | null
           id?: string
+          institution_uuid?: string | null
           name?: string
           price?: number | null
           slug?: string
           start_date?: string | null
+          status?: string | null
           vat_rate?: number | null
           venue_name?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_institution_uuid_fkey"
+            columns: ["institution_uuid"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exhibitors: {
         Row: {
