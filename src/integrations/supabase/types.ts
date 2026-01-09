@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendee_purchases: {
+        Row: {
+          attendee_id: string | null
+          created_at: string | null
+          id: string
+          payment_reference: string | null
+          service_id: string | null
+          status: string | null
+        }
+        Insert: {
+          attendee_id?: string | null
+          created_at?: string | null
+          id?: string
+          payment_reference?: string | null
+          service_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          attendee_id?: string | null
+          created_at?: string | null
+          id?: string
+          payment_reference?: string | null
+          service_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendee_purchases_attendee_id_fkey"
+            columns: ["attendee_id"]
+            isOneToOne: false
+            referencedRelation: "attendees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendee_purchases_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "event_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendees: {
         Row: {
           badge_printed: boolean | null
@@ -106,6 +148,47 @@ export type Database = {
           session_id?: string
         }
         Relationships: []
+      }
+      event_services: {
+        Row: {
+          capacity: number | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          event_id: string | null
+          id: string
+          name: string
+          price: number
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          name: string
+          price?: number
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          name?: string
+          price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_services_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       events: {
         Row: {

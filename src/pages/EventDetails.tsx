@@ -7,8 +7,10 @@ import { ArrowLeft, Calendar, Tag, Users, DollarSign, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditEventModal } from '@/components/events/EditEventModal';
 import { EventAttendeesTable } from '@/components/events/EventAttendeesTable';
+import { EventServicesTable } from '@/components/events/EventServicesTable';
 
 export default function EventDetails() {
   const { id } = useParams<{ id: string }>();
@@ -174,11 +176,25 @@ export default function EventDetails() {
         </Card>
       </div>
 
-      {/* Attendees Table */}
-      <EventAttendeesTable 
-        attendees={attendees || []} 
-        isLoading={attendeesLoading} 
-      />
+      {/* Tabs for Attendees & Services */}
+      <Tabs defaultValue="attendees" className="w-full">
+        <TabsList>
+          <TabsTrigger value="attendees">Attendees</TabsTrigger>
+          <TabsTrigger value="services">Services</TabsTrigger>
+        </TabsList>
+        <TabsContent value="attendees" className="mt-4">
+          <EventAttendeesTable 
+            attendees={attendees || []} 
+            isLoading={attendeesLoading} 
+          />
+        </TabsContent>
+        <TabsContent value="services" className="mt-4">
+          <EventServicesTable 
+            eventId={event.id} 
+            currency={event.currency || 'EUR'} 
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* Edit Modal */}
       <EditEventModal
