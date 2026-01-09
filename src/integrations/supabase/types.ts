@@ -378,6 +378,7 @@ export type Database = {
           last_name: string | null
           oib: string | null
           phone: string | null
+          role: string | null
           telegram_id: string | null
         }
         Insert: {
@@ -391,6 +392,7 @@ export type Database = {
           last_name?: string | null
           oib?: string | null
           phone?: string | null
+          role?: string | null
           telegram_id?: string | null
         }
         Update: {
@@ -404,6 +406,7 @@ export type Database = {
           last_name?: string | null
           oib?: string | null
           phone?: string | null
+          role?: string | null
           telegram_id?: string | null
         }
         Relationships: [

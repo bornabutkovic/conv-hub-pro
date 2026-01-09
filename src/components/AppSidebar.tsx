@@ -1,4 +1,4 @@
-import { LayoutDashboard, Calendar, Users, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Settings, LogOut, Shield } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -20,6 +20,8 @@ const navItems = [
   { title: 'Attendees', url: '/attendees', icon: Users },
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
+
+const adminItem = { title: 'Admin Panel', url: '/admin', icon: Shield };
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -58,6 +60,22 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              
+              {/* Admin Panel - Only visible to super_admin */}
+              {profile?.role === 'super_admin' && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild tooltip={adminItem.title}>
+                    <NavLink
+                      to={adminItem.url}
+                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                      activeClassName="bg-sidebar-accent text-primary font-medium"
+                    >
+                      <adminItem.icon className="h-5 w-5 shrink-0" />
+                      {!collapsed && <span>{adminItem.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
