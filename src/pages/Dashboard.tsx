@@ -1,4 +1,4 @@
-import { DollarSign, Users, Calendar, Plus } from 'lucide-react';
+import { DollarSign, Users, Calendar, Plus, Building2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -43,35 +43,41 @@ function StatCard({ title, value, icon, description, loading }: StatCardProps) {
 export default function Dashboard() {
   const { profile } = useAuth();
   const institutionUuid = profile?.institution_uuid;
+  const isSuperAdmin = profile?.role === 'super_admin';
 
   // Fetch active events count
   const { data: activeEventsCount, isLoading: loadingEvents } = useQuery({
-    queryKey: ['dashboard-active-events', institutionUuid],
+    queryKey: ['dashboard-active-events', institutionUuid, isSuperAdmin],
     queryFn: async () => {
-      if (!institutionUuid) return 0;
-      const { count, error } = await supabase
+      let query = supabase
         .from('events')
         .select('*', { count: 'exact', head: true })
-        .eq('institution_uuid', institutionUuid)
         .eq('status', 'active');
       
+      // Super admin sees all, regular users see only their institution
+      if (!isSuperAdmin && institutionUuid) {
+        query = query.eq('institution_uuid', institutionUuid);
+      }
+      
+      const { count, error } = await query;
       if (error) throw error;
       return count || 0;
     },
-    enabled: !!institutionUuid,
+    enabled: !!profile && (isSuperAdmin || !!institutionUuid),
   });
 
   // Fetch total attendees and revenue
   const { data: statsData, isLoading: loadingStats } = useQuery({
-    queryKey: ['dashboard-stats', institutionUuid],
+    queryKey: ['dashboard-stats', institutionUuid, isSuperAdmin],
     queryFn: async () => {
-      if (!institutionUuid) return { totalAttendees: 0, totalRevenue: 0 };
+      // Get events (all for super admin, filtered for regular users)
+      let eventsQuery = supabase.from('events').select('id, price');
       
-      // First get all events for this institution
-      const { data: events, error: eventsError } = await supabase
-        .from('events')
-        .select('id, price')
-        .eq('institution_uuid', institutionUuid);
+      if (!isSuperAdmin && institutionUuid) {
+        eventsQuery = eventsQuery.eq('institution_uuid', institutionUuid);
+      }
+      
+      const { data: events, error: eventsError } = await eventsQuery;
       
       if (eventsError) throw eventsError;
       if (!events || events.length === 0) return { totalAttendees: 0, totalRevenue: 0 };
@@ -97,25 +103,35 @@ export default function Dashboard() {
 
       return { totalAttendees, totalRevenue };
     },
-    enabled: !!institutionUuid,
+    enabled: !!profile && (isSuperAdmin || !!institutionUuid),
   });
 
   // Fetch recent events
   const { data: recentEvents, isLoading: loadingRecent } = useQuery({
-    queryKey: ['dashboard-recent-events', institutionUuid],
+    queryKey: ['dashboard-recent-events', institutionUuid, isSuperAdmin],
     queryFn: async () => {
-      if (!institutionUuid) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from('events')
-        .select('id, name, slug, start_date, status')
-        .eq('institution_uuid', institutionUuid)
+        .select(`
+          id, name, slug, start_date, status,
+          institutions:institution_uuid (name)
+        `)
         .order('created_at', { ascending: false })
         .limit(3);
       
+      if (!isSuperAdmin && institutionUuid) {
+        query = query.eq('institution_uuid', institutionUuid);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      
+      return (data || []).map((event: any) => ({
+        ...event,
+        institution_name: event.institutions?.name || null,
+      }));
     },
-    enabled: !!institutionUuid,
+    enabled: !!profile && (isSuperAdmin || !!institutionUuid),
   });
 
   const isLoading = loadingEvents || loadingStats;
@@ -141,24 +157,24 @@ export default function Dashboard() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          title={profile?.role === 'super_admin' ? "Total Platform Volume" : "Total Revenue"}
+          title={isSuperAdmin ? "Total Platform Volume" : "Total Revenue"}
           value={`€${(statsData?.totalRevenue || 0).toLocaleString('de-DE', { minimumFractionDigits: 2 })}`}
           icon={<DollarSign className="h-5 w-5" />}
-          description={profile?.role === 'super_admin' ? "GMV across all institutions" : "From all events"}
+          description={isSuperAdmin ? "GMV across all institutions" : "From all events"}
           loading={isLoading}
         />
         <StatCard
           title="Total Attendees"
           value={String(statsData?.totalAttendees || 0)}
           icon={<Users className="h-5 w-5" />}
-          description="Across all events"
+          description={isSuperAdmin ? "Across all institutions" : "Across all events"}
           loading={isLoading}
         />
         <StatCard
           title="Active Events"
           value={String(activeEventsCount || 0)}
           icon={<Calendar className="h-5 w-5" />}
-          description="Currently running"
+          description={isSuperAdmin ? "Platform-wide" : "Currently running"}
           loading={isLoading}
         />
       </div>
@@ -185,9 +201,17 @@ export default function Dashboard() {
                   <CardContent className="py-4 flex items-center justify-between">
                     <div>
                       <h3 className="font-medium">{event.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {event.slug} {event.start_date && `• ${format(new Date(event.start_date), 'MMM d, yyyy')}`}
-                      </p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>{event.slug}</span>
+                        {event.start_date && (
+                          <span>• {format(new Date(event.start_date), 'MMM d, yyyy')}</span>
+                        )}
+                        {isSuperAdmin && event.institution_name && (
+                          <span className="flex items-center gap-1">
+                            • <Building2 className="h-3 w-3" /> {event.institution_name}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <Badge variant={event.status === 'active' ? 'default' : 'secondary'}>
                       {event.status || 'draft'}
