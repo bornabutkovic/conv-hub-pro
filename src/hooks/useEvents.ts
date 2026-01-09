@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export type EventStatus = 'all' | 'active' | 'draft' | 'past';
 
-interface Event {
+export interface Event {
   id: string;
   name: string;
   event_id: string | null;
@@ -17,21 +17,26 @@ interface Event {
   venue_name: string | null;
   created_at: string | null;
   institution_uuid: string | null;
+  institution_name?: string | null;
 }
 
 export function useEvents(statusFilter: EventStatus = 'all') {
   const { profile } = useAuth();
+  const isSuperAdmin = profile?.role === 'super_admin';
 
   return useQuery({
-    queryKey: ['events', profile?.institution_uuid, statusFilter],
+    queryKey: ['events', profile?.institution_uuid, profile?.role, statusFilter],
     queryFn: async (): Promise<Event[]> => {
       let query = supabase
         .from('events')
-        .select('*')
+        .select(`
+          *,
+          institutions:institution_uuid (name)
+        `)
         .order('start_date', { ascending: false });
 
-      // Filter by institution if user has one
-      if (profile?.institution_uuid) {
+      // Super admin sees all events, regular users only see their institution's
+      if (!isSuperAdmin && profile?.institution_uuid) {
         query = query.eq('institution_uuid', profile.institution_uuid);
       }
 
@@ -44,8 +49,11 @@ export function useEvents(statusFilter: EventStatus = 'all') {
 
       if (error) throw error;
 
-      // Type assertion since status and institution_uuid aren't in generated types yet
-      return (data || []) as Event[];
+      // Map the data to include institution_name
+      return (data || []).map((event: any) => ({
+        ...event,
+        institution_name: event.institutions?.name || null,
+      })) as Event[];
     },
     enabled: !!profile,
   });
