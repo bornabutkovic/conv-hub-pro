@@ -573,7 +573,9 @@ export type Database = {
       }
       ticket_types: {
         Row: {
+          category: string | null
           created_at: string | null
+          description: string | null
           event_id: string | null
           id: string
           name: string
@@ -582,7 +584,9 @@ export type Database = {
           vat_rate: number | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
+          description?: string | null
           event_id?: string | null
           id?: string
           name: string
@@ -591,7 +595,9 @@ export type Database = {
           vat_rate?: number | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
+          description?: string | null
           event_id?: string | null
           id?: string
           name?: string

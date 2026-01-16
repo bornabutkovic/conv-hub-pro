@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditEventModal } from '@/components/events/EditEventModal';
 import { EventAttendeesTable } from '@/components/events/EventAttendeesTable';
 import { EventServicesTable } from '@/components/events/EventServicesTable';
+import { TicketTypesTable } from '@/components/events/TicketTypesTable';
 
 export default function EventDetails() {
   const { id } = useParams<{ id: string }>();
@@ -176,10 +177,11 @@ export default function EventDetails() {
         </Card>
       </div>
 
-      {/* Tabs for Attendees & Services */}
+      {/* Tabs for Attendees, Tickets & Services */}
       <Tabs defaultValue="attendees" className="w-full">
         <TabsList>
           <TabsTrigger value="attendees">Attendees</TabsTrigger>
+          <TabsTrigger value="tickets">Tickets & Pricing</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
         </TabsList>
         <TabsContent value="attendees" className="mt-4">
@@ -187,6 +189,12 @@ export default function EventDetails() {
             attendees={attendees || []} 
             isLoading={attendeesLoading}
             eventId={event.id}
+          />
+        </TabsContent>
+        <TabsContent value="tickets" className="mt-4">
+          <TicketTypesTable 
+            eventId={event.id} 
+            currency={event.currency || 'EUR'} 
           />
         </TabsContent>
         <TabsContent value="services" className="mt-4">
