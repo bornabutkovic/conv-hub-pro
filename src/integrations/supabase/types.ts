@@ -22,6 +22,7 @@ export type Database = {
           payment_reference: string | null
           service_id: string | null
           status: string | null
+          stripe_payment_id: string | null
         }
         Insert: {
           attendee_id?: string | null
@@ -30,6 +31,7 @@ export type Database = {
           payment_reference?: string | null
           service_id?: string | null
           status?: string | null
+          stripe_payment_id?: string | null
         }
         Update: {
           attendee_id?: string | null
@@ -38,6 +40,7 @@ export type Database = {
           payment_reference?: string | null
           service_id?: string | null
           status?: string | null
+          stripe_payment_id?: string | null
         }
         Relationships: [
           {
@@ -194,47 +197,65 @@ export type Database = {
         Row: {
           created_at: string | null
           currency: string | null
+          early_bird_deadline: string | null
           end_date: string | null
           event_id: string | null
           id: string
           institution_uuid: string | null
+          location_city: string | null
+          location_country: string | null
           name: string
+          payment_due_days: number | null
           price: number | null
+          short_name: string | null
           slug: string
           start_date: string | null
           status: string | null
           vat_rate: number | null
           venue_name: string | null
+          website_url: string | null
         }
         Insert: {
           created_at?: string | null
           currency?: string | null
+          early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
           id?: string
           institution_uuid?: string | null
+          location_city?: string | null
+          location_country?: string | null
           name: string
+          payment_due_days?: number | null
           price?: number | null
+          short_name?: string | null
           slug: string
           start_date?: string | null
           status?: string | null
           vat_rate?: number | null
           venue_name?: string | null
+          website_url?: string | null
         }
         Update: {
           created_at?: string | null
           currency?: string | null
+          early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
           id?: string
           institution_uuid?: string | null
+          location_city?: string | null
+          location_country?: string | null
           name?: string
+          payment_due_days?: number | null
           price?: number | null
+          short_name?: string | null
           slug?: string
           start_date?: string | null
           status?: string | null
           vat_rate?: number | null
           venue_name?: string | null
+          website_url?: string | null
         }
         Relationships: [
           {
