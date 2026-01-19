@@ -15,7 +15,6 @@ import Attendees from "./pages/Attendees";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import AdminChats from "./pages/AdminChats";
-import AdminUsers from "./pages/AdminUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -95,16 +94,6 @@ const App = () => (
                 <AdminRoute>
                   <AppLayout>
                     <AdminChats />
-                  </AppLayout>
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/users"
-              element={
-                <AdminRoute>
-                  <AppLayout>
-                    <AdminUsers />
                   </AppLayout>
                 </AdminRoute>
               }
