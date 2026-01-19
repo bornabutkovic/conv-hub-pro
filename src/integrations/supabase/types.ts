@@ -152,6 +152,45 @@ export type Database = {
         }
         Relationships: []
       }
+      event_memberships: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          id: string
+          role: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          role?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          role?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_memberships_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_services: {
         Row: {
           capacity: number | null
@@ -204,6 +243,7 @@ export type Database = {
           end_date: string | null
           event_id: string | null
           id: string
+          institution_id: string | null
           institution_uuid: string | null
           location_city: string | null
           location_country: string | null
@@ -233,6 +273,7 @@ export type Database = {
           end_date?: string | null
           event_id?: string | null
           id?: string
+          institution_id?: string | null
           institution_uuid?: string | null
           location_city?: string | null
           location_country?: string | null
@@ -262,6 +303,7 @@ export type Database = {
           end_date?: string | null
           event_id?: string | null
           id?: string
+          institution_id?: string | null
           institution_uuid?: string | null
           location_city?: string | null
           location_country?: string | null
@@ -282,6 +324,13 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "events_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "events_institution_uuid_fkey"
             columns: ["institution_uuid"]
