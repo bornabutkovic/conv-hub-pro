@@ -21,40 +21,72 @@ export interface Event {
 }
 
 export function useEvents(statusFilter: EventStatus = 'all') {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const isSuperAdmin = profile?.role === 'super_admin';
 
   return useQuery({
-    queryKey: ['events', profile?.institution_uuid, profile?.role, statusFilter],
+    queryKey: ['events', user?.id, profile?.role, statusFilter],
     queryFn: async (): Promise<Event[]> => {
+      if (isSuperAdmin) {
+        // Super admin sees ALL events
+        let query = supabase
+          .from('events')
+          .select(`
+            *,
+            institutions:institution_uuid (name)
+          `)
+          .order('start_date', { ascending: false });
+
+        if (statusFilter !== 'all') {
+          query = query.eq('status', statusFilter);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        return (data || []).map((event: any) => ({
+          ...event,
+          institution_name: event.institutions?.name || null,
+        })) as Event[];
+      }
+
+      // Regular users: fetch events they are members of
+      if (!user?.id) return [];
+
+      // First get event IDs from memberships
+      const { data: memberships, error: membershipError } = await supabase
+        .from('event_memberships')
+        .select('event_id')
+        .eq('user_id', user.id);
+
+      if (membershipError) throw membershipError;
+
+      const eventIds = memberships?.map(m => m.event_id).filter(Boolean) as string[];
+      
+      if (eventIds.length === 0) return [];
+
+      // Then fetch those events
       let query = supabase
         .from('events')
         .select(`
           *,
           institutions:institution_uuid (name)
         `)
+        .in('id', eventIds)
         .order('start_date', { ascending: false });
 
-      // Super admin sees all events, regular users only see their institution's
-      if (!isSuperAdmin && profile?.institution_uuid) {
-        query = query.eq('institution_uuid', profile.institution_uuid);
-      }
-
-      // Apply status filter
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
 
-      // Map the data to include institution_name
       return (data || []).map((event: any) => ({
         ...event,
         institution_name: event.institutions?.name || null,
       })) as Event[];
     },
-    enabled: !!profile,
+    enabled: !!user,
   });
 }

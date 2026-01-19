@@ -156,6 +156,11 @@ export function CreateEventModal({
       return;
     }
 
+    if (!profile?.id) {
+      toast.error('User profile not found');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -174,34 +179,55 @@ export function CreateEventModal({
         ? data.additional_admins.split(',').map(email => email.trim()).filter(Boolean)
         : null;
 
-      const { error } = await supabase.from('events').insert({
-        name: data.name,
-        short_name: data.short_name || null,
-        website_url: data.website_url || null,
-        venue_name: data.venue_name,
-        location_city: data.location_city,
-        location_country: data.location_country,
-        slug: generateSlug(data.name),
-        start_date: startDateTime.toISOString(),
-        end_date: endDateTime.toISOString(),
-        early_bird_deadline: data.early_bird_deadline?.toISOString() || null,
-        payment_due_days: data.payment_due_days,
-        currency: data.currency,
-        tax_location: data.tax_location || null,
-        bc_position: data.bc_position || null,
-        bc_reference: data.bc_reference || null,
-        notification_sender_name: data.notification_sender_name,
-        notification_sender_email: data.notification_sender_email,
-        support_phone: data.support_phone || null,
-        additional_admins: additionalAdminsArray,
-        supported_languages: data.supported_languages,
-        status: data.status,
-        institution_uuid: profile.institution_uuid,
-      });
+      // Step 1: Create the event
+      const { data: newEvent, error: eventError } = await supabase
+        .from('events')
+        .insert({
+          name: data.name,
+          short_name: data.short_name || null,
+          website_url: data.website_url || null,
+          venue_name: data.venue_name,
+          location_city: data.location_city,
+          location_country: data.location_country,
+          slug: generateSlug(data.name),
+          start_date: startDateTime.toISOString(),
+          end_date: endDateTime.toISOString(),
+          early_bird_deadline: data.early_bird_deadline?.toISOString() || null,
+          payment_due_days: data.payment_due_days,
+          currency: data.currency,
+          tax_location: data.tax_location || null,
+          bc_position: data.bc_position || null,
+          bc_reference: data.bc_reference || null,
+          notification_sender_name: data.notification_sender_name,
+          notification_sender_email: data.notification_sender_email,
+          support_phone: data.support_phone || null,
+          additional_admins: additionalAdminsArray,
+          supported_languages: data.supported_languages,
+          status: data.status,
+          institution_uuid: profile.institution_uuid,
+        })
+        .select('id')
+        .single();
 
-      if (error) throw error;
+      if (eventError) throw eventError;
 
-      toast.success('Event created successfully!');
+      // Step 2: Create event_membership for the creator
+      const { error: membershipError } = await supabase
+        .from('event_memberships')
+        .insert({
+          event_id: newEvent.id,
+          user_id: profile.id,
+          role: 'organizer_admin',
+        });
+
+      if (membershipError) {
+        console.error('Error creating event membership:', membershipError);
+        // Don't fail the entire operation, event was created successfully
+        toast.warning('Event created, but membership assignment failed');
+      } else {
+        toast.success('Event created successfully!');
+      }
+
       form.reset();
       onOpenChange(false);
       onEventCreated();
