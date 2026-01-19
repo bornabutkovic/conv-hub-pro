@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Search, Phone, MessageCircle, Users, Calendar } from 'lucide-react';
+import { Search, Phone, MessageCircle, Users, Calendar, Shield, Building } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,13 +14,23 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { UserDetailsModal } from '@/components/admin/UserDetailsModal';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Profile = Tables<'profiles'>;
 
+type RoleFilter = 'all' | 'super_admin' | 'user';
+
 export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
 
   const { data: users, isLoading } = useQuery({
@@ -38,18 +48,31 @@ export default function AdminUsers() {
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
-    if (!searchQuery.trim()) return users;
     
-    const query = searchQuery.toLowerCase();
-    return users.filter((user) => {
-      const phone = user.phone?.toLowerCase() || '';
-      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase();
-      return phone.includes(query) || fullName.includes(query);
-    });
-  }, [users, searchQuery]);
+    let filtered = users;
+    
+    // Apply role filter
+    if (roleFilter !== 'all') {
+      filtered = filtered.filter((user) => user.role === roleFilter);
+    }
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((user) => {
+        const phone = user.phone?.toLowerCase() || '';
+        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase();
+        const email = user.email?.toLowerCase() || '';
+        return phone.includes(query) || fullName.includes(query) || email.includes(query);
+      });
+    }
+    
+    return filtered;
+  }, [users, searchQuery, roleFilter]);
 
   const totalUsers = users?.length || 0;
-  const whatsappUsers = users?.filter(u => u.phone)?.length || 0;
+  const superAdminCount = users?.filter(u => u.role === 'super_admin')?.length || 0;
+  const regularUserCount = users?.filter(u => u.role === 'user' || !u.role)?.length || 0;
 
   if (isLoading) {
     return (
@@ -90,12 +113,12 @@ export default function AdminUsers() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-500/10">
-              <MessageCircle className="h-5 w-5 text-green-500" />
+            <div className="p-2 rounded-lg bg-purple-500/10">
+              <Shield className="h-5 w-5 text-purple-500" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{whatsappUsers}</p>
-              <p className="text-sm text-muted-foreground">WhatsApp Active</p>
+              <p className="text-2xl font-bold">{superAdminCount}</p>
+              <p className="text-sm text-muted-foreground">Super Admins</p>
             </div>
           </CardContent>
         </Card>
@@ -105,24 +128,36 @@ export default function AdminUsers() {
               <Calendar className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{filteredUsers.length}</p>
-              <p className="text-sm text-muted-foreground">Showing</p>
+              <p className="text-2xl font-bold">{regularUserCount}</p>
+              <p className="text-sm text-muted-foreground">Registered Users</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Search Bar */}
+      {/* Search & Filter Bar */}
       <Card>
         <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by phone number or name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 text-base"
-            />
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by phone, name, or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 text-base"
+              />
+            </div>
+            <Select value={roleFilter} onValueChange={(value: RoleFilter) => setRoleFilter(value)}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter by role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="super_admin">Super Admin</SelectItem>
+                <SelectItem value="user">User</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -130,14 +165,14 @@ export default function AdminUsers() {
       {/* Users Table */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">User Directory</CardTitle>
+          <CardTitle className="text-lg">User Directory ({filteredUsers.length})</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {filteredUsers.length === 0 ? (
             <div className="p-8 text-center">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                {searchQuery ? 'No users match your search.' : 'No users found.'}
+                {searchQuery || roleFilter !== 'all' ? 'No users match your filters.' : 'No users found.'}
               </p>
             </div>
           ) : (
@@ -145,16 +180,21 @@ export default function AdminUsers() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[180px]">
+                    <TableHead>Full Name</TableHead>
+                    <TableHead>
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4" />
-                        Phone Number
+                        Phone
                       </div>
                     </TableHead>
-                    <TableHead>Full Name</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead className="w-[150px]">Date Joined</TableHead>
-                    <TableHead className="w-[120px] text-center">WhatsApp</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>
+                      <div className="flex items-center gap-2">
+                        <Building className="h-4 w-4" />
+                        Institution
+                      </div>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -164,31 +204,31 @@ export default function AdminUsers() {
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => setSelectedUser(user)}
                     >
-                      <TableCell className="font-mono font-semibold text-primary">
-                        {user.phone || '—'}
-                      </TableCell>
                       <TableCell className="font-medium">
                         {user.first_name || user.last_name
                           ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
                           : '—'}
                       </TableCell>
+                      <TableCell className="font-mono text-primary">
+                        {user.phone || '—'}
+                      </TableCell>
                       <TableCell className="text-muted-foreground">
                         {user.email || '—'}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {user.created_at
-                          ? format(new Date(user.created_at), 'dd MMM yyyy')
-                          : '—'}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {user.phone ? (
-                          <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                            <MessageCircle className="h-3 w-3 mr-1" />
-                            Active
+                      <TableCell>
+                        {user.role === 'super_admin' ? (
+                          <Badge className="bg-purple-500 hover:bg-purple-600 text-white">
+                            <Shield className="h-3 w-3 mr-1" />
+                            SUPER ADMIN
                           </Badge>
                         ) : (
-                          <Badge variant="secondary">None</Badge>
+                          <Badge variant="secondary">
+                            User
+                          </Badge>
                         )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {user.institution || '—'}
                       </TableCell>
                     </TableRow>
                   ))}
