@@ -35,19 +35,11 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-const LANGUAGE_OPTIONS = [
-  { value: 'hr', label: 'HR - Hrvatski' },
-  { value: 'en', label: 'EN - English' },
-  { value: 'de', label: 'DE - Deutsch' },
-];
 
 const createEventSchema = z.object({
   // Section 1: Event Details
@@ -67,22 +59,6 @@ const createEventSchema = z.object({
   end_time: z.string().min(1, 'End time is required'),
   early_bird_deadline: z.date().optional(),
   payment_due_days: z.coerce.number().min(1, 'Must be at least 1 day').default(7),
-  
-  // Section 4: Financials & Business Central
-  currency: z.enum(['EUR', 'USD']).default('EUR'),
-  tax_location: z.string().max(100).optional(),
-  bc_position: z.string().max(100).optional(),
-  bc_reference: z.string().max(100).optional(),
-  
-  // Section 5: Notifications & Support
-  notification_sender_name: z.string().min(1, 'Sender name is required').max(100),
-  notification_sender_email: z.string().email('Please enter a valid email').min(1, 'Sender email is required'),
-  support_phone: z.string().max(50).optional(),
-  support_contacts: z.string().max(500).optional(),
-  
-  // Section 6: Administration
-  additional_admins: z.string().optional(),
-  supported_languages: z.array(z.string()).default(['hr']),
   
   // Additional fields
   status: z.enum(['draft', 'active']),
@@ -129,16 +105,6 @@ export function CreateEventModal({
       start_time: '09:00',
       end_time: '18:00',
       payment_due_days: 7,
-      currency: 'EUR',
-      tax_location: '',
-      bc_position: '',
-      bc_reference: '',
-      notification_sender_name: '',
-      notification_sender_email: '',
-      support_phone: '',
-      support_contacts: '',
-      additional_admins: '',
-      supported_languages: ['hr'],
       status: 'draft',
     },
   });
@@ -169,11 +135,6 @@ export function CreateEventModal({
       const endDateTime = new Date(data.end_date);
       endDateTime.setHours(endHours, endMinutes, 0, 0);
 
-      // Parse additional admins (comma-separated emails to array)
-      const additionalAdminsArray = data.additional_admins
-        ? data.additional_admins.split(',').map(email => email.trim()).filter(Boolean)
-        : null;
-
       const { error } = await supabase.from('events').insert({
         name: data.name,
         short_name: data.short_name || null,
@@ -186,15 +147,6 @@ export function CreateEventModal({
         end_date: endDateTime.toISOString(),
         early_bird_deadline: data.early_bird_deadline?.toISOString() || null,
         payment_due_days: data.payment_due_days,
-        currency: data.currency,
-        tax_location: data.tax_location || null,
-        bc_position: data.bc_position || null,
-        bc_reference: data.bc_reference || null,
-        notification_sender_name: data.notification_sender_name,
-        notification_sender_email: data.notification_sender_email,
-        support_phone: data.support_phone || null,
-        additional_admins: additionalAdminsArray,
-        supported_languages: data.supported_languages,
         status: data.status,
         institution_uuid: profile.institution_uuid,
       });
@@ -215,7 +167,7 @@ export function CreateEventModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] p-0">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] p-0">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="text-xl">Create New Event</DialogTitle>
         </DialogHeader>
@@ -535,209 +487,6 @@ export function CreateEventModal({
                           <SelectItem value="active">Active</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Section 4: Financials & Settings */}
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground">Financials & Settings</h3>
-                  <p className="text-sm text-muted-foreground">Financial configuration and Business Central integration</p>
-                </div>
-                <Separator />
-
-                {/* Financials & Business Central */}
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="currency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Currency</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select currency" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="EUR">EUR</SelectItem>
-                            <SelectItem value="USD">USD</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="tax_location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Porezna lokacija</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Croatia" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="bc_position"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Business Central Position</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Position reference" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="bc_reference"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Business Central Referent</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Referent name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Notifications & Support */}
-                <div className="pt-2">
-                  <p className="text-sm font-medium text-foreground mb-3">Notifications & Support</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="notification_sender_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Pošiljatelj ime *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Ivan Horvat" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="notification_sender_email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Pošiljatelj mail *</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="email@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="support_phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kontakt mobitel</FormLabel>
-                      <FormControl>
-                        <Input placeholder="+385 91 234 5678" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="support_contacts"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Support Contacts</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Additional support contact information..." 
-                          className="min-h-[80px]"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Administration */}
-                <div className="pt-2">
-                  <p className="text-sm font-medium text-foreground mb-3">Administration</p>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="additional_admins"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Additional Admins</FormLabel>
-                      <FormControl>
-                        <Input placeholder="admin1@email.com, admin2@email.com" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Enter multiple emails separated by commas
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="supported_languages"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Languages</FormLabel>
-                      <div className="flex flex-wrap gap-4 pt-2">
-                        {LANGUAGE_OPTIONS.map((lang) => (
-                          <div key={lang.value} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`lang-${lang.value}`}
-                              checked={field.value?.includes(lang.value)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  field.onChange([...(field.value || []), lang.value]);
-                                } else {
-                                  field.onChange(
-                                    field.value?.filter((v) => v !== lang.value) || []
-                                  );
-                                }
-                              }}
-                            />
-                            <label
-                              htmlFor={`lang-${lang.value}`}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              {lang.label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
