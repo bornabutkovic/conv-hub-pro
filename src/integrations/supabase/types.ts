@@ -152,6 +152,45 @@ export type Database = {
         }
         Relationships: []
       }
+      event_memberships: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          id: string
+          role: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          role?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          role?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_memberships_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_services: {
         Row: {
           capacity: number | null
@@ -195,69 +234,103 @@ export type Database = {
       }
       events: {
         Row: {
+          additional_admins: string[] | null
+          bc_position: string | null
+          bc_reference: string | null
           created_at: string | null
           currency: string | null
           early_bird_deadline: string | null
           end_date: string | null
           event_id: string | null
           id: string
+          institution_id: string | null
           institution_uuid: string | null
           location_city: string | null
           location_country: string | null
           name: string
+          notification_sender_email: string | null
+          notification_sender_name: string | null
           payment_due_days: number | null
           price: number | null
           short_name: string | null
           slug: string
           start_date: string | null
           status: string | null
+          support_phone: string | null
+          supported_languages: string[] | null
+          tax_location: string | null
           vat_rate: number | null
           venue_name: string | null
           website_url: string | null
         }
         Insert: {
+          additional_admins?: string[] | null
+          bc_position?: string | null
+          bc_reference?: string | null
           created_at?: string | null
           currency?: string | null
           early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
           id?: string
+          institution_id?: string | null
           institution_uuid?: string | null
           location_city?: string | null
           location_country?: string | null
           name: string
+          notification_sender_email?: string | null
+          notification_sender_name?: string | null
           payment_due_days?: number | null
           price?: number | null
           short_name?: string | null
           slug: string
           start_date?: string | null
           status?: string | null
+          support_phone?: string | null
+          supported_languages?: string[] | null
+          tax_location?: string | null
           vat_rate?: number | null
           venue_name?: string | null
           website_url?: string | null
         }
         Update: {
+          additional_admins?: string[] | null
+          bc_position?: string | null
+          bc_reference?: string | null
           created_at?: string | null
           currency?: string | null
           early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
           id?: string
+          institution_id?: string | null
           institution_uuid?: string | null
           location_city?: string | null
           location_country?: string | null
           name?: string
+          notification_sender_email?: string | null
+          notification_sender_name?: string | null
           payment_due_days?: number | null
           price?: number | null
           short_name?: string | null
           slug?: string
           start_date?: string | null
           status?: string | null
+          support_phone?: string | null
+          supported_languages?: string[] | null
+          tax_location?: string | null
           vat_rate?: number | null
           venue_name?: string | null
           website_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "events_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "events_institution_uuid_fkey"
             columns: ["institution_uuid"]
@@ -571,11 +644,51 @@ export type Database = {
           },
         ]
       }
+      ticket_price_tiers: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          price: number
+          sales_end_at: string | null
+          sales_start_at: string | null
+          ticket_type_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          price: number
+          sales_end_at?: string | null
+          sales_start_at?: string | null
+          ticket_type_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          price?: number
+          sales_end_at?: string | null
+          sales_start_at?: string | null
+          ticket_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_price_tiers_ticket_type_id_fkey"
+            columns: ["ticket_type_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_types: {
         Row: {
+          bc_sku: string | null
           category: string | null
           created_at: string | null
           description: string | null
+          display_order: number | null
           event_id: string | null
           id: string
           name: string
@@ -584,9 +697,11 @@ export type Database = {
           vat_rate: number | null
         }
         Insert: {
+          bc_sku?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           event_id?: string | null
           id?: string
           name: string
@@ -595,9 +710,11 @@ export type Database = {
           vat_rate?: number | null
         }
         Update: {
+          bc_sku?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           event_id?: string | null
           id?: string
           name?: string

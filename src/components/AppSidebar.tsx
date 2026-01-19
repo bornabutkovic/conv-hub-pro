@@ -1,4 +1,4 @@
-import { LayoutDashboard, Calendar, Users, Settings, LogOut, Shield, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Settings, LogOut, Shield, MessageCircle, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +25,7 @@ const navItems = [
 const adminItems = [
   { title: 'Admin Panel', url: '/admin', icon: Shield },
   { title: 'WhatsApp Inspector', url: '/admin/chats', icon: MessageCircle },
+  { title: 'User Directory', url: '/admin/users', icon: Phone },
 ];
 
 export function AppSidebar() {
