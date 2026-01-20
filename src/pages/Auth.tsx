@@ -12,14 +12,11 @@ const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { signIn, signUp, user, loading } = useAuth();
+  const { signIn, user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -56,51 +53,21 @@ export default function Auth() {
       return;
     }
 
-    if (isLogin) {
-      const { error } = await signIn(email, password);
-      if (error) {
-        toast({
-          title: 'Login Failed',
-          description: error.message === 'Invalid login credentials' 
-            ? 'Invalid email or password. Please try again.'
-            : error.message,
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Welcome back!',
-          description: 'You have successfully logged in.',
-        });
-        navigate('/', { replace: true });
-      }
+    const { error } = await signIn(email, password);
+    if (error) {
+      toast({
+        title: 'Login Failed',
+        description: error.message === 'Invalid login credentials' 
+          ? 'Invalid email or password. Please try again.'
+          : error.message,
+        variant: 'destructive',
+      });
     } else {
-      if (!firstName.trim() || !lastName.trim()) {
-        toast({
-          title: 'Missing Information',
-          description: 'Please enter your first and last name.',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      const { error } = await signUp(email, password, firstName, lastName);
-      if (error) {
-        let errorMessage = error.message;
-        if (error.message.includes('already registered')) {
-          errorMessage = 'This email is already registered. Please log in instead.';
-        }
-        toast({
-          title: 'Sign Up Failed',
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Account Created!',
-          description: 'Please check your email to confirm your account.',
-        });
-      }
+      toast({
+        title: 'Welcome back!',
+        description: 'You have successfully logged in.',
+      });
+      navigate('/', { replace: true });
     }
 
     setIsSubmitting(false);
@@ -121,44 +88,13 @@ export default function Auth() {
           <div className="mb-4">
             <h1 className="text-3xl font-bold text-primary">Conveyo</h1>
           </div>
-          <CardTitle className="text-2xl">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </CardTitle>
+          <CardTitle className="text-2xl">Welcome Back</CardTitle>
           <CardDescription>
-            {isLogin
-              ? 'Enter your credentials to access your dashboard'
-              : 'Sign up to start managing your events'}
+            Enter your credentials to access your dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    placeholder="John"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required={!isLogin}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Doe"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required={!isLogin}
-                  />
-                </div>
-              </div>
-            )}
-
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -188,37 +124,23 @@ export default function Auth() {
               className="w-full"
               disabled={isSubmitting}
             >
-              {isSubmitting
-                ? 'Please wait...'
-                : isLogin
-                ? 'Log In'
-                : 'Create Account'}
+              {isSubmitting ? 'Please wait...' : 'Log In'}
             </Button>
 
-            <div className="text-center text-sm text-muted-foreground">
-              {isLogin ? (
-                <>
-                  Don't have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setIsLogin(false)}
-                    className="text-primary hover:underline font-medium"
-                  >
-                    Sign up
-                  </button>
-                </>
-              ) : (
-                <>
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setIsLogin(true)}
-                    className="text-primary hover:underline font-medium"
-                  >
-                    Log in
-                  </button>
-                </>
-              )}
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  // TODO: Implement forgot password flow
+                  toast({
+                    title: 'Forgot Password',
+                    description: 'Please contact your administrator to reset your password.',
+                  });
+                }}
+                className="text-sm text-muted-foreground hover:text-primary hover:underline"
+              >
+                Forgot password?
+              </button>
             </div>
           </form>
         </CardContent>
