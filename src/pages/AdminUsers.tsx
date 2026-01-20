@@ -30,6 +30,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { UserDetailsModal } from '@/components/admin/UserDetailsModal';
+import { InviteUserModal } from '@/components/admin/InviteUserModal';
 import type { Tables } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
@@ -47,6 +48,7 @@ export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('organizers');
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
   
   const isSuperAdmin = currentUserProfile?.role === 'super_admin';
 
@@ -179,7 +181,7 @@ export default function AdminUsers() {
           <p className="text-muted-foreground mt-1">Manage platform users across all tiers</p>
         </div>
         {isSuperAdmin && (
-          <Button onClick={() => toast.info('Invite user modal coming soon')}>
+          <Button onClick={() => setInviteModalOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" />
             Invite User
           </Button>
@@ -512,6 +514,12 @@ export default function AdminUsers() {
         onOpenChange={(open) => {
           if (!open) setSelectedUser(null);
         }}
+      />
+
+      {/* Invite User Modal */}
+      <InviteUserModal
+        open={inviteModalOpen}
+        onOpenChange={setInviteModalOpen}
       />
     </div>
   );
