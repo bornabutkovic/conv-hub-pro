@@ -209,16 +209,19 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Institution (Optional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={(value) => field.onChange(value === '__none__' ? '' : value)} 
+                    value={field.value || '__none__'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select an institution" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No institution</SelectItem>
-                      {institutions?.map((inst) => (
-                        <SelectItem key={inst.id} value={inst.id || ''}>
+                      <SelectItem value="__none__">No institution</SelectItem>
+                      {institutions?.filter(inst => inst.id).map((inst) => (
+                        <SelectItem key={inst.id} value={inst.id!}>
                           {inst.name}
                         </SelectItem>
                       ))}
