@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { 
   Search, 
@@ -12,7 +13,8 @@ import {
   UserCheck,
   LogIn,
   Settings,
-  Crown
+  Crown,
+  UserPlus
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -41,9 +43,12 @@ type ProfileWithInstitution = Profile & {
 type TabType = 'organizers' | 'attendees' | 'team';
 
 export default function AdminUsers() {
+  const { profile: currentUserProfile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('organizers');
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
+  
+  const isSuperAdmin = currentUserProfile?.role === 'super_admin';
 
   // Fetch all profiles with institution data
   const { data: users, isLoading } = useQuery({
@@ -168,9 +173,17 @@ export default function AdminUsers() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">System Users</h1>
-        <p className="text-muted-foreground mt-1">Manage platform users across all tiers</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">System Users</h1>
+          <p className="text-muted-foreground mt-1">Manage platform users across all tiers</p>
+        </div>
+        {isSuperAdmin && (
+          <Button onClick={() => toast.info('Invite user modal coming soon')}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Invite User
+          </Button>
+        )}
       </div>
 
       {/* Stats Cards */}
