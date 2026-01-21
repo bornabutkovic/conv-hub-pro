@@ -16,6 +16,7 @@ import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import AdminChats from "./pages/AdminChats";
 import AdminUsers from "./pages/AdminUsers";
+import UpdatePassword from "./pages/UpdatePassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/update-password" element={<UpdatePassword />} />
             <Route
               path="/"
               element={
