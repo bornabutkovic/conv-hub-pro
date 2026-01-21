@@ -54,11 +54,13 @@ export default function Attendees() {
   };
 
   const formatCsvCell = (value: string): string => {
-    // Wrap in quotes if contains comma, quote, or newline
-    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-      return `"${value.replace(/"/g, '""')}"`;
-    }
-    return value;
+    // Always wrap in double quotes and escape existing quotes for European Excel
+    return `"${value.replace(/"/g, '""')}"`;
+  };
+
+  const formatEuropeanDecimal = (value: number): string => {
+    // Format with comma as decimal separator for European locale
+    return value.toFixed(2).replace('.', ',');
   };
 
   const formatEuropeanDate = (dateString: string | null): string => {
@@ -99,14 +101,15 @@ export default function Attendees() {
       formatCsvCell(attendee.event_institution_name || ''),
       formatCsvCell(attendee.event_name || ''),
       formatCsvCell(attendee.event_name || ''), // Ticket type placeholder - uses event name
-      '0.00', // Price placeholder - would need to join with ticket data
-      attendee.checked_in ? 'Da' : 'Ne',
+      formatCsvCell(formatEuropeanDecimal(0)), // Price placeholder with European decimal
+      formatCsvCell(attendee.checked_in ? 'Da' : 'Ne'),
       formatCsvCell(translateStatus(attendee.status))
     ]);
 
+    // Use semicolon delimiter for European Excel compatibility
     const csvContent = [
-      headers.join(','),
-      ...rows.map((row) => row.join(','))
+      headers.map(h => formatCsvCell(h)).join(';'),
+      ...rows.map((row) => row.join(';'))
     ].join('\n');
 
     // UTF-8 BOM for proper Excel encoding of Croatian characters
