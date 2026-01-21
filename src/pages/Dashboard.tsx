@@ -1,110 +1,26 @@
-import { DollarSign, Users, Calendar, Plus, Building2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DollarSign, Users, Clock, Crown, Plus, Calendar, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
-interface StatCardProps {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  description?: string;
-  loading?: boolean;
-}
-
-function StatCard({ title, value, icon, description, loading }: StatCardProps) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div className="text-primary">{icon}</div>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <Skeleton className="h-8 w-20" />
-        ) : (
-          <div className="text-2xl font-bold">{value}</div>
-        )}
-        {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+import { KPICard } from '@/components/dashboard/KPICard';
+import { RegistrationChart } from '@/components/dashboard/RegistrationChart';
+import { TicketDistributionChart } from '@/components/dashboard/TicketDistributionChart';
+import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 
 export default function Dashboard() {
   const { profile } = useAuth();
   const institutionUuid = profile?.institution_uuid;
   const isSuperAdmin = profile?.role === 'super_admin';
 
-  // Fetch active events count
-  const { data: activeEventsCount, isLoading: loadingEvents } = useQuery({
-    queryKey: ['dashboard-active-events', institutionUuid, isSuperAdmin],
-    queryFn: async () => {
-      let query = supabase
-        .from('events')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'active');
-      
-      // Super admin sees all, regular users see only their institution
-      if (!isSuperAdmin && institutionUuid) {
-        query = query.eq('institution_uuid', institutionUuid);
-      }
-      
-      const { count, error } = await query;
-      if (error) throw error;
-      return count || 0;
-    },
-    enabled: !!profile && (isSuperAdmin || !!institutionUuid),
-  });
-
-  // Fetch total attendees and revenue
-  const { data: statsData, isLoading: loadingStats } = useQuery({
-    queryKey: ['dashboard-stats', institutionUuid, isSuperAdmin],
-    queryFn: async () => {
-      // Get events (all for super admin, filtered for regular users)
-      let eventsQuery = supabase.from('events').select('id, price');
-      
-      if (!isSuperAdmin && institutionUuid) {
-        eventsQuery = eventsQuery.eq('institution_uuid', institutionUuid);
-      }
-      
-      const { data: events, error: eventsError } = await eventsQuery;
-      
-      if (eventsError) throw eventsError;
-      if (!events || events.length === 0) return { totalAttendees: 0, totalRevenue: 0 };
-
-      const eventIds = events.map(e => e.id);
-      const eventPrices = events.reduce((acc, e) => {
-        acc[e.id] = e.price || 0;
-        return acc;
-      }, {} as Record<string, number>);
-
-      // Get attendees for these events
-      const { data: attendees, error: attendeesError } = await supabase
-        .from('attendees')
-        .select('event_id')
-        .in('event_id', eventIds);
-      
-      if (attendeesError) throw attendeesError;
-
-      const totalAttendees = attendees?.length || 0;
-      const totalRevenue = attendees?.reduce((sum, att) => {
-        return sum + (eventPrices[att.event_id || ''] || 0);
-      }, 0) || 0;
-
-      return { totalAttendees, totalRevenue };
-    },
-    enabled: !!profile && (isSuperAdmin || !!institutionUuid),
-  });
+  const { data: stats, isLoading: loadingStats } = useDashboardStats();
 
   // Fetch recent events
   const { data: recentEvents, isLoading: loadingRecent } = useQuery({
@@ -134,12 +50,18 @@ export default function Dashboard() {
     enabled: !!profile && (isSuperAdmin || !!institutionUuid),
   });
 
-  const isLoading = loadingEvents || loadingStats;
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">
@@ -154,54 +76,87 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <StatCard
-          title={isSuperAdmin ? "Total Platform Volume" : "Total Revenue"}
-          value={`€${(statsData?.totalRevenue || 0).toLocaleString('de-DE', { minimumFractionDigits: 2 })}`}
+      {/* KPI Cards Row */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <KPICard
+          title={isSuperAdmin ? "Platform Volume" : "Total Revenue"}
+          value={formatCurrency(stats?.totalRevenue || 0)}
           icon={<DollarSign className="h-5 w-5" />}
-          description={isSuperAdmin ? "GMV across all institutions" : "From all events"}
-          loading={isLoading}
+          description={isSuperAdmin ? "GMV across all institutions" : "Tickets + Add-ons"}
+          loading={loadingStats}
+          variant={(stats?.totalRevenue || 0) > 0 ? 'success' : 'default'}
         />
-        <StatCard
+        <KPICard
           title="Total Attendees"
-          value={String(statsData?.totalAttendees || 0)}
+          value={String(stats?.totalAttendees || 0)}
           icon={<Users className="h-5 w-5" />}
-          description={isSuperAdmin ? "Across all institutions" : "Across all events"}
-          loading={isLoading}
+          description={isSuperAdmin ? "Across all events" : "Registered users"}
+          loading={loadingStats}
         />
-        <StatCard
-          title="Active Events"
-          value={String(activeEventsCount || 0)}
-          icon={<Calendar className="h-5 w-5" />}
-          description={isSuperAdmin ? "Platform-wide" : "Currently running"}
-          loading={isLoading}
+        <KPICard
+          title="Pending Income"
+          value={formatCurrency(stats?.pendingIncome || 0)}
+          icon={<Clock className="h-5 w-5" />}
+          description="Awaiting payment"
+          loading={loadingStats}
+          variant={(stats?.pendingIncome || 0) > 0 ? 'warning' : 'default'}
+        />
+        <KPICard
+          title="VIP Ratio"
+          value={`${(stats?.vipRatio || 0).toFixed(1)}%`}
+          icon={<Crown className="h-5 w-5" />}
+          description="Premium ticket holders"
+          loading={loadingStats}
         />
       </div>
 
-      {/* Recent Events Section */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Recent Events</h2>
-        {loadingRecent ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Card key={i}>
-                <CardContent className="py-4">
-                  <Skeleton className="h-6 w-48 mb-2" />
-                  <Skeleton className="h-4 w-32" />
-                </CardContent>
-              </Card>
-            ))}
+      {/* Charts Row */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <RegistrationChart 
+          data={stats?.registrationTimeline || []} 
+          loading={loadingStats} 
+        />
+        <TicketDistributionChart 
+          data={stats?.ticketDistribution || []} 
+          loading={loadingStats} 
+        />
+      </div>
+
+      {/* Bottom Section: Activity Feed + Recent Events */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <ActivityFeed 
+          activities={stats?.recentActivity || []} 
+          loading={loadingStats} 
+        />
+
+        {/* Recent Events */}
+        <Card>
+          <div className="p-6 pb-2">
+            <h3 className="text-lg font-semibold">Recent Events</h3>
+            <p className="text-sm text-muted-foreground">Your latest created events</p>
           </div>
-        ) : recentEvents && recentEvents.length > 0 ? (
-          <div className="space-y-3">
-            {recentEvents.map((event) => (
-              <Link key={event.id} to={`/events/${event.id}`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-                  <CardContent className="py-4 flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">{event.name}</h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CardContent>
+            {loadingRecent ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-3 rounded-lg border">
+                    <Skeleton className="h-5 w-48 mb-2" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                ))}
+              </div>
+            ) : recentEvents && recentEvents.length > 0 ? (
+              <div className="space-y-3">
+                {recentEvents.map((event) => (
+                  <Link key={event.id} to={`/events/${event.id}`}>
+                    <div className="p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium truncate">{event.name}</h4>
+                        <Badge variant={event.status === 'active' ? 'default' : 'secondary'}>
+                          {event.status || 'draft'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                         <span>{event.slug}</span>
                         {event.start_date && (
                           <span>• {format(new Date(event.start_date), 'MMM d, yyyy')}</span>
@@ -213,33 +168,23 @@ export default function Dashboard() {
                         )}
                       </div>
                     </div>
-                    <Badge variant={event.status === 'active' ? 'default' : 'secondary'}>
-                      {event.status || 'draft'}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium text-muted-foreground">
-                No events yet
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Create your first event to get started
-              </p>
-              <Button asChild className="gap-2">
-                <Link to="/events">
-                  <Plus className="h-4 w-4" />
-                  Create Event
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Calendar className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                <p className="text-sm text-muted-foreground mb-3">No events yet</p>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/events">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Event
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
