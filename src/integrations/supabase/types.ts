@@ -750,7 +750,16 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      create_user_wizard: {
+        Args: {
+          email_input: string
+          first_name_input: string
+          institution_id_input: string
+          last_name_input: string
+          role_input: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       payer_type: "individual" | "company" | "sponsor"
