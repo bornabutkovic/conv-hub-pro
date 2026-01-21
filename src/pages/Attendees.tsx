@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Users, Search, Loader2, Building2, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Search, Loader2, Building2, Calendar, CheckCircle, XCircle, Gift } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -14,9 +15,17 @@ import {
 import { useAttendees } from '@/hooks/useAttendees';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
+import { AttendeeServicesModal } from '@/components/attendees/AttendeeServicesModal';
+
+interface SelectedAttendee {
+  id: string;
+  name: string;
+  eventId: string;
+}
 
 export default function Attendees() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAttendee, setSelectedAttendee] = useState<SelectedAttendee | null>(null);
   const { profile } = useAuth();
   const isSuperAdmin = profile?.role === 'super_admin';
   
@@ -33,6 +42,15 @@ export default function Attendees() {
       default:
         return <Badge variant="outline">{status || 'Unknown'}</Badge>;
     }
+  };
+
+  const handleOpenServices = (attendee: { id: string; first_name: string; last_name: string; event_id: string | null }) => {
+    if (!attendee.event_id) return;
+    setSelectedAttendee({
+      id: attendee.id,
+      name: `${attendee.first_name} ${attendee.last_name}`,
+      eventId: attendee.event_id,
+    });
   };
 
   return (
@@ -74,6 +92,7 @@ export default function Attendees() {
                   <TableHead>Status</TableHead>
                   <TableHead>Checked In</TableHead>
                   <TableHead>Registered</TableHead>
+                  <TableHead className="w-[80px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -117,6 +136,17 @@ export default function Attendees() {
                         ? format(new Date(attendee.created_at), 'MMM d, yyyy')
                         : '-'}
                     </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenServices(attendee)}
+                        disabled={!attendee.event_id}
+                        title="Manage Services"
+                      >
+                        <Gift className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -137,6 +167,17 @@ export default function Attendees() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Services Modal */}
+      {selectedAttendee && (
+        <AttendeeServicesModal
+          open={!!selectedAttendee}
+          onOpenChange={(open) => !open && setSelectedAttendee(null)}
+          attendeeId={selectedAttendee.id}
+          attendeeName={selectedAttendee.name}
+          eventId={selectedAttendee.eventId}
+        />
       )}
     </div>
   );
