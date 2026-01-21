@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Ticket, Gift, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { RevenueBreakdown } from '@/hooks/useDashboardStats';
 import { cn } from '@/lib/utils';
@@ -13,14 +15,18 @@ interface FinancialOverviewProps {
   selectedEventId?: string;
 }
 
+type MetricType = 'total' | 'tickets' | 'addons';
+
 const COLORS = {
-  tickets: 'hsl(24.6, 95%, 53.1%)',
-  addons: 'hsl(210, 70%, 50%)',
+  paid: 'hsl(142.1, 76.2%, 36.3%)', // green
+  pending: 'hsl(24.6, 95%, 53.1%)', // orange/amber
 };
 
 export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEventId }: FinancialOverviewProps) {
   const navigate = useNavigate();
+  const [selectedMetric, setSelectedMetric] = useState<MetricType>('total');
   const filterParam = selectedEventId && selectedEventId !== 'all' ? `&event=${selectedEventId}` : '';
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
@@ -29,36 +35,76 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
     }).format(amount);
   };
 
-  const chartData = [
-    { 
-      name: 'Kotizacije (Tickets)', 
-      value: revenue.ticketRevenue, 
-      color: COLORS.tickets 
-    },
-    { 
-      name: 'Dodatne usluge (Add-ons)', 
-      value: revenue.addonRevenue, 
-      color: COLORS.addons 
-    },
-  ].filter(item => item.value > 0);
+  // Get chart data based on selected metric
+  const getChartData = () => {
+    let paid = 0;
+    let pending = 0;
+    let label = '';
 
-  const totalPaid = revenue.totalRevenue;
-  const totalPending = revenue.totalPending;
+    switch (selectedMetric) {
+      case 'tickets':
+        paid = revenue.ticketRevenue;
+        pending = revenue.ticketPending;
+        label = 'Tickets';
+        break;
+      case 'addons':
+        paid = revenue.addonRevenue;
+        pending = revenue.addonPending;
+        label = 'Add-ons';
+        break;
+      case 'total':
+      default:
+        paid = revenue.totalRevenue;
+        pending = revenue.totalPending;
+        label = 'Total';
+        break;
+    }
+
+    return {
+      data: [
+        { name: 'Paid', value: paid, color: COLORS.paid },
+        { name: 'Pending', value: pending, color: COLORS.pending },
+      ].filter(item => item.value > 0),
+      total: paid + pending,
+      paid,
+      pending,
+      label,
+    };
+  };
+
+  const chartInfo = getChartData();
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      const percentage = totalPaid > 0 ? ((data.value / totalPaid) * 100).toFixed(1) : 0;
+      const percentage = chartInfo.total > 0 ? ((data.value / chartInfo.total) * 100).toFixed(1) : 0;
       return (
         <div className="bg-background border rounded-lg shadow-lg p-3">
           <p className="font-medium text-sm">{data.name}</p>
           <p className="text-lg font-bold">{formatCurrency(data.value)}</p>
-          <p className="text-sm text-muted-foreground">{percentage}% of total</p>
+          <p className="text-sm text-muted-foreground">{percentage}% of {chartInfo.label.toLowerCase()}</p>
         </div>
       );
     }
     return null;
   };
+
+  const renderCustomLegend = () => (
+    <div className="flex justify-center gap-6 mt-2">
+      <div className="flex items-center gap-2">
+        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.paid }} />
+        <span className="text-sm text-muted-foreground">
+          Paid: <span className="font-medium text-foreground">{formatCurrency(chartInfo.paid)}</span>
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.pending }} />
+        <span className="text-sm text-muted-foreground">
+          Pending: <span className="font-medium text-foreground">{formatCurrency(chartInfo.pending)}</span>
+        </span>
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -148,10 +194,10 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Total Paid Revenue</p>
-                  <p className="text-3xl font-bold text-primary">{formatCurrency(totalPaid)}</p>
-                  {totalPending > 0 && (
+                  <p className="text-3xl font-bold text-primary">{formatCurrency(revenue.totalRevenue)}</p>
+                  {revenue.totalPending > 0 && (
                     <p className="text-sm font-medium text-warning">
-                      Total Pending: {formatCurrency(totalPending)}
+                      Total Pending: {formatCurrency(revenue.totalPending)}
                     </p>
                   )}
                 </div>
@@ -159,48 +205,69 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
             </div>
           </div>
 
-          {/* Donut Chart */}
-          <div className="flex flex-col items-center justify-center">
-            {chartData.length > 0 ? (
-              <>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                  Revenue Breakdown
-                </h4>
-                <ResponsiveContainer width="100%" height={240}>
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend 
-                      verticalAlign="bottom" 
-                      height={36}
-                      formatter={(value) => (
-                        <span className="text-sm text-foreground">{value}</span>
-                      )}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-center">
-                <TrendingUp className="h-12 w-12 text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground">No revenue data yet</p>
-                <p className="text-sm text-muted-foreground/70">
-                  Revenue will appear here once payments are received
-                </p>
-              </div>
-            )}
+          {/* Donut Chart with Metric Selector */}
+          <div className="flex flex-col">
+            {/* Metric Selector */}
+            <div className="flex flex-col items-center mb-4">
+              <h4 className="text-sm font-medium text-muted-foreground mb-3">
+                Revenue Breakdown
+              </h4>
+              <Tabs 
+                value={selectedMetric} 
+                onValueChange={(v) => setSelectedMetric(v as MetricType)}
+                className="w-full max-w-xs"
+              >
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="total">Total</TabsTrigger>
+                  <TabsTrigger value="tickets">Tickets</TabsTrigger>
+                  <TabsTrigger value="addons">Add-ons</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* Chart */}
+            <div className="flex-1 flex flex-col items-center justify-center">
+              {chartInfo.data.length > 0 ? (
+                <>
+                  <div className="relative w-full">
+                    <ResponsiveContainer width="100%" height={200}>
+                      <PieChart>
+                        <Pie
+                          data={chartInfo.data}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={55}
+                          outerRadius={85}
+                          paddingAngle={4}
+                          dataKey="value"
+                        >
+                          {chartInfo.data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    {/* Center Label */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground">{chartInfo.label}</p>
+                        <p className="text-lg font-bold">{formatCurrency(chartInfo.total)}</p>
+                      </div>
+                    </div>
+                  </div>
+                  {renderCustomLegend()}
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-48 text-center">
+                  <TrendingUp className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                  <p className="text-muted-foreground">No revenue data yet</p>
+                  <p className="text-sm text-muted-foreground/70">
+                    Revenue will appear here once payments are received
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
