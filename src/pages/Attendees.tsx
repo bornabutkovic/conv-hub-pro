@@ -28,29 +28,48 @@ export default function Attendees() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [eventFilter, setEventFilter] = useState<string | null>(null);
   const [selectedAttendee, setSelectedAttendee] = useState<SelectedAttendee | null>(null);
   const { profile } = useAuth();
   const isSuperAdmin = profile?.role === 'super_admin';
   
-  // Read status filter from URL on mount
+  // Read filters from URL on mount
   useEffect(() => {
     const statusFromUrl = searchParams.get('status');
+    const eventFromUrl = searchParams.get('event');
     if (statusFromUrl) {
       setStatusFilter(statusFromUrl);
+    }
+    if (eventFromUrl) {
+      setEventFilter(eventFromUrl);
     }
   }, [searchParams]);
 
   const { data: attendees, isLoading } = useAttendees(searchQuery);
 
-  // Filter attendees by status if filter is active
-  const filteredAttendees = statusFilter && attendees
-    ? attendees.filter(a => a.status === statusFilter)
-    : attendees;
+  // Filter attendees by status and event if filters are active
+  const filteredAttendees = attendees?.filter(a => {
+    if (statusFilter && a.status !== statusFilter) return false;
+    if (eventFilter && a.event_id !== eventFilter) return false;
+    return true;
+  });
 
   const clearStatusFilter = () => {
     setStatusFilter(null);
     searchParams.delete('status');
     setSearchParams(searchParams);
+  };
+
+  const clearEventFilter = () => {
+    setEventFilter(null);
+    searchParams.delete('event');
+    setSearchParams(searchParams);
+  };
+
+  const clearAllFilters = () => {
+    setStatusFilter(null);
+    setEventFilter(null);
+    setSearchParams(new URLSearchParams());
   };
 
   const getStatusBadge = (status: string | null) => {
@@ -179,17 +198,35 @@ export default function Attendees() {
             className="pl-10"
           />
         </div>
-        {statusFilter && (
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="px-3 py-1.5">
-              Status: {statusFilter === 'approved' ? 'Paid' : statusFilter}
-              <button 
-                onClick={clearStatusFilter}
-                className="ml-2 hover:text-destructive"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
+        {(statusFilter || eventFilter) && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {statusFilter && (
+              <Badge variant="secondary" className="px-3 py-1.5">
+                Status: {statusFilter === 'approved' ? 'Paid' : statusFilter}
+                <button 
+                  onClick={clearStatusFilter}
+                  className="ml-2 hover:text-destructive"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {eventFilter && (
+              <Badge variant="secondary" className="px-3 py-1.5">
+                Filtered by Event
+                <button 
+                  onClick={clearEventFilter}
+                  className="ml-2 hover:text-destructive"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {(statusFilter && eventFilter) && (
+              <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                Clear All
+              </Button>
+            )}
           </div>
         )}
       </div>

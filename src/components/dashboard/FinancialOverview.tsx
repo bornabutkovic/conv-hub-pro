@@ -10,6 +10,7 @@ interface FinancialOverviewProps {
   revenue: RevenueBreakdown;
   loading?: boolean;
   isSuperAdmin?: boolean;
+  selectedEventId?: string;
 }
 
 const COLORS = {
@@ -17,8 +18,9 @@ const COLORS = {
   addons: 'hsl(210, 70%, 50%)',
 };
 
-export function FinancialOverview({ revenue, loading, isSuperAdmin }: FinancialOverviewProps) {
+export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEventId }: FinancialOverviewProps) {
   const navigate = useNavigate();
+  const filterParam = selectedEventId && selectedEventId !== 'all' ? `&event=${selectedEventId}` : '';
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
@@ -96,7 +98,7 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin }: FinancialO
                 "p-4 rounded-lg border bg-card transition-all",
                 "cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
               )}
-              onClick={() => navigate('/attendees?status=approved')}
+              onClick={() => navigate(`/attendees?status=approved${filterParam}`)}
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-primary/10">
@@ -120,7 +122,7 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin }: FinancialO
                 "p-4 rounded-lg border bg-card transition-all",
                 "cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
               )}
-              onClick={() => navigate('/attendees?status=approved')}
+              onClick={() => navigate(`/attendees?status=approved${filterParam}`)}
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-accent">

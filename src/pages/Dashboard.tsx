@@ -1,8 +1,16 @@
-import { Users, Clock, Crown, Plus, Calendar, Building2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, Clock, Plus, Calendar, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -20,12 +28,11 @@ export default function Dashboard() {
   const { profile } = useAuth();
   const institutionUuid = profile?.institution_uuid;
   const isSuperAdmin = profile?.role === 'super_admin';
+  const [selectedEventId, setSelectedEventId] = useState<string>('all');
 
-  const { data: stats, isLoading: loadingStats } = useDashboardStats();
-
-  // Fetch recent events
-  const { data: recentEvents, isLoading: loadingRecent } = useQuery({
-    queryKey: ['dashboard-recent-events', institutionUuid, isSuperAdmin],
+  // Fetch all events for the selector
+  const { data: allEvents, isLoading: loadingEvents } = useQuery({
+    queryKey: ['dashboard-events-selector', institutionUuid, isSuperAdmin],
     queryFn: async () => {
       let query = supabase
         .from('events')
@@ -33,8 +40,7 @@ export default function Dashboard() {
           id, name, slug, start_date, status,
           institutions:institution_uuid (name)
         `)
-        .order('created_at', { ascending: false })
-        .limit(3);
+        .order('start_date', { ascending: false });
       
       if (!isSuperAdmin && institutionUuid) {
         query = query.eq('institution_uuid', institutionUuid);
@@ -51,6 +57,21 @@ export default function Dashboard() {
     enabled: !!profile && (isSuperAdmin || !!institutionUuid),
   });
 
+  // Auto-select the most recent active event on load
+  useEffect(() => {
+    if (allEvents && allEvents.length > 0 && selectedEventId === 'all') {
+      const activeEvent = allEvents.find(e => e.status === 'active');
+      if (activeEvent) {
+        setSelectedEventId(activeEvent.id);
+      } else {
+        // Fall back to first event if no active ones
+        setSelectedEventId(allEvents[0].id);
+      }
+    }
+  }, [allEvents]);
+
+  const { data: stats, isLoading: loadingStats } = useDashboardStats(selectedEventId);
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
@@ -59,22 +80,70 @@ export default function Dashboard() {
     }).format(amount);
   };
 
+  const selectedEvent = allEvents?.find(e => e.id === selectedEventId);
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
-          </p>
+      {/* Header with Event Selector */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
+            </p>
+          </div>
+          <Button asChild className="gap-2">
+            <Link to="/events">
+              <Plus className="h-4 w-4" />
+              Create Event
+            </Link>
+          </Button>
         </div>
-        <Button asChild className="gap-2">
-          <Link to="/events">
-            <Plus className="h-4 w-4" />
-            Create Event
-          </Link>
-        </Button>
+
+        {/* Event Selector */}
+        <div className="flex items-center gap-3 p-4 rounded-lg border bg-card">
+          <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+            Viewing Event:
+          </span>
+          {loadingEvents ? (
+            <Skeleton className="h-10 w-64" />
+          ) : (
+            <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+              <SelectTrigger className="w-full max-w-md">
+                <SelectValue placeholder="Select an event" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <span className="font-medium">All Events</span>
+                </SelectItem>
+                {allEvents?.map((event) => (
+                  <SelectItem key={event.id} value={event.id}>
+                    <div className="flex items-center gap-2">
+                      <span>{event.name}</span>
+                      {event.status === 'active' && (
+                        <Badge variant="default" className="text-xs">Active</Badge>
+                      )}
+                      {event.start_date && (
+                        <span className="text-xs text-muted-foreground">
+                          ({format(new Date(event.start_date), 'MMM d, yyyy')})
+                        </span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {selectedEvent && (
+            <Link 
+              to={`/events/${selectedEvent.id}`}
+              className="text-sm text-primary hover:underline whitespace-nowrap"
+            >
+              View Details →
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Financial Overview Section */}
@@ -89,17 +158,21 @@ export default function Dashboard() {
         }}
         loading={loadingStats}
         isSuperAdmin={isSuperAdmin}
+        selectedEventId={selectedEventId}
       />
 
-      {/* KPI Cards Row */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+      {/* KPI Cards Row - Now 2 cards spanning wider */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         <KPICard
           title="Total Attendees"
           value={String(stats?.totalAttendees || 0)}
           icon={<Users className="h-5 w-5" />}
-          description={isSuperAdmin ? "Across all events" : "Registered users"}
+          description={selectedEventId === 'all' 
+            ? (isSuperAdmin ? "Across all events" : "Registered users") 
+            : `For ${selectedEvent?.name || 'this event'}`
+          }
           loading={loadingStats}
-          href="/attendees"
+          href={selectedEventId === 'all' ? "/attendees" : `/attendees?event=${selectedEventId}`}
         />
         <KPICard
           title="Pending Income"
@@ -108,14 +181,7 @@ export default function Dashboard() {
           description="Awaiting payment"
           loading={loadingStats}
           variant={(stats?.pendingIncome || 0) > 0 ? 'warning' : 'default'}
-          href="/attendees?status=pending"
-        />
-        <KPICard
-          title="VIP Ratio"
-          value={`${(stats?.vipRatio || 0).toFixed(1)}%`}
-          icon={<Crown className="h-5 w-5" />}
-          description="Premium ticket holders"
-          loading={loadingStats}
+          href={selectedEventId === 'all' ? "/attendees?status=pending" : `/attendees?status=pending&event=${selectedEventId}`}
         />
       </div>
 
@@ -127,7 +193,8 @@ export default function Dashboard() {
         />
         <TicketDistributionChart 
           data={stats?.ticketDistribution || []} 
-          loading={loadingStats} 
+          loading={loadingStats}
+          eventName={selectedEventId !== 'all' ? selectedEvent?.name : undefined}
         />
       </div>
 
@@ -145,7 +212,7 @@ export default function Dashboard() {
             <p className="text-sm text-muted-foreground">Your latest created events</p>
           </div>
           <CardContent>
-            {loadingRecent ? (
+            {loadingEvents ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="p-3 rounded-lg border">
@@ -154,9 +221,9 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-            ) : recentEvents && recentEvents.length > 0 ? (
+            ) : allEvents && allEvents.length > 0 ? (
               <div className="space-y-3">
-                {recentEvents.map((event) => (
+                {allEvents.slice(0, 3).map((event) => (
                   <Link key={event.id} to={`/events/${event.id}`}>
                     <div className="p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between">
