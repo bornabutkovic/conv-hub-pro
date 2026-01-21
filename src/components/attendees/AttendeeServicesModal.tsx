@@ -35,9 +35,9 @@ interface AttendeeServicesModalProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending', variant: 'secondary' as const },
-  { value: 'paid', label: 'Paid', variant: 'default' as const },
-  { value: 'cancelled', label: 'Cancelled', variant: 'destructive' as const },
+  { value: 'pending', label: 'Pending', className: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+  { value: 'paid', label: 'Paid', className: 'bg-green-500/10 text-green-600 border-green-500/20' },
+  { value: 'cancelled', label: 'Cancelled', className: 'bg-muted text-muted-foreground border-muted' },
 ];
 
 export function AttendeeServicesModal({
@@ -62,9 +62,11 @@ export function AttendeeServicesModal({
     (s) => !purchasedServiceIds.includes(s.id)
   ) || [];
 
-  // Calculate total
-  const total = purchases?.reduce((sum, p) => sum + (p.service_price || 0), 0) || 0;
-  const currency = purchases?.[0]?.service_currency || 'EUR';
+  // Calculate financials
+  const currency = purchases?.[0]?.service_currency || availableServices?.[0]?.currency || 'EUR';
+  const totalValue = purchases?.reduce((sum, p) => sum + (p.service_price || 0), 0) || 0;
+  const paidAmount = purchases?.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.service_price || 0), 0) || 0;
+  const remainingDue = totalValue - paidAmount;
 
   const handleAddService = async () => {
     if (!selectedServiceId) {
@@ -101,7 +103,7 @@ export function AttendeeServicesModal({
 
   const getStatusBadge = (status: string) => {
     const option = STATUS_OPTIONS.find((o) => o.value === status) || STATUS_OPTIONS[0];
-    return <Badge variant={option.variant}>{option.label}</Badge>;
+    return <Badge className={option.className}>{option.label}</Badge>;
   };
 
   const formatPrice = (price: number, curr: string) => {
@@ -194,7 +196,7 @@ export function AttendeeServicesModal({
                       <SelectContent>
                         {STATUS_OPTIONS.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
-                            <Badge variant={option.variant}>{option.label}</Badge>
+                            <Badge className={option.className}>{option.label}</Badge>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -219,12 +221,27 @@ export function AttendeeServicesModal({
 
               <Separator />
 
-              {/* Total */}
-              <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
-                <span className="font-semibold">Total</span>
-                <span className="text-lg font-bold text-primary">
-                  {formatPrice(total, currency)}
-                </span>
+              {/* Financial Summary */}
+              <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Total Value</span>
+                  <span className="font-medium">
+                    {formatPrice(totalValue, currency)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Paid Amount</span>
+                  <span className="font-medium text-green-600">
+                    {formatPrice(paidAmount, currency)}
+                  </span>
+                </div>
+                <Separator />
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">Remaining Due</span>
+                  <span className={`text-lg font-bold ${remainingDue > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    {formatPrice(remainingDue, currency)}
+                  </span>
+                </div>
               </div>
             </div>
           ) : (
