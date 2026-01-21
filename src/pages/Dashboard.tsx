@@ -1,4 +1,4 @@
-import { DollarSign, Users, Clock, Crown, Plus, Calendar, Building2 } from 'lucide-react';
+import { Users, Clock, Crown, Plus, Calendar, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,6 +13,7 @@ import { KPICard } from '@/components/dashboard/KPICard';
 import { RegistrationChart } from '@/components/dashboard/RegistrationChart';
 import { TicketDistributionChart } from '@/components/dashboard/TicketDistributionChart';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
+import { FinancialOverview } from '@/components/dashboard/FinancialOverview';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 
 export default function Dashboard() {
@@ -76,16 +77,22 @@ export default function Dashboard() {
         </Button>
       </div>
 
+      {/* Financial Overview Section */}
+      <FinancialOverview
+        revenue={stats?.revenue || {
+          ticketRevenue: 0,
+          ticketPending: 0,
+          addonRevenue: 0,
+          addonPending: 0,
+          totalRevenue: 0,
+          totalPending: 0,
+        }}
+        loading={loadingStats}
+        isSuperAdmin={isSuperAdmin}
+      />
+
       {/* KPI Cards Row */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <KPICard
-          title={isSuperAdmin ? "Platform Volume" : "Total Revenue"}
-          value={formatCurrency(stats?.totalRevenue || 0)}
-          icon={<DollarSign className="h-5 w-5" />}
-          description={isSuperAdmin ? "GMV across all institutions" : "Tickets + Add-ons"}
-          loading={loadingStats}
-          variant={(stats?.totalRevenue || 0) > 0 ? 'success' : 'default'}
-        />
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <KPICard
           title="Total Attendees"
           value={String(stats?.totalAttendees || 0)}

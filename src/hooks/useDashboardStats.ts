@@ -3,8 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { subDays, format, startOfDay } from 'date-fns';
 
-export interface DashboardStats {
+export interface RevenueBreakdown {
+  ticketRevenue: number;
+  ticketPending: number;
+  addonRevenue: number;
+  addonPending: number;
   totalRevenue: number;
+  totalPending: number;
+}
+
+export interface DashboardStats {
+  revenue: RevenueBreakdown;
   totalAttendees: number;
   pendingIncome: number;
   vipRatio: number;
@@ -46,7 +55,14 @@ export function useDashboardStats() {
 
       if (!events || events.length === 0) {
         return {
-          totalRevenue: 0,
+          revenue: {
+            ticketRevenue: 0,
+            ticketPending: 0,
+            addonRevenue: 0,
+            addonPending: 0,
+            totalRevenue: 0,
+            totalPending: 0,
+          },
           totalAttendees: 0,
           pendingIncome: 0,
           vipRatio: 0,
@@ -92,26 +108,37 @@ export function useDashboardStats() {
 
       if (purchasesError) throw purchasesError;
 
-      // Calculate total revenue (paid order items + paid purchases)
-      const ticketRevenue = (orderItems || []).reduce((sum, item) => sum + Number(item.total_price || 0), 0);
-      const addonRevenue = (purchases || [])
-        .filter(p => p.status === 'paid')
-        .reduce((sum, p) => sum + Number((p.event_services as any)?.price || 0), 0);
-      const totalRevenue = ticketRevenue + addonRevenue;
-
-      // Calculate pending income
+      // Calculate revenue by status
+      // Paid ticket revenue - from approved attendees
+      const paidAttendees = (attendees || []).filter(a => a.status === 'approved');
+      const paidAttendeeIds = paidAttendees.map(a => a.id);
+      const paidOrderItems = (orderItems || []).filter(item => 
+        paidAttendeeIds.includes(item.attendee_id || '')
+      );
+      const ticketRevenue = paidOrderItems.reduce((sum, item) => sum + Number(item.total_price || 0), 0);
+      
+      // Pending ticket revenue
       const pendingAttendees = (attendees || []).filter(a => a.status === 'pending');
       const pendingAttendeeIds = pendingAttendees.map(a => a.id);
       const pendingOrderItems = (orderItems || []).filter(item => 
         pendingAttendeeIds.includes(item.attendee_id || '')
       );
-      const pendingTicketIncome = pendingOrderItems.reduce((sum, item) => sum + Number(item.total_price || 0), 0);
+      const ticketPending = pendingOrderItems.reduce((sum, item) => sum + Number(item.total_price || 0), 0);
       
-      const pendingPurchases = (purchases || []).filter(p => p.status === 'pending');
-      const pendingPurchaseIncome = pendingPurchases.reduce((sum, p) => 
-        sum + Number((p.event_services as any)?.price || 0), 0
-      );
-      const pendingIncome = pendingTicketIncome + pendingPurchaseIncome;
+      // Paid add-on revenue
+      const addonRevenue = (purchases || [])
+        .filter(p => p.status === 'paid')
+        .reduce((sum, p) => sum + Number((p.event_services as any)?.price || 0), 0);
+      
+      // Pending add-on revenue
+      const addonPending = (purchases || [])
+        .filter(p => p.status === 'pending')
+        .reduce((sum, p) => sum + Number((p.event_services as any)?.price || 0), 0);
+      
+      // Total calculations
+      const totalRevenue = ticketRevenue + addonRevenue;
+      const totalPending = ticketPending + addonPending;
+      const pendingIncome = totalPending;
 
       // Calculate VIP ratio
       const vipTickets = (orderItems || []).filter(item => {
@@ -190,7 +217,14 @@ export function useDashboardStats() {
       );
 
       return {
-        totalRevenue,
+        revenue: {
+          ticketRevenue,
+          ticketPending,
+          addonRevenue,
+          addonPending,
+          totalRevenue,
+          totalPending,
+        },
         totalAttendees: (attendees || []).length,
         pendingIncome,
         vipRatio,
