@@ -682,6 +682,50 @@ export type Database = {
           },
         ]
       }
+      ticket_tiers: {
+        Row: {
+          capacity: number | null
+          created_at: string | null
+          description: string | null
+          event_id: string | null
+          id: string
+          name: string
+          price: number
+          sales_end: string | null
+          sales_start: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string | null
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          name: string
+          price?: number
+          sales_end?: string | null
+          sales_start?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string | null
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          name?: string
+          price?: number
+          sales_end?: string | null
+          sales_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_tiers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_types: {
         Row: {
           bc_sku: string | null
