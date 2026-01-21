@@ -81,28 +81,21 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('invite-user', {
-        body: {
-          email: values.email,
-          first_name: values.first_name,
-          last_name: values.last_name,
-          role: values.role,
-          institution_id: values.institution_id || null,
-        },
+      const { data, error } = await supabase.rpc('create_user_wizard', {
+        email_input: values.email,
+        first_name_input: values.first_name,
+        last_name_input: values.last_name,
+        role_input: values.role,
+        institution_id_input: values.institution_id || null,
       });
 
       if (error) {
-        console.error('Invite error:', error);
-        toast.error(error.message || 'Failed to send invitation');
+        console.error('Create user error:', error);
+        toast.error(error.message || 'Failed to create user');
         return;
       }
 
-      if (data?.error) {
-        toast.error(data.error);
-        return;
-      }
-
-      toast.success(`Invitation sent successfully to ${values.email}`);
+      toast.success('User created! Temporary Password: Conveyo2026!');
       form.reset();
       onOpenChange(false);
       
