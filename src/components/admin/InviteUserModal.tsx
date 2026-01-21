@@ -81,6 +81,7 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
     setIsSubmitting(true);
 
     try {
+      // Step 1: Create user via RPC
       const { data, error } = await supabase.rpc('create_user_wizard', {
         email_input: values.email,
         first_name_input: values.first_name,
@@ -95,7 +96,18 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
         return;
       }
 
-      toast.success('User created! Temporary Password: Conveyo2026!');
+      // Step 2: Send password reset email
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(values.email, {
+        redirectTo: window.location.origin + '/auth/update-password',
+      });
+
+      if (resetError) {
+        console.error('Password reset email error:', resetError);
+        toast.warning('User created, but failed to send invitation email. Please resend manually.');
+      } else {
+        toast.success('Invitation sent! The user will receive an email to set their password.');
+      }
+
       form.reset();
       onOpenChange(false);
       
