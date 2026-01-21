@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Search, Loader2, Building2, Calendar, CheckCircle, XCircle, Gift } from 'lucide-react';
+import { Users, Search, Loader2, Building2, Calendar, CheckCircle, XCircle, Gift, Download } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -53,15 +53,68 @@ export default function Attendees() {
     });
   };
 
+  const exportToCSV = () => {
+    if (!attendees || attendees.length === 0) return;
+
+    const headers = [
+      'First Name',
+      'Last Name',
+      'Email',
+      'Phone',
+      'Event',
+      'Institution',
+      'Status',
+      'Checked In',
+      'Registration Date'
+    ];
+
+    const rows = attendees.map((attendee) => [
+      attendee.first_name || '',
+      attendee.last_name || '',
+      attendee.email || '',
+      attendee.phone || '',
+      attendee.event_name || '',
+      attendee.event_institution_name || '',
+      attendee.status || '',
+      attendee.checked_in ? 'Yes' : 'No',
+      attendee.created_at ? format(new Date(attendee.created_at), 'yyyy-MM-dd') : ''
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `attendees_export_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Attendees</h1>
-        <p className="text-muted-foreground">
-          {isSuperAdmin 
-            ? 'View and manage attendees across all institutions' 
-            : 'View and manage all your event attendees'}
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Attendees</h1>
+          <p className="text-muted-foreground">
+            {isSuperAdmin 
+              ? 'View and manage attendees across all institutions' 
+              : 'View and manage all your event attendees'}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={exportToCSV}
+          disabled={!attendees || attendees.length === 0}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export to CSV
+        </Button>
       </div>
 
       {/* Search */}
