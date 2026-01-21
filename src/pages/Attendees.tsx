@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Users, Search, Loader2, Building2, Calendar, CheckCircle, XCircle, Gift, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Users, Search, Loader2, Building2, Calendar, CheckCircle, XCircle, Gift, Download, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -24,12 +25,33 @@ interface SelectedAttendee {
 }
 
 export default function Attendees() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [selectedAttendee, setSelectedAttendee] = useState<SelectedAttendee | null>(null);
   const { profile } = useAuth();
   const isSuperAdmin = profile?.role === 'super_admin';
   
+  // Read status filter from URL on mount
+  useEffect(() => {
+    const statusFromUrl = searchParams.get('status');
+    if (statusFromUrl) {
+      setStatusFilter(statusFromUrl);
+    }
+  }, [searchParams]);
+
   const { data: attendees, isLoading } = useAttendees(searchQuery);
+
+  // Filter attendees by status if filter is active
+  const filteredAttendees = statusFilter && attendees
+    ? attendees.filter(a => a.status === statusFilter)
+    : attendees;
+
+  const clearStatusFilter = () => {
+    setStatusFilter(null);
+    searchParams.delete('status');
+    setSearchParams(searchParams);
+  };
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
@@ -146,22 +168,37 @@ export default function Attendees() {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by name, email, or phone..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, email, or phone..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        {statusFilter && (
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="px-3 py-1.5">
+              Status: {statusFilter === 'approved' ? 'Paid' : statusFilter}
+              <button 
+                onClick={clearStatusFilter}
+                className="ml-2 hover:text-destructive"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          </div>
+        )}
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      ) : attendees && attendees.length > 0 ? (
+      ) : filteredAttendees && filteredAttendees.length > 0 ? (
         <Card>
           <CardContent className="p-0">
             <Table>
@@ -178,7 +215,7 @@ export default function Attendees() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {attendees.map((attendee) => (
+                {filteredAttendees.map((attendee) => (
                   <TableRow key={attendee.id}>
                     <TableCell className="font-medium">
                       {attendee.first_name} {attendee.last_name}

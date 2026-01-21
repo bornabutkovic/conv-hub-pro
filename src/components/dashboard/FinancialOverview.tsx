@@ -1,8 +1,10 @@
+import { useNavigate } from 'react-router-dom';
 import { Ticket, Gift, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { RevenueBreakdown } from '@/hooks/useDashboardStats';
+import { cn } from '@/lib/utils';
 
 interface FinancialOverviewProps {
   revenue: RevenueBreakdown;
@@ -16,6 +18,7 @@ const COLORS = {
 };
 
 export function FinancialOverview({ revenue, loading, isSuperAdmin }: FinancialOverviewProps) {
+  const navigate = useNavigate();
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
@@ -88,7 +91,13 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin }: FinancialO
           {/* Revenue Breakdown Cards */}
           <div className="space-y-4">
             {/* Ticket Revenue */}
-            <div className="p-4 rounded-lg border bg-card">
+            <div 
+              className={cn(
+                "p-4 rounded-lg border bg-card transition-all",
+                "cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
+              )}
+              onClick={() => navigate('/attendees?status=approved')}
+            >
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-primary/10">
                   <Ticket className="h-5 w-5 text-primary" />
@@ -106,7 +115,13 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin }: FinancialO
             </div>
 
             {/* Add-on Revenue */}
-            <div className="p-4 rounded-lg border bg-card">
+            <div 
+              className={cn(
+                "p-4 rounded-lg border bg-card transition-all",
+                "cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
+              )}
+              onClick={() => navigate('/attendees?status=approved')}
+            >
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-accent">
                   <Gift className="h-5 w-5 text-accent-foreground" />

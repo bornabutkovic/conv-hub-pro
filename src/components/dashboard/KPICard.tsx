@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -13,6 +14,7 @@ interface KPICardProps {
     value: number;
     label: string;
   };
+  href?: string;
 }
 
 const variantStyles = {
@@ -36,13 +38,27 @@ export function KPICard({
   description, 
   loading, 
   variant = 'default',
-  trend 
+  trend,
+  href
 }: KPICardProps) {
+  const navigate = useNavigate();
+  const isClickable = !!href;
+
+  const handleClick = () => {
+    if (href) {
+      navigate(href);
+    }
+  };
+
   return (
-    <Card className={cn(
-      'transition-all hover:shadow-md',
-      variantStyles[variant]
-    )}>
+    <Card 
+      className={cn(
+        'transition-all hover:shadow-md',
+        variantStyles[variant],
+        isClickable && 'cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]'
+      )}
+      onClick={isClickable ? handleClick : undefined}
+    >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
