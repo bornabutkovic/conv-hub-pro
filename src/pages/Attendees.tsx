@@ -53,39 +53,65 @@ export default function Attendees() {
     });
   };
 
+  const formatCsvCell = (value: string): string => {
+    // Wrap in quotes if contains comma, quote, or newline
+    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  };
+
+  const formatEuropeanDate = (dateString: string | null): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return format(date, 'dd.MM.yyyy HH:mm');
+  };
+
+  const translateStatus = (status: string | null): string => {
+    switch (status) {
+      case 'approved': return 'Odobreno';
+      case 'pending': return 'Na čekanju';
+      case 'cancelled': return 'Otkazano';
+      default: return status || '';
+    }
+  };
+
   const exportToCSV = () => {
     if (!attendees || attendees.length === 0) return;
 
+    // Croatian headers as requested
     const headers = [
-      'First Name',
-      'Last Name',
+      'Ime',
+      'Prezime', 
       'Email',
-      'Phone',
-      'Event',
-      'Institution',
-      'Status',
-      'Checked In',
-      'Registration Date'
+      'Ustanova',
+      'Uloga',
+      'Kotizacija',
+      'Cijena (EUR)',
+      'Plaćeno',
+      'Status'
     ];
 
     const rows = attendees.map((attendee) => [
-      attendee.first_name || '',
-      attendee.last_name || '',
-      attendee.email || '',
-      attendee.phone || '',
-      attendee.event_name || '',
-      attendee.event_institution_name || '',
-      attendee.status || '',
-      attendee.checked_in ? 'Yes' : 'No',
-      attendee.created_at ? format(new Date(attendee.created_at), 'yyyy-MM-dd') : ''
+      formatCsvCell(attendee.first_name || ''),
+      formatCsvCell(attendee.last_name || ''),
+      formatCsvCell(attendee.email || ''),
+      formatCsvCell(attendee.event_institution_name || ''),
+      formatCsvCell(attendee.event_name || ''),
+      formatCsvCell(attendee.event_name || ''), // Ticket type placeholder - uses event name
+      '0.00', // Price placeholder - would need to join with ticket data
+      attendee.checked_in ? 'Da' : 'Ne',
+      formatCsvCell(translateStatus(attendee.status))
     ]);
 
     const csvContent = [
       headers.join(','),
-      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      ...rows.map((row) => row.join(','))
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // UTF-8 BOM for proper Excel encoding of Croatian characters
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
