@@ -99,6 +99,7 @@ export default function Dashboard() {
           icon={<Users className="h-5 w-5" />}
           description={isSuperAdmin ? "Across all events" : "Registered users"}
           loading={loadingStats}
+          href="/attendees"
         />
         <KPICard
           title="Pending Income"
@@ -107,6 +108,7 @@ export default function Dashboard() {
           description="Awaiting payment"
           loading={loadingStats}
           variant={(stats?.pendingIncome || 0) > 0 ? 'warning' : 'default'}
+          href="/attendees?status=pending"
         />
         <KPICard
           title="VIP Ratio"
