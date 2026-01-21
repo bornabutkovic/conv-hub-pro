@@ -16,7 +16,6 @@ export interface DashboardStats {
   revenue: RevenueBreakdown;
   totalAttendees: number;
   pendingIncome: number;
-  vipRatio: number;
   ticketDistribution: { name: string; value: number; color: string }[];
   registrationTimeline: { date: string; count: number }[];
   recentActivity: {
@@ -35,25 +34,35 @@ const CHART_COLORS = [
   'hsl(150, 60%, 45%)',    // Green
   'hsl(280, 60%, 55%)',    // Purple
   'hsl(45, 90%, 50%)',     // Yellow
+  'hsl(0, 70%, 55%)',      // Red
+  'hsl(180, 60%, 45%)',    // Teal
 ];
 
-export function useDashboardStats() {
+export function useDashboardStats(selectedEventId?: string | null) {
   const { profile } = useAuth();
   const institutionUuid = profile?.institution_uuid;
   const isSuperAdmin = profile?.role === 'super_admin';
 
   return useQuery({
-    queryKey: ['dashboard-stats-full', institutionUuid, isSuperAdmin],
+    queryKey: ['dashboard-stats-full', institutionUuid, isSuperAdmin, selectedEventId],
     queryFn: async (): Promise<DashboardStats> => {
-      // Get events based on role
-      let eventsQuery = supabase.from('events').select('id, price, currency');
-      if (!isSuperAdmin && institutionUuid) {
-        eventsQuery = eventsQuery.eq('institution_uuid', institutionUuid);
-      }
-      const { data: events, error: eventsError } = await eventsQuery;
-      if (eventsError) throw eventsError;
+      let eventIds: string[] = [];
 
-      if (!events || events.length === 0) {
+      if (selectedEventId && selectedEventId !== 'all') {
+        // Single event selected
+        eventIds = [selectedEventId];
+      } else {
+        // Get all events based on role
+        let eventsQuery = supabase.from('events').select('id');
+        if (!isSuperAdmin && institutionUuid) {
+          eventsQuery = eventsQuery.eq('institution_uuid', institutionUuid);
+        }
+        const { data: events, error: eventsError } = await eventsQuery;
+        if (eventsError) throw eventsError;
+        eventIds = (events || []).map(e => e.id);
+      }
+
+      if (eventIds.length === 0) {
         return {
           revenue: {
             ticketRevenue: 0,
@@ -65,16 +74,13 @@ export function useDashboardStats() {
           },
           totalAttendees: 0,
           pendingIncome: 0,
-          vipRatio: 0,
           ticketDistribution: [],
           registrationTimeline: [],
           recentActivity: [],
         };
       }
 
-      const eventIds = events.map(e => e.id);
-
-      // Get all attendees for these events with their order items
+      // Get all attendees for these events
       const { data: attendees, error: attendeesError } = await supabase
         .from('attendees')
         .select(`
@@ -85,6 +91,8 @@ export function useDashboardStats() {
 
       if (attendeesError) throw attendeesError;
 
+      const attendeeIds = (attendees || []).map(a => a.id);
+
       // Get order items with ticket types for revenue calculation
       const { data: orderItems, error: orderItemsError } = await supabase
         .from('order_items')
@@ -92,7 +100,7 @@ export function useDashboardStats() {
           id, total_price, attendee_id,
           ticket_types:ticket_type_id (id, name, category)
         `)
-        .in('attendee_id', (attendees || []).map(a => a.id));
+        .in('attendee_id', attendeeIds);
 
       if (orderItemsError) throw orderItemsError;
 
@@ -103,10 +111,18 @@ export function useDashboardStats() {
           id, status, created_at, attendee_id,
           event_services:service_id (name, price)
         `)
-        .in('attendee_id', (attendees || []).map(a => a.id))
+        .in('attendee_id', attendeeIds)
         .order('created_at', { ascending: false });
 
       if (purchasesError) throw purchasesError;
+
+      // Get ticket types for the selected event(s) for distribution
+      const { data: ticketTypes, error: ticketTypesError } = await supabase
+        .from('ticket_types')
+        .select('id, name, event_id')
+        .in('event_id', eventIds);
+
+      if (ticketTypesError) throw ticketTypesError;
 
       // Calculate revenue by status
       // Paid ticket revenue - from approved attendees
@@ -140,27 +156,29 @@ export function useDashboardStats() {
       const totalPending = ticketPending + addonPending;
       const pendingIncome = totalPending;
 
-      // Calculate VIP ratio
-      const vipTickets = (orderItems || []).filter(item => {
-        const category = (item.ticket_types as any)?.category?.toLowerCase() || '';
-        const name = (item.ticket_types as any)?.name?.toLowerCase() || '';
-        return category.includes('vip') || name.includes('vip') || name.includes('premium');
-      });
-      const vipRatio = (attendees || []).length > 0 
-        ? (vipTickets.length / (attendees || []).length) * 100 
-        : 0;
-
-      // Calculate ticket distribution
+      // Calculate ticket distribution based on ticket_types for the event(s)
       const ticketCounts: Record<string, number> = {};
-      (orderItems || []).forEach(item => {
-        const ticketName = (item.ticket_types as any)?.name || 'Other';
-        ticketCounts[ticketName] = (ticketCounts[ticketName] || 0) + 1;
+      
+      // Initialize counts for all ticket types
+      (ticketTypes || []).forEach(tt => {
+        ticketCounts[tt.name] = 0;
       });
-      const ticketDistribution = Object.entries(ticketCounts).map(([name, value], index) => ({
-        name,
-        value,
-        color: CHART_COLORS[index % CHART_COLORS.length],
-      }));
+      
+      // Count actual orders by ticket type
+      (orderItems || []).forEach(item => {
+        const ticketName = (item.ticket_types as any)?.name;
+        if (ticketName) {
+          ticketCounts[ticketName] = (ticketCounts[ticketName] || 0) + 1;
+        }
+      });
+      
+      const ticketDistribution = Object.entries(ticketCounts)
+        .filter(([_, value]) => value > 0) // Only show types with registrations
+        .map(([name, value], index) => ({
+          name,
+          value,
+          color: CHART_COLORS[index % CHART_COLORS.length],
+        }));
 
       // Calculate registration timeline (last 14 days)
       const today = startOfDay(new Date());
@@ -227,7 +245,6 @@ export function useDashboardStats() {
         },
         totalAttendees: (attendees || []).length,
         pendingIncome,
-        vipRatio,
         ticketDistribution,
         registrationTimeline,
         recentActivity: recentActivity.slice(0, 5),

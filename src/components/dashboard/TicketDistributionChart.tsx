@@ -5,9 +5,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 interface TicketDistributionChartProps {
   data: { name: string; value: number; color: string }[];
   loading?: boolean;
+  eventName?: string;
 }
 
-export function TicketDistributionChart({ data, loading }: TicketDistributionChartProps) {
+export function TicketDistributionChart({ data, loading, eventName }: TicketDistributionChartProps) {
   if (loading) {
     return (
       <Card>
@@ -27,7 +28,9 @@ export function TicketDistributionChart({ data, loading }: TicketDistributionCha
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold">Ticket Distribution</CardTitle>
-        <p className="text-sm text-muted-foreground">Breakdown by ticket type</p>
+        <p className="text-sm text-muted-foreground">
+          {eventName ? `Breakdown for ${eventName}` : 'Breakdown by ticket type'}
+        </p>
       </CardHeader>
       <CardContent>
         <div className="h-[250px] w-full">
