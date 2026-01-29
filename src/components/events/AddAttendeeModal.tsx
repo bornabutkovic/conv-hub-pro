@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -24,6 +24,12 @@ import type { Database } from '@/integrations/supabase/types';
 
 type RegistrationStatus = Database['public']['Enums']['registration_status'];
 
+interface TicketTier {
+  id: string;
+  name: string;
+  price: number;
+}
+
 interface AddAttendeeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -38,7 +44,34 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     phone: '',
     email: '',
     status: 'pending' as RegistrationStatus,
+    ticketTierId: '',
+    pricePaid: 0,
   });
+
+  // Fetch ticket tiers for this event
+  const { data: ticketTiers } = useQuery({
+    queryKey: ['ticket-tiers', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('ticket_tiers')
+        .select('id, name, price')
+        .eq('event_id', eventId)
+        .order('price', { ascending: true });
+      
+      if (error) throw error;
+      return data as TicketTier[];
+    },
+    enabled: open && !!eventId,
+  });
+
+  const handleTicketTierChange = (tierId: string) => {
+    const tier = ticketTiers?.find(t => t.id === tierId);
+    setFormData({
+      ...formData,
+      ticketTierId: tierId,
+      pricePaid: tier?.price || 0,
+    });
+  };
 
   const addAttendeeMutation = useMutation({
     mutationFn: async () => {
@@ -116,12 +149,37 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
         });
 
       if (attendeeError) throw attendeeError;
+
+      // Step 4: Create event_membership with ticket tier and price_paid
+      if (formData.ticketTierId) {
+        const { error: membershipError } = await supabase
+          .from('event_memberships')
+          .insert({
+            event_id: eventId,
+            user_id: profileId,
+            ticket_tier_id: formData.ticketTierId,
+            price_paid: formData.pricePaid,
+            payment_status: 'pending',
+            role: 'attendee',
+          });
+
+        if (membershipError) throw membershipError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
+      queryClient.invalidateQueries({ queryKey: ['event-memberships', eventId] });
       toast.success('Attendee added successfully');
       onOpenChange(false);
-      setFormData({ firstName: '', lastName: '', phone: '', email: '', status: 'pending' });
+      setFormData({ 
+        firstName: '', 
+        lastName: '', 
+        phone: '', 
+        email: '', 
+        status: 'pending',
+        ticketTierId: '',
+        pricePaid: 0,
+      });
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to add attendee');
@@ -200,6 +258,38 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="ticketTier">Ticket Tier</Label>
+              <Select
+                value={formData.ticketTierId}
+                onValueChange={handleTicketTierChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select ticket tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ticketTiers?.map((tier) => (
+                    <SelectItem key={tier.id} value={tier.id}>
+                      {tier.name} - €{tier.price.toFixed(2)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pricePaid">Price Paid (€)</Label>
+              <Input
+                id="pricePaid"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.pricePaid}
+                onChange={(e) => setFormData({ ...formData, pricePaid: parseFloat(e.target.value) || 0 })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Auto-filled from tier, can be adjusted if needed
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>

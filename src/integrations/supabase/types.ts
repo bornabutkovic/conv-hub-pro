@@ -158,6 +158,7 @@ export type Database = {
           event_id: string | null
           id: string
           role: string | null
+          ticket_tier_id: string | null
           user_id: string | null
         }
         Insert: {
@@ -165,6 +166,7 @@ export type Database = {
           event_id?: string | null
           id?: string
           role?: string | null
+          ticket_tier_id?: string | null
           user_id?: string | null
         }
         Update: {
@@ -172,6 +174,7 @@ export type Database = {
           event_id?: string | null
           id?: string
           role?: string | null
+          ticket_tier_id?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -180,6 +183,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_memberships_ticket_tier_id_fkey"
+            columns: ["ticket_tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
             referencedColumns: ["id"]
           },
           {
@@ -372,6 +382,7 @@ export type Database = {
       institutions: {
         Row: {
           address: string
+          billing_email: string | null
           created_at: string | null
           id: string | null
           invoice_email: string
@@ -381,6 +392,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          billing_email?: string | null
           created_at?: string | null
           id?: string | null
           invoice_email: string
@@ -390,6 +402,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          billing_email?: string | null
           created_at?: string | null
           id?: string | null
           invoice_email?: string
