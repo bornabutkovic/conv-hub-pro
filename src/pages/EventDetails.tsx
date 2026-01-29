@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditEventModal } from '@/components/events/EditEventModal';
 import { EventAttendeesTable } from '@/components/events/EventAttendeesTable';
 import { EventServicesTable } from '@/components/events/EventServicesTable';
-import { TicketTypesTable } from '@/components/events/TicketTypesTable';
+
 import { TicketTiersTable } from '@/components/events/TicketTiersTable';
 
 export default function EventDetails() {
@@ -96,7 +96,26 @@ export default function EventDetails() {
   }
 
   const totalAttendees = attendees?.length || 0;
-  const totalRevenue = totalAttendees * (event.price || 0);
+
+  // Fetch event_memberships to calculate revenue from price_paid
+  const { data: memberships } = useQuery({
+    queryKey: ['event-memberships-revenue', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('event_memberships')
+        .select('*')
+        .eq('event_id', id!);
+      
+      if (error) throw error;
+      return data as Array<{ price_paid?: number }>;
+    },
+    enabled: !!id,
+  });
+
+  const totalRevenue = (memberships || []).reduce(
+    (sum, m) => sum + Number(m.price_paid || 0), 
+    0
+  );
 
   return (
     <div className="space-y-6">
@@ -183,7 +202,6 @@ export default function EventDetails() {
         <TabsList>
           <TabsTrigger value="attendees">Attendees</TabsTrigger>
           <TabsTrigger value="ticket-tiers">Ticket Tiers</TabsTrigger>
-          <TabsTrigger value="tickets">Tickets & Pricing</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
         </TabsList>
         <TabsContent value="attendees" className="mt-4">
@@ -195,12 +213,6 @@ export default function EventDetails() {
         </TabsContent>
         <TabsContent value="ticket-tiers" className="mt-4">
           <TicketTiersTable 
-            eventId={event.id} 
-            currency={event.currency || 'EUR'} 
-          />
-        </TabsContent>
-        <TabsContent value="tickets" className="mt-4">
-          <TicketTypesTable 
             eventId={event.id} 
             currency={event.currency || 'EUR'} 
           />
