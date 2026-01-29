@@ -63,6 +63,21 @@ export default function EventDetails() {
     enabled: !!id,
   });
 
+  // Fetch event_memberships to calculate revenue from price_paid - MUST be before any early returns
+  const { data: memberships } = useQuery({
+    queryKey: ['event-memberships-revenue', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('event_memberships')
+        .select('*')
+        .eq('event_id', id!);
+      
+      if (error) throw error;
+      return data as Array<{ price_paid?: number }>;
+    },
+    enabled: !!id,
+  });
+
   const getStatusVariant = (status: string | null) => {
     switch (status) {
       case 'active':
@@ -96,22 +111,6 @@ export default function EventDetails() {
   }
 
   const totalAttendees = attendees?.length || 0;
-
-  // Fetch event_memberships to calculate revenue from price_paid
-  const { data: memberships } = useQuery({
-    queryKey: ['event-memberships-revenue', id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('event_memberships')
-        .select('*')
-        .eq('event_id', id!);
-      
-      if (error) throw error;
-      return data as Array<{ price_paid?: number }>;
-    },
-    enabled: !!id,
-  });
-
   const totalRevenue = (memberships || []).reduce(
     (sum, m) => sum + Number(m.price_paid || 0), 
     0

@@ -706,6 +706,7 @@ export type Database = {
           price: number
           sales_end: string | null
           sales_start: string | null
+          status: string | null
         }
         Insert: {
           capacity?: number | null
@@ -717,6 +718,7 @@ export type Database = {
           price?: number
           sales_end?: string | null
           sales_start?: string | null
+          status?: string | null
         }
         Update: {
           capacity?: number | null
@@ -728,6 +730,7 @@ export type Database = {
           price?: number
           sales_end?: string | null
           sales_start?: string | null
+          status?: string | null
         }
         Relationships: [
           {
