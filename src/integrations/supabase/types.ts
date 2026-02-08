@@ -72,10 +72,13 @@ export type Database = {
           invoice_sent_at: string | null
           last_name: string
           oib: string | null
+          payment_status: string | null
           phone: string | null
+          price_paid: number | null
           profile_id: string | null
           requires_invoice: boolean | null
           status: Database["public"]["Enums"]["registration_status"] | null
+          ticket_tier_id: string | null
           whatsapp_id: string | null
         }
         Insert: {
@@ -90,10 +93,13 @@ export type Database = {
           invoice_sent_at?: string | null
           last_name: string
           oib?: string | null
+          payment_status?: string | null
           phone?: string | null
+          price_paid?: number | null
           profile_id?: string | null
           requires_invoice?: boolean | null
           status?: Database["public"]["Enums"]["registration_status"] | null
+          ticket_tier_id?: string | null
           whatsapp_id?: string | null
         }
         Update: {
@@ -108,10 +114,13 @@ export type Database = {
           invoice_sent_at?: string | null
           last_name?: string
           oib?: string | null
+          payment_status?: string | null
           phone?: string | null
+          price_paid?: number | null
           profile_id?: string | null
           requires_invoice?: boolean | null
           status?: Database["public"]["Enums"]["registration_status"] | null
+          ticket_tier_id?: string | null
           whatsapp_id?: string | null
         }
         Relationships: [
@@ -123,10 +132,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "attendees_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendees_ticket_tier_id_fkey"
+            columns: ["ticket_tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
             referencedColumns: ["id"]
           },
         ]
@@ -186,6 +209,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_memberships_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_memberships_ticket_tier_id_fkey"
             columns: ["ticket_tier_id"]
             isOneToOne: false
@@ -207,6 +237,8 @@ export type Database = {
           created_at: string | null
           currency: string | null
           description: string | null
+          erp_code: string | null
+          event_code: string | null
           event_id: string | null
           id: string
           name: string
@@ -217,6 +249,8 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          erp_code?: string | null
+          event_code?: string | null
           event_id?: string | null
           id?: string
           name: string
@@ -227,6 +261,8 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          erp_code?: string | null
+          event_code?: string | null
           event_id?: string | null
           id?: string
           name?: string
@@ -238,6 +274,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_services_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
             referencedColumns: ["id"]
           },
         ]
@@ -266,6 +309,7 @@ export type Database = {
           slug: string
           start_date: string | null
           status: string | null
+          stripe_tax_rate_id: string | null
           support_phone: string | null
           supported_languages: string[] | null
           tax_location: string | null
@@ -296,6 +340,7 @@ export type Database = {
           slug: string
           start_date?: string | null
           status?: string | null
+          stripe_tax_rate_id?: string | null
           support_phone?: string | null
           supported_languages?: string[] | null
           tax_location?: string | null
@@ -326,6 +371,7 @@ export type Database = {
           slug?: string
           start_date?: string | null
           status?: string | null
+          stripe_tax_rate_id?: string | null
           support_phone?: string | null
           supported_languages?: string[] | null
           tax_location?: string | null
@@ -375,6 +421,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exhibitors_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
             referencedColumns: ["id"]
           },
         ]
@@ -557,10 +610,20 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "orders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
         Row: {
+          billing_email: string | null
+          company_name: string | null
+          company_oib: string | null
           created_at: string | null
           email: string | null
           first_name: string | null
@@ -575,6 +638,9 @@ export type Database = {
           telegram_id: string | null
         }
         Insert: {
+          billing_email?: string | null
+          company_name?: string | null
+          company_oib?: string | null
           created_at?: string | null
           email?: string | null
           first_name?: string | null
@@ -589,6 +655,9 @@ export type Database = {
           telegram_id?: string | null
         }
         Update: {
+          billing_email?: string | null
+          company_name?: string | null
+          company_oib?: string | null
           created_at?: string | null
           email?: string | null
           first_name?: string | null
@@ -604,17 +673,64 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_institution_id_fkey"
-            columns: ["institution_id"]
-            isOneToOne: false
-            referencedRelation: "institutions"
-            referencedColumns: ["oib"]
-          },
-          {
             foreignKeyName: "profiles_institution_uuid_fkey"
             columns: ["institution_uuid"]
             isOneToOne: false
             referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchases: {
+        Row: {
+          amount: number | null
+          attendee_id: string | null
+          bc_invoice_no: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          invoice_url: string | null
+          service_id: string | null
+          status: string | null
+          stripe_session_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          attendee_id?: string | null
+          bc_invoice_no?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          invoice_url?: string | null
+          service_id?: string | null
+          status?: string | null
+          stripe_session_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          attendee_id?: string | null
+          bc_invoice_no?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          invoice_url?: string | null
+          service_id?: string | null
+          status?: string | null
+          stripe_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_attendee_id_fkey"
+            columns: ["attendee_id"]
+            isOneToOne: false
+            referencedRelation: "attendees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchases_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "event_services"
             referencedColumns: ["id"]
           },
         ]
@@ -653,6 +769,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
             referencedColumns: ["id"]
           },
         ]
@@ -740,6 +863,13 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ticket_tiers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ticket_types: {
@@ -790,6 +920,13 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ticket_types_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -807,6 +944,117 @@ export type Database = {
           user_name: string | null
         }
         Relationships: []
+      }
+      view_events_full: {
+        Row: {
+          additional_admins: string[] | null
+          bc_position: string | null
+          bc_reference: string | null
+          created_at: string | null
+          currency: string | null
+          early_bird_deadline: string | null
+          end_date: string | null
+          event_id: string | null
+          id: string | null
+          institution_id: string | null
+          institution_uuid: string | null
+          location_city: string | null
+          location_country: string | null
+          name: string | null
+          notification_sender_email: string | null
+          notification_sender_name: string | null
+          payment_due_days: number | null
+          price: number | null
+          short_name: string | null
+          slug: string | null
+          start_date: string | null
+          status: string | null
+          support_phone: string | null
+          supported_languages: string[] | null
+          tax_location: string | null
+          ticket_options: Json | null
+          vat_rate: number | null
+          venue_name: string | null
+          website_url: string | null
+        }
+        Insert: {
+          additional_admins?: string[] | null
+          bc_position?: string | null
+          bc_reference?: string | null
+          created_at?: string | null
+          currency?: string | null
+          early_bird_deadline?: string | null
+          end_date?: string | null
+          event_id?: string | null
+          id?: string | null
+          institution_id?: string | null
+          institution_uuid?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          name?: string | null
+          notification_sender_email?: string | null
+          notification_sender_name?: string | null
+          payment_due_days?: number | null
+          price?: number | null
+          short_name?: string | null
+          slug?: string | null
+          start_date?: string | null
+          status?: string | null
+          support_phone?: string | null
+          supported_languages?: string[] | null
+          tax_location?: string | null
+          ticket_options?: never
+          vat_rate?: number | null
+          venue_name?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          additional_admins?: string[] | null
+          bc_position?: string | null
+          bc_reference?: string | null
+          created_at?: string | null
+          currency?: string | null
+          early_bird_deadline?: string | null
+          end_date?: string | null
+          event_id?: string | null
+          id?: string | null
+          institution_id?: string | null
+          institution_uuid?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          name?: string | null
+          notification_sender_email?: string | null
+          notification_sender_name?: string | null
+          payment_due_days?: number | null
+          price?: number | null
+          short_name?: string | null
+          slug?: string | null
+          start_date?: string | null
+          status?: string | null
+          support_phone?: string | null
+          supported_languages?: string[] | null
+          tax_location?: string | null
+          ticket_options?: never
+          vat_rate?: number | null
+          venue_name?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_institution_uuid_fkey"
+            columns: ["institution_uuid"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
