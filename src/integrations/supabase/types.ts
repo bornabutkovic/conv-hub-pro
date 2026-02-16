@@ -14,70 +14,29 @@ export type Database = {
   }
   public: {
     Tables: {
-      attendee_purchases: {
-        Row: {
-          attendee_id: string | null
-          created_at: string | null
-          id: string
-          payment_reference: string | null
-          service_id: string | null
-          status: string | null
-          stripe_payment_id: string | null
-        }
-        Insert: {
-          attendee_id?: string | null
-          created_at?: string | null
-          id?: string
-          payment_reference?: string | null
-          service_id?: string | null
-          status?: string | null
-          stripe_payment_id?: string | null
-        }
-        Update: {
-          attendee_id?: string | null
-          created_at?: string | null
-          id?: string
-          payment_reference?: string | null
-          service_id?: string | null
-          status?: string | null
-          stripe_payment_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "attendee_purchases_attendee_id_fkey"
-            columns: ["attendee_id"]
-            isOneToOne: false
-            referencedRelation: "attendees"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "attendee_purchases_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "event_services"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       attendees: {
         Row: {
           badge_printed: boolean | null
           checked_in: boolean | null
           created_at: string | null
           email: string | null
+          erp_sku: string | null
           event_id: string | null
           first_name: string
           id: string
           institution: string | null
           invoice_sent_at: string | null
           last_name: string
+          name: string | null
           oib: string | null
           payment_status: string | null
           phone: string | null
           price_paid: number | null
           profile_id: string | null
           requires_invoice: boolean | null
+          scanned_at: string | null
           status: Database["public"]["Enums"]["registration_status"] | null
+          ticket_sent_at: string | null
           ticket_tier_id: string | null
           whatsapp_id: string | null
         }
@@ -86,19 +45,23 @@ export type Database = {
           checked_in?: boolean | null
           created_at?: string | null
           email?: string | null
+          erp_sku?: string | null
           event_id?: string | null
           first_name: string
           id?: string
           institution?: string | null
           invoice_sent_at?: string | null
           last_name: string
+          name?: string | null
           oib?: string | null
           payment_status?: string | null
           phone?: string | null
           price_paid?: number | null
           profile_id?: string | null
           requires_invoice?: boolean | null
+          scanned_at?: string | null
           status?: Database["public"]["Enums"]["registration_status"] | null
+          ticket_sent_at?: string | null
           ticket_tier_id?: string | null
           whatsapp_id?: string | null
         }
@@ -107,19 +70,23 @@ export type Database = {
           checked_in?: boolean | null
           created_at?: string | null
           email?: string | null
+          erp_sku?: string | null
           event_id?: string | null
           first_name?: string
           id?: string
           institution?: string | null
           invoice_sent_at?: string | null
           last_name?: string
+          name?: string | null
           oib?: string | null
           payment_status?: string | null
           phone?: string | null
           price_paid?: number | null
           profile_id?: string | null
           requires_invoice?: boolean | null
+          scanned_at?: string | null
           status?: Database["public"]["Enums"]["registration_status"] | null
+          ticket_sent_at?: string | null
           ticket_tier_id?: string | null
           whatsapp_id?: string | null
         }
@@ -435,6 +402,9 @@ export type Database = {
       institutions: {
         Row: {
           address: string
+          bc_generic_customer_id: string | null
+          bc_payment_method_bank: string | null
+          bc_payment_method_card: string | null
           billing_email: string | null
           created_at: string | null
           id: string | null
@@ -445,6 +415,9 @@ export type Database = {
         }
         Insert: {
           address: string
+          bc_generic_customer_id?: string | null
+          bc_payment_method_bank?: string | null
+          bc_payment_method_card?: string | null
           billing_email?: string | null
           created_at?: string | null
           id?: string | null
@@ -455,6 +428,9 @@ export type Database = {
         }
         Update: {
           address?: string
+          bc_generic_customer_id?: string | null
+          bc_payment_method_bank?: string | null
+          bc_payment_method_card?: string | null
           billing_email?: string | null
           created_at?: string | null
           id?: string | null
@@ -510,7 +486,9 @@ export type Database = {
           description: string
           id: string
           order_id: string | null
+          price_at_purchase: number | null
           quantity: number | null
+          service_id: string | null
           ticket_type_id: string | null
           total_price: number
           unit_price: number
@@ -521,7 +499,9 @@ export type Database = {
           description: string
           id?: string
           order_id?: string | null
+          price_at_purchase?: number | null
           quantity?: number | null
+          service_id?: string | null
           ticket_type_id?: string | null
           total_price: number
           unit_price: number
@@ -532,13 +512,22 @@ export type Database = {
           description?: string
           id?: string
           order_id?: string | null
+          price_at_purchase?: number | null
           quantity?: number | null
+          service_id?: string | null
           ticket_type_id?: string | null
           total_price?: number
           unit_price?: number
           vat_amount?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_order_items_tiers"
+            columns: ["ticket_type_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_items_attendee_id_fkey"
             columns: ["attendee_id"]
@@ -554,16 +543,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "order_items_ticket_type_id_fkey"
-            columns: ["ticket_type_id"]
+            foreignKeyName: "order_items_service_id_fkey"
+            columns: ["service_id"]
             isOneToOne: false
-            referencedRelation: "ticket_types"
+            referencedRelation: "event_services"
             referencedColumns: ["id"]
           },
         ]
       }
       orders: {
         Row: {
+          attendee_id: string | null
+          bc_customer_no: string | null
+          bc_invoice_id: string | null
+          bc_invoice_number: string | null
           created_at: string | null
           event_id: string | null
           id: string
@@ -577,6 +570,10 @@ export type Database = {
           total_amount: number | null
         }
         Insert: {
+          attendee_id?: string | null
+          bc_customer_no?: string | null
+          bc_invoice_id?: string | null
+          bc_invoice_number?: string | null
           created_at?: string | null
           event_id?: string | null
           id?: string
@@ -590,6 +587,10 @@ export type Database = {
           total_amount?: number | null
         }
         Update: {
+          attendee_id?: string | null
+          bc_customer_no?: string | null
+          bc_invoice_id?: string | null
+          bc_invoice_number?: string | null
           created_at?: string | null
           event_id?: string | null
           id?: string
@@ -603,6 +604,13 @@ export type Database = {
           total_amount?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_attendee_id_fkey"
+            columns: ["attendee_id"]
+            isOneToOne: false
+            referencedRelation: "attendees"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_event_id_fkey"
             columns: ["event_id"]
@@ -618,6 +626,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_method_mappings: {
+        Row: {
+          bc_code: string
+          created_at: string
+          id: number
+          stripe_brand: string
+        }
+        Insert: {
+          bc_code: string
+          created_at?: string
+          id?: number
+          stripe_brand: string
+        }
+        Update: {
+          bc_code?: string
+          created_at?: string
+          id?: number
+          stripe_brand?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -681,60 +710,6 @@ export type Database = {
           },
         ]
       }
-      purchases: {
-        Row: {
-          amount: number | null
-          attendee_id: string | null
-          bc_invoice_no: string | null
-          created_at: string | null
-          currency: string | null
-          id: string
-          invoice_url: string | null
-          service_id: string | null
-          status: string | null
-          stripe_session_id: string | null
-        }
-        Insert: {
-          amount?: number | null
-          attendee_id?: string | null
-          bc_invoice_no?: string | null
-          created_at?: string | null
-          currency?: string | null
-          id?: string
-          invoice_url?: string | null
-          service_id?: string | null
-          status?: string | null
-          stripe_session_id?: string | null
-        }
-        Update: {
-          amount?: number | null
-          attendee_id?: string | null
-          bc_invoice_no?: string | null
-          created_at?: string | null
-          currency?: string | null
-          id?: string
-          invoice_url?: string | null
-          service_id?: string | null
-          status?: string | null
-          stripe_session_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "purchases_attendee_id_fkey"
-            columns: ["attendee_id"]
-            isOneToOne: false
-            referencedRelation: "attendees"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "purchases_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "event_services"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       sessions: {
         Row: {
           end_time: string | null
@@ -780,49 +755,12 @@ export type Database = {
           },
         ]
       }
-      ticket_price_tiers: {
-        Row: {
-          created_at: string | null
-          id: string
-          name: string
-          price: number
-          sales_end_at: string | null
-          sales_start_at: string | null
-          ticket_type_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          name: string
-          price: number
-          sales_end_at?: string | null
-          sales_start_at?: string | null
-          ticket_type_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          name?: string
-          price?: number
-          sales_end_at?: string | null
-          sales_start_at?: string | null
-          ticket_type_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ticket_price_tiers_ticket_type_id_fkey"
-            columns: ["ticket_type_id"]
-            isOneToOne: false
-            referencedRelation: "ticket_types"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       ticket_tiers: {
         Row: {
           capacity: number | null
           created_at: string | null
           description: string | null
+          erp_code: string | null
           event_id: string | null
           id: string
           name: string
@@ -835,6 +773,7 @@ export type Database = {
           capacity?: number | null
           created_at?: string | null
           description?: string | null
+          erp_code?: string | null
           event_id?: string | null
           id?: string
           name: string
@@ -847,6 +786,7 @@ export type Database = {
           capacity?: number | null
           created_at?: string | null
           description?: string | null
+          erp_code?: string | null
           event_id?: string | null
           id?: string
           name?: string
@@ -865,63 +805,6 @@ export type Database = {
           },
           {
             foreignKeyName: "ticket_tiers_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "view_events_full"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ticket_types: {
-        Row: {
-          bc_sku: string | null
-          category: string | null
-          created_at: string | null
-          description: string | null
-          display_order: number | null
-          event_id: string | null
-          id: string
-          name: string
-          price: number
-          quota: number | null
-          vat_rate: number | null
-        }
-        Insert: {
-          bc_sku?: string | null
-          category?: string | null
-          created_at?: string | null
-          description?: string | null
-          display_order?: number | null
-          event_id?: string | null
-          id?: string
-          name: string
-          price: number
-          quota?: number | null
-          vat_rate?: number | null
-        }
-        Update: {
-          bc_sku?: string | null
-          category?: string | null
-          created_at?: string | null
-          description?: string | null
-          display_order?: number | null
-          event_id?: string | null
-          id?: string
-          name?: string
-          price?: number
-          quota?: number | null
-          vat_rate?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ticket_types_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ticket_types_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "view_events_full"
