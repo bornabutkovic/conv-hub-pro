@@ -2,6 +2,7 @@ import { LayoutDashboard, Calendar, Users, Settings, LogOut, Shield, MessageCirc
 import { Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import {
   Sidebar,
   SidebarContent,
@@ -66,8 +67,8 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               
-              {/* Admin items - Only visible to super_admin */}
-              {profile?.role === 'super_admin' && adminItems.map((item) => (
+              {/* Admin items - Only visible to admin */}
+              {isAdmin(profile?.role) && adminItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink

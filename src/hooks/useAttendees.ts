@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 
 export interface Attendee {
   id: string;
@@ -19,7 +20,7 @@ export interface Attendee {
 
 export function useAttendees(searchQuery: string = '') {
   const { profile } = useAuth();
-  const isSuperAdmin = profile?.role === 'super_admin';
+  const isSuperAdmin = isAdmin(profile?.role);
 
   return useQuery({
     queryKey: ['attendees', profile?.institution_uuid, profile?.role, searchQuery],

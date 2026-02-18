@@ -32,6 +32,7 @@ import {
 import { UserDetailsModal } from '@/components/admin/UserDetailsModal';
 import { InviteUserModal } from '@/components/admin/InviteUserModal';
 import type { Tables } from '@/integrations/supabase/types';
+import { isAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
 
 type Profile = Tables<'profiles'>;
@@ -50,7 +51,7 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   
-  const isSuperAdmin = currentUserProfile?.role === 'super_admin';
+  const isSuperAdmin = isAdmin(currentUserProfile?.role);
 
   // Fetch all profiles with institution data
   const { data: users, isLoading } = useQuery({
@@ -95,7 +96,7 @@ export default function AdminUsers() {
 
   // Filter users by role category
   const organizers = useMemo(() => 
-    users?.filter(u => u.role === 'admin' || u.role === 'organizer_admin') || [],
+    users?.filter(u => u.role === 'event_organizer' || u.role === 'admin' || u.role === 'organizer_admin') || [],
     [users]
   );
 
@@ -105,7 +106,7 @@ export default function AdminUsers() {
   );
 
   const superAdmins = useMemo(() => 
-    users?.filter(u => u.role === 'super_admin') || [],
+    users?.filter(u => isAdmin(u.role)) || [],
     [users]
   );
 

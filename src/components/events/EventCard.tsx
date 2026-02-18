@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 
 interface EventCardProps {
   event: {
@@ -21,7 +22,7 @@ interface EventCardProps {
 export function EventCard({ event }: EventCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const isSuperAdmin = profile?.role === 'super_admin';
+  const isSuperAdmin = isAdmin(profile?.role);
 
   const getStatusVariant = (status: string | null) => {
     switch (status) {

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { isElevatedRole } from '@/lib/roles';
 import { subDays, format, startOfDay } from 'date-fns';
 
 export interface RevenueBreakdown {
@@ -41,7 +42,7 @@ const CHART_COLORS = [
 export function useDashboardStats(selectedEventId?: string | null) {
   const { profile } = useAuth();
   const institutionUuid = profile?.institution_uuid;
-  const isElevated = ['super_admin', 'admin', 'event_organizer', 'organizer_admin'].includes(profile?.role || '');
+  const isElevated = isElevatedRole(profile?.role);
 
   return useQuery({
     queryKey: ['dashboard-stats-full', institutionUuid, isElevated, selectedEventId],
