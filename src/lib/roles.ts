@@ -9,6 +9,8 @@ export function getRoleDisplayName(role: string | null | undefined): string {
       return 'Admin';
     case 'admin':
       return 'Event Organizer';
+    case 'event_organizer':
+      return 'Event Organizer';
     case 'organizer_admin':
       return 'Event Organizer';
     case 'user':
