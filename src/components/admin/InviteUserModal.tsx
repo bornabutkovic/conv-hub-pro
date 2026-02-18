@@ -35,7 +35,7 @@ const inviteFormSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
-  role: z.enum(['super_admin', 'admin', 'user'], {
+  role: z.enum(['super_admin', 'event_organizer', 'user'], {
     required_error: 'Please select a role',
   }),
   institution_id: z.string().optional(),
@@ -58,7 +58,7 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
       email: '',
       first_name: '',
       last_name: '',
-      role: 'admin',
+      role: 'event_organizer',
       institution_id: '',
     },
   });
@@ -199,7 +199,7 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="admin">Event Organizer</SelectItem>
+                      <SelectItem value="event_organizer">Event Organizer</SelectItem>
                       <SelectItem value="super_admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
