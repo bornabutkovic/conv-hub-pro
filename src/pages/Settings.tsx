@@ -96,6 +96,7 @@ export default function Settings() {
   const getRoleBadgeVariant = (role: string | null) => {
     switch (role) {
       case 'super_admin':
+      case 'admin':
         return 'destructive';
       case 'company_admin':
         return 'default';

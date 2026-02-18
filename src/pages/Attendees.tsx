@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { useAttendees } from '@/hooks/useAttendees';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import { format } from 'date-fns';
 import { AttendeeServicesModal } from '@/components/attendees/AttendeeServicesModal';
 
@@ -31,7 +32,7 @@ export default function Attendees() {
   const [eventFilter, setEventFilter] = useState<string | null>(null);
   const [selectedAttendee, setSelectedAttendee] = useState<SelectedAttendee | null>(null);
   const { profile } = useAuth();
-  const isSuperAdmin = profile?.role === 'super_admin';
+  const isSuperAdmin = isAdmin(profile?.role);
   
   // Read filters from URL on mount
   useEffect(() => {

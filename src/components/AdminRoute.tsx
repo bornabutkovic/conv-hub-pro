@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -20,8 +21,8 @@ export function AdminRoute({ children }: AdminRouteProps) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Only super_admin can access admin routes
-  if (profile?.role !== 'super_admin') {
+  // Only admin (or legacy super_admin) can access admin routes
+  if (!isAdmin(profile?.role)) {
     return <Navigate to="/" replace />;
   }
 

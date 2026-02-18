@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -27,7 +28,7 @@ import { useDashboardStats } from '@/hooks/useDashboardStats';
 export default function Dashboard() {
   const { profile } = useAuth();
   const institutionUuid = profile?.institution_uuid;
-  const isSuperAdmin = profile?.role === 'super_admin';
+  const isSuperAdmin = isAdmin(profile?.role);
   const [selectedEventId, setSelectedEventId] = useState<string>('all');
 
   // Fetch all events for the selector

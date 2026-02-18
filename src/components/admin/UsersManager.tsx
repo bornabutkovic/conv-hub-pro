@@ -118,7 +118,7 @@ export function UsersManager() {
                 </TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
-                  <Badge variant={user.role === 'super_admin' ? 'default' : 'secondary'}>
+                  <Badge variant={(user.role === 'super_admin' || user.role === 'admin') ? 'default' : 'secondary'}>
                     {getRoleDisplayName(user.role)}
                   </Badge>
                 </TableCell>
