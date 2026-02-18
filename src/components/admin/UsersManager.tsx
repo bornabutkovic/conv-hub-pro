@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getRoleDisplayName } from '@/lib/roles';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -118,7 +119,7 @@ export function UsersManager() {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <Badge variant={user.role === 'super_admin' ? 'default' : 'secondary'}>
-                    {user.role || 'user'}
+                    {getRoleDisplayName(user.role)}
                   </Badge>
                 </TableCell>
                 <TableCell className="min-w-[200px]">

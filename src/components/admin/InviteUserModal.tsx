@@ -199,8 +199,8 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="admin">Admin (Organizer)</SelectItem>
-                      <SelectItem value="super_admin">Super Admin</SelectItem>
+                      <SelectItem value="admin">Event Organizer</SelectItem>
+                      <SelectItem value="super_admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

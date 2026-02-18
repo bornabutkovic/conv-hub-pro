@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getRoleDisplayName } from '@/lib/roles';
 import { Settings as SettingsIcon, Building2, User, Loader2, Save } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -104,10 +105,7 @@ export default function Settings() {
   };
 
   const formatRole = (role: string | null) => {
-    if (!role) return 'User';
-    return role.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    return getRoleDisplayName(role);
   };
 
   return (

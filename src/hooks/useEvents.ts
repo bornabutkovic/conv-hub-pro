@@ -50,18 +50,32 @@ export function useEvents(statusFilter: EventStatus = 'all') {
         })) as Event[];
       }
 
-      // Regular users: fetch events they are members of
+      // Regular users: fetch events via memberships + institution
       if (!user?.id) return [];
 
-      // First get event IDs from memberships
+      // Get event IDs from memberships
       const { data: memberships, error: membershipError } = await supabase
         .from('event_memberships')
         .select('event_id')
         .eq('user_id', user.id);
 
-      if (membershipError) throw membershipError;
+      if (membershipError) {
+        console.warn('Membership query error (may be RLS):', membershipError);
+      }
 
-      const eventIds = memberships?.map(m => m.event_id).filter(Boolean) as string[];
+      const memberEventIds = (memberships || []).map(m => m.event_id).filter(Boolean) as string[];
+
+      // Also get events from the user's institution
+      let institutionEventIds: string[] = [];
+      if (profile?.institution_uuid) {
+        const { data: instEvents } = await supabase
+          .from('events')
+          .select('id')
+          .eq('institution_uuid', profile.institution_uuid);
+        institutionEventIds = (instEvents || []).map(e => e.id);
+      }
+
+      const eventIds = [...new Set([...memberEventIds, ...institutionEventIds])];
       
       if (eventIds.length === 0) return [];
 
