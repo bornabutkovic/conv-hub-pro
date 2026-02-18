@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { getRoleDisplayName } from '@/lib/roles';
 import { format } from 'date-fns';
 import {
   Dialog,
@@ -151,7 +152,7 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
 
             {user.role && (
               <Badge variant={user.role === 'super_admin' ? 'default' : 'secondary'}>
-                {user.role}
+                {getRoleDisplayName(user.role)}
               </Badge>
             )}
           </div>

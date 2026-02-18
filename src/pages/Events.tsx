@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Calendar, Plus, Loader2 } from 'lucide-react';
+import { Calendar, Plus, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EventCard } from '@/components/events/EventCard';
 import { CreateEventModal } from '@/components/events/CreateEventModal';
 import { useEvents, EventStatus } from '@/hooks/useEvents';
@@ -45,8 +46,17 @@ export default function Events() {
       </Tabs>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6 space-y-3">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-8 w-24" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       ) : events && events.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -65,7 +75,7 @@ export default function Events() {
             </h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-sm">
               {statusFilter === 'all'
-                ? 'Create your first event to start managing registrations, attendees, and more.'
+                ? 'No events found. If you believe this is an error, please contact the Admin.'
                 : `You don't have any ${statusFilter} events at the moment.`}
             </p>
             <Button
