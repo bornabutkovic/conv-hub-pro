@@ -41,20 +41,18 @@ const CHART_COLORS = [
 export function useDashboardStats(selectedEventId?: string | null) {
   const { profile } = useAuth();
   const institutionUuid = profile?.institution_uuid;
-  const isSuperAdmin = profile?.role === 'super_admin';
+  const isElevated = ['super_admin', 'admin', 'event_organizer', 'organizer_admin'].includes(profile?.role || '');
 
   return useQuery({
-    queryKey: ['dashboard-stats-full', institutionUuid, isSuperAdmin, selectedEventId],
+    queryKey: ['dashboard-stats-full', institutionUuid, isElevated, selectedEventId],
     queryFn: async (): Promise<DashboardStats> => {
       let eventIds: string[] = [];
 
       if (selectedEventId && selectedEventId !== 'all') {
         eventIds = [selectedEventId];
       } else {
+        // RLS handles visibility - just fetch all accessible events
         let eventsQuery = supabase.from('events').select('id');
-        if (!isSuperAdmin && institutionUuid) {
-          eventsQuery = eventsQuery.eq('institution_uuid', institutionUuid);
-        }
         const { data: events, error: eventsError } = await eventsQuery;
         if (eventsError) throw eventsError;
         eventIds = (events || []).map(e => e.id);
@@ -157,6 +155,6 @@ export function useDashboardStats(selectedEventId?: string | null) {
         recentActivity: recentActivity.slice(0, 5),
       };
     },
-    enabled: !!profile && (isSuperAdmin || !!institutionUuid),
+    enabled: !!profile,
   });
 }
