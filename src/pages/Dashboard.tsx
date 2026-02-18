@@ -31,6 +31,21 @@ export default function Dashboard() {
   const isSuperAdmin = isAdmin(profile?.role);
   const [selectedEventId, setSelectedEventId] = useState<string>('all');
 
+  // Fetch institution name for organizers
+  const { data: institutionName } = useQuery({
+    queryKey: ['institution-name', institutionUuid],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('institutions')
+        .select('name')
+        .eq('id', institutionUuid!)
+        .single();
+      if (error) return null;
+      return data?.name || null;
+    },
+    enabled: !!institutionUuid && !isSuperAdmin,
+  });
+
   // Fetch all events for the selector
   const { data: allEvents, isLoading: loadingEvents } = useQuery({
     queryKey: ['dashboard-events-selector', institutionUuid, isSuperAdmin],
@@ -93,6 +108,12 @@ export default function Dashboard() {
             <p className="text-muted-foreground">
               Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
             </p>
+            {!isSuperAdmin && institutionName && (
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
+                <Building2 className="h-4 w-4" />
+                <span>Managing: <strong className="text-foreground">{institutionName}</strong></span>
+              </div>
+            )}
           </div>
           <Button asChild className="gap-2">
             <Link to="/events">

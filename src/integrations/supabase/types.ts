@@ -954,6 +954,7 @@ export type Database = {
         }
         Returns: string
       }
+      is_admin_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       payer_type: "individual" | "company" | "sponsor"
