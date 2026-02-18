@@ -566,6 +566,7 @@ export type Database = {
           payer_oib: string | null
           payer_type: Database["public"]["Enums"]["payer_type"]
           pdf_url: string | null
+          po_number: string | null
           status: Database["public"]["Enums"]["payment_status"] | null
           total_amount: number | null
         }
@@ -583,6 +584,7 @@ export type Database = {
           payer_oib?: string | null
           payer_type: Database["public"]["Enums"]["payer_type"]
           pdf_url?: string | null
+          po_number?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           total_amount?: number | null
         }
@@ -600,6 +602,7 @@ export type Database = {
           payer_oib?: string | null
           payer_type?: Database["public"]["Enums"]["payer_type"]
           pdf_url?: string | null
+          po_number?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           total_amount?: number | null
         }
