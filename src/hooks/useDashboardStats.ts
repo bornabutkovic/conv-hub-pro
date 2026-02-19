@@ -30,13 +30,13 @@ export interface DashboardStats {
 }
 
 const CHART_COLORS = [
-  'hsl(24.6, 95%, 53.1%)',
-  'hsl(210, 70%, 50%)',
-  'hsl(150, 60%, 45%)',
+  'hsl(263, 70%, 58%)',
+  'hsl(263, 84%, 35%)',
+  'hsl(263, 50%, 72%)',
   'hsl(280, 60%, 55%)',
-  'hsl(45, 90%, 50%)',
-  'hsl(0, 70%, 55%)',
-  'hsl(180, 60%, 45%)',
+  'hsl(240, 50%, 60%)',
+  'hsl(263, 40%, 45%)',
+  'hsl(300, 50%, 50%)',
 ];
 
 export function useDashboardStats(selectedEventId?: string | null) {

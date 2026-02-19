@@ -19,7 +19,7 @@ type MetricType = 'total' | 'tickets' | 'addons';
 
 const COLORS = {
   paid: 'hsl(142.1, 76.2%, 36.3%)', // green
-  pending: 'hsl(24.6, 95%, 53.1%)', // orange/amber
+  pending: 'hsl(263, 70%, 58%)', // purple
 };
 
 export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEventId }: FinancialOverviewProps) {

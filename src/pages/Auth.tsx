@@ -30,25 +30,16 @@ export default function Auth() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validate inputs
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
-      toast({
-        title: 'Invalid Email',
-        description: emailResult.error.errors[0].message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Invalid Email', description: emailResult.error.errors[0].message, variant: 'destructive' });
       setIsSubmitting(false);
       return;
     }
 
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
-      toast({
-        title: 'Invalid Password',
-        description: passwordResult.error.errors[0].message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Invalid Password', description: passwordResult.error.errors[0].message, variant: 'destructive' });
       setIsSubmitting(false);
       return;
     }
@@ -63,10 +54,7 @@ export default function Auth() {
         variant: 'destructive',
       });
     } else {
-      toast({
-        title: 'Welcome back!',
-        description: 'You have successfully logged in.',
-      });
+      toast({ title: 'Welcome back!', description: 'You have successfully logged in.' });
       navigate('/', { replace: true });
     }
 
@@ -82,11 +70,11 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md shadow-xl rounded-2xl">
         <CardHeader className="text-center">
           <div className="mb-4">
-            <h1 className="text-3xl font-bold text-primary">Conveyo</h1>
+            <h1 className="text-3xl font-bold text-primary">Conwayo</h1>
           </div>
           <CardTitle className="text-2xl">Welcome Back</CardTitle>
           <CardDescription>
@@ -97,46 +85,19 @@ export default function Auth() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" className="w-full rounded-xl" disabled={isSubmitting}>
               {isSubmitting ? 'Please wait...' : 'Log In'}
             </Button>
-
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => {
-                  // TODO: Implement forgot password flow
-                  toast({
-                    title: 'Forgot Password',
-                    description: 'Please contact your administrator to reset your password.',
-                  });
-                }}
+                onClick={() => toast({ title: 'Forgot Password', description: 'Please contact your administrator to reset your password.' })}
                 className="text-sm text-muted-foreground hover:text-primary hover:underline"
               >
                 Forgot password?
