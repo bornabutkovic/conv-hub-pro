@@ -115,7 +115,7 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-          <Button asChild className="gap-2">
+          <Button asChild className="gap-2 rounded-xl">
             <Link to="/events">
               <Plus className="h-4 w-4" />
               Create Event

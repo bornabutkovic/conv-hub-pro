@@ -40,10 +40,10 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      {/* Logo - clickable link to home */}
-      <Link to="/" className="block p-4 border-b border-sidebar-border hover:bg-sidebar-accent/50 transition-colors">
-        <h1 className={`font-bold text-primary transition-all ${collapsed ? 'text-lg' : 'text-2xl'}`}>
-          {collapsed ? 'C' : 'Conveyo'}
+      {/* Logo */}
+      <Link to="/" className="block p-4 border-b border-sidebar-border hover:opacity-80 transition-opacity">
+        <h1 className={`font-bold text-white tracking-tight transition-all ${collapsed ? 'text-lg' : 'text-2xl'}`}>
+          {collapsed ? 'C' : 'Conwayo'}
         </h1>
       </Link>
 
@@ -57,8 +57,8 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === '/'}
-                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-                      activeClassName="bg-sidebar-accent text-primary font-medium"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white transition-colors"
+                      activeClassName="bg-sidebar-accent text-white font-medium"
                     >
                       <item.icon className="h-5 w-5 shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
@@ -67,14 +67,14 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               
-              {/* Admin items - Only visible to admin */}
+              {/* Admin items */}
               {isAdmin(profile?.role) && adminItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
                       to={item.url}
-                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-                      activeClassName="bg-sidebar-accent text-primary font-medium"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white transition-colors"
+                      activeClassName="bg-sidebar-accent text-white font-medium"
                     >
                       <item.icon className="h-5 w-5 shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
@@ -89,20 +89,25 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
         {!collapsed && profile && (
-          <div className="mb-3 text-sm">
-            <p className="font-medium text-sidebar-foreground">
-              {profile.first_name} {profile.last_name}
-            </p>
-            <p className="text-muted-foreground truncate text-xs">
-              {profile.email}
-            </p>
+          <div className="mb-3 flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-sidebar-accent flex items-center justify-center text-white font-semibold text-sm shrink-0">
+              {(profile.first_name?.[0] || '').toUpperCase()}{(profile.last_name?.[0] || '').toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-white text-sm truncate">
+                {profile.first_name} {profile.last_name}
+              </p>
+              <p className="text-sidebar-foreground/60 truncate text-xs">
+                {profile.email}
+              </p>
+            </div>
           </div>
         )}
         <Button
           variant="ghost"
           size={collapsed ? 'icon' : 'default'}
           onClick={handleSignOut}
-          className="w-full justify-start text-muted-foreground hover:text-destructive"
+          className="w-full justify-start text-sidebar-foreground/60 hover:text-white hover:bg-sidebar-accent"
         >
           <LogOut className="h-5 w-5 shrink-0" />
           {!collapsed && <span className="ml-2">Sign Out</span>}
