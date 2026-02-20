@@ -28,6 +28,7 @@ interface TicketTier {
   id: string;
   name: string;
   price: number;
+  erp_code: string | null;
 }
 
 interface AddAttendeeModalProps {
@@ -54,7 +55,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     queryFn: async () => {
       const { data, error } = await supabase
         .from('ticket_tiers')
-        .select('id, name, price')
+        .select('id, name, price, erp_code')
         .eq('event_id', eventId)
         .order('price', { ascending: true });
       
@@ -135,7 +136,12 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
         throw new Error('User is already registered for this event.');
       }
 
-      // Step 3: Insert new attendee record
+      // Step 3: Resolve erp_sku from selected ticket tier
+      const selectedTier = formData.ticketTierId
+        ? ticketTiers?.find(t => t.id === formData.ticketTierId)
+        : null;
+
+      // Step 4: Insert new attendee record
       const { error: attendeeError } = await supabase
         .from('attendees')
         .insert({
@@ -146,25 +152,12 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
           phone: phone,
           email: email,
           status: formData.status,
+          ticket_tier_id: formData.ticketTierId || null,
+          price_paid: formData.pricePaid,
+          erp_sku: selectedTier?.erp_code || null,
         });
 
       if (attendeeError) throw attendeeError;
-
-      // Step 4: Create event_membership with ticket tier and price_paid
-      if (formData.ticketTierId) {
-        const { error: membershipError } = await supabase
-          .from('event_memberships')
-          .insert({
-            event_id: eventId,
-            user_id: profileId,
-            ticket_tier_id: formData.ticketTierId,
-            price_paid: formData.pricePaid,
-            payment_status: 'pending',
-            role: 'attendee',
-          });
-
-        if (membershipError) throw membershipError;
-      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
