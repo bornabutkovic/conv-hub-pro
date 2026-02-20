@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { ArrowLeft, Calendar, Tag, Users, DollarSign, Edit } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, Users, DollarSign, Edit, Send, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,13 +11,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditEventModal } from '@/components/events/EditEventModal';
 import { EventAttendeesTable } from '@/components/events/EventAttendeesTable';
 import { EventServicesTable } from '@/components/events/EventServicesTable';
-
 import { TicketTiersTable } from '@/components/events/TicketTiersTable';
+import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
+import { toast } from 'sonner';
 
 export default function EventDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const { profile } = useAuth();
+  const userIsAdmin = isAdmin(profile?.role);
 
   const { data: event, isLoading: eventLoading, refetch: refetchEvent } = useQuery({
     queryKey: ['event', id],
@@ -63,7 +68,6 @@ export default function EventDetails() {
     enabled: !!id,
   });
 
-  // Fetch event_memberships to calculate revenue from price_paid - MUST be before any early returns
   const { data: memberships } = useQuery({
     queryKey: ['event-memberships-revenue', id],
     queryFn: async () => {
@@ -78,16 +82,50 @@ export default function EventDetails() {
     enabled: !!id,
   });
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (!event) return;
+    setIsUpdatingStatus(true);
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({ status: newStatus })
+        .eq('id', event.id);
+      
+      if (error) throw error;
+
+      const labels: Record<string, string> = {
+        pending_approval: 'submitted for review',
+        published: 'approved and published',
+        draft: 'returned to draft',
+      };
+      toast.success(`Event ${labels[newStatus] || 'updated'}!`);
+      refetchEvent();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update status');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   const getStatusVariant = (status: string | null) => {
     switch (status) {
-      case 'active':
-        return 'default';
-      case 'draft':
-        return 'secondary';
-      case 'past':
-        return 'outline';
-      default:
-        return 'secondary';
+      case 'published': return 'default';
+      case 'active': return 'default';
+      case 'pending_approval': return 'outline';
+      case 'draft': return 'secondary';
+      case 'past': return 'outline';
+      default: return 'secondary';
+    }
+  };
+
+  const getStatusLabel = (status: string | null) => {
+    switch (status) {
+      case 'published': return 'Published';
+      case 'active': return 'Active';
+      case 'pending_approval': return 'Pending Approval';
+      case 'draft': return 'Draft';
+      case 'past': return 'Past';
+      default: return 'Draft';
     }
   };
 
@@ -134,7 +172,7 @@ export default function EventDetails() {
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-foreground">{event.name}</h1>
             <Badge variant={getStatusVariant(event.status)} className="text-sm">
-              {event.status || 'draft'}
+              {getStatusLabel(event.status)}
             </Badge>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
@@ -152,10 +190,44 @@ export default function EventDetails() {
             )}
           </div>
         </div>
-        <Button onClick={() => setIsEditModalOpen(true)}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Event
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Submit for Review — only for organizers with draft events */}
+          {!userIsAdmin && event.status === 'draft' && (
+            <Button 
+              variant="outline" 
+              onClick={() => handleStatusChange('pending_approval')}
+              disabled={isUpdatingStatus}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Submit for Review
+            </Button>
+          )}
+
+          {/* Admin approval actions */}
+          {userIsAdmin && event.status === 'pending_approval' && (
+            <>
+              <Button 
+                onClick={() => handleStatusChange('published')}
+                disabled={isUpdatingStatus}
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Approve & Publish
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => handleStatusChange('draft')}
+                disabled={isUpdatingStatus}
+              >
+                Return to Draft
+              </Button>
+            </>
+          )}
+
+          <Button onClick={() => setIsEditModalOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Event
+          </Button>
+        </div>
       </div>
 
       {/* Stats Row */}

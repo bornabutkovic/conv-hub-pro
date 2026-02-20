@@ -88,7 +88,7 @@ const createEventSchema = z.object({
   institution_uuid: z.string().optional(),
   
   // Additional fields
-  status: z.enum(['draft', 'active']),
+  status: z.enum(['draft', 'pending_approval', 'published', 'active']).default('draft'),
 }).refine((data) => {
   const startDateTime = new Date(data.start_date);
   const [startHours, startMinutes] = data.start_time.split(':').map(Number);
@@ -593,30 +593,7 @@ export function CreateEventModal({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="active">Active</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Status is always 'draft' for new events - no selector needed */}
               </div>
 
               {/* Section 4: Financials & Settings */}
@@ -666,6 +643,7 @@ export function CreateEventModal({
                   />
                 </div>
 
+                {userIsAdmin && (
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -695,6 +673,7 @@ export function CreateEventModal({
                     )}
                   />
                 </div>
+                )}
 
                 {/* Notifications & Support */}
                 <div className="pt-2">
