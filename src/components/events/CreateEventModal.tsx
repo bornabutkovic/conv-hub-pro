@@ -40,8 +40,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useQuery } from '@tanstack/react-query';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Hrvatski' },
@@ -83,6 +85,7 @@ const createEventSchema = z.object({
   // Section 6: Administration
   additional_admins: z.string().optional(),
   supported_languages: z.array(z.string()).default(['hr']),
+  institution_uuid: z.string().optional(),
   
   // Additional fields
   status: z.enum(['draft', 'active']),
@@ -116,6 +119,21 @@ export function CreateEventModal({
 }: CreateEventModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { profile } = useAuth();
+  const userIsAdmin = isAdmin(profile?.role);
+
+  // Fetch institutions for admin users to select from
+  const { data: institutions } = useQuery({
+    queryKey: ['institutions-list'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('institutions')
+        .select('id, name')
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: userIsAdmin && open,
+  });
 
   const form = useForm<CreateEventForm>({
     resolver: zodResolver(createEventSchema),
@@ -151,8 +169,13 @@ export function CreateEventModal({
   };
 
   const onSubmit = async (data: CreateEventForm) => {
-    if (!profile?.institution_uuid) {
-      toast.error('No institution linked to your profile');
+    // Resolve institution: admin selects from dropdown, organizer uses own
+    const resolvedInstitutionUuid = userIsAdmin
+      ? data.institution_uuid || null
+      : profile?.institution_uuid || null;
+
+    if (!resolvedInstitutionUuid) {
+      toast.error('Please select an institution for this event');
       return;
     }
 
@@ -204,7 +227,7 @@ export function CreateEventModal({
           additional_admins: additionalAdminsArray,
           supported_languages: data.supported_languages,
           status: data.status,
-          institution_uuid: profile.institution_uuid,
+          institution_uuid: resolvedInstitutionUuid,
         })
         .select('id')
         .single();
@@ -256,6 +279,35 @@ export function CreateEventModal({
                   <p className="text-sm text-muted-foreground">Basic information about your event</p>
                 </div>
                 <Separator />
+
+                {/* Institution selector for admins */}
+                {userIsAdmin && (
+                  <FormField
+                    control={form.control}
+                    name="institution_uuid"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Institution *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select an institution" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {institutions?.map((inst) => (
+                              <SelectItem key={inst.id!} value={inst.id!}>
+                                {inst.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Choose which institution owns this event</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
                 
                 <FormField
                   control={form.control}
