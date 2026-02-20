@@ -39,6 +39,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tables } from '@/integrations/supabase/types';
@@ -84,7 +86,7 @@ const editEventSchema = z.object({
   supported_languages: z.array(z.string()).default(['hr']),
   
   // Additional fields
-  status: z.enum(['draft', 'active', 'past']),
+  status: z.enum(['draft', 'pending_approval', 'published', 'active', 'past']),
 }).refine((data) => {
   const startDateTime = new Date(data.start_date);
   const [startHours, startMinutes] = data.start_time.split(':').map(Number);
@@ -116,6 +118,8 @@ export function EditEventModal({
   onEventUpdated,
 }: EditEventModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { profile } = useAuth();
+  const userIsAdmin = isAdmin(profile?.role);
 
   const form = useForm<EditEventForm>({
     resolver: zodResolver(editEventSchema),
@@ -187,7 +191,7 @@ export function EditEventModal({
         support_phone: event.support_phone || '',
         additional_admins: additionalAdminsStr,
         supported_languages: event.supported_languages || ['hr'],
-        status: (event.status as 'draft' | 'active' | 'past') || 'draft',
+        status: (event.status as 'draft' | 'pending_approval' | 'published' | 'active' | 'past') || 'draft',
       });
     }
   }, [event, open, form]);
@@ -550,6 +554,7 @@ export function EditEventModal({
                   )}
                 />
 
+                {userIsAdmin ? (
                 <FormField
                   control={form.control}
                   name="status"
@@ -567,6 +572,8 @@ export function EditEventModal({
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="draft">Draft</SelectItem>
+                          <SelectItem value="pending_approval">Pending Approval</SelectItem>
+                          <SelectItem value="published">Published</SelectItem>
                           <SelectItem value="active">Active</SelectItem>
                           <SelectItem value="past">Past</SelectItem>
                         </SelectContent>
@@ -575,6 +582,11 @@ export function EditEventModal({
                     </FormItem>
                   )}
                 />
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    Status: <span className="font-medium capitalize">{form.getValues('status')?.replace('_', ' ')}</span>
+                  </div>
+                )}
               </div>
 
               {/* Section 4: Financials & Settings */}
@@ -624,6 +636,7 @@ export function EditEventModal({
                   />
                 </div>
 
+                {userIsAdmin && (
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -653,6 +666,7 @@ export function EditEventModal({
                     )}
                   />
                 </div>
+                )}
 
                 {/* Notifications & Support */}
                 <div className="pt-2">

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Plus, RefreshCw } from 'lucide-react';
+import { Calendar, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,10 +7,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EventCard } from '@/components/events/EventCard';
 import { CreateEventModal } from '@/components/events/CreateEventModal';
 import { useEvents, EventStatus } from '@/hooks/useEvents';
+import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 
 export default function Events() {
   const [statusFilter, setStatusFilter] = useState<EventStatus>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { profile } = useAuth();
+  const userIsAdmin = isAdmin(profile?.role);
 
   const { data: events, isLoading, refetch } = useEvents(statusFilter);
 
@@ -39,8 +43,12 @@ export default function Events() {
       >
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="draft">Draft</TabsTrigger>
+          {userIsAdmin && (
+            <TabsTrigger value="pending_approval">Pending Approval</TabsTrigger>
+          )}
+          <TabsTrigger value="published">Published</TabsTrigger>
+          <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="past">Past</TabsTrigger>
         </TabsList>
       </Tabs>
@@ -71,12 +79,12 @@ export default function Events() {
             <h3 className="text-xl font-medium text-muted-foreground">
               {statusFilter === 'all'
                 ? 'No events yet'
-                : `No ${statusFilter} events`}
+                : `No ${statusFilter.replace('_', ' ')} events`}
             </h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-sm">
               {statusFilter === 'all'
                 ? 'No events found. If you believe this is an error, please contact the Admin.'
-                : `You don't have any ${statusFilter} events at the moment.`}
+                : `You don't have any ${statusFilter.replace('_', ' ')} events at the moment.`}
             </p>
             <Button
               className="gap-2"
