@@ -944,6 +944,7 @@ export type Database = {
       }
     }
     Functions: {
+      auto_complete_past_events: { Args: never; Returns: undefined }
       create_user_wizard: {
         Args: {
           email_input: string

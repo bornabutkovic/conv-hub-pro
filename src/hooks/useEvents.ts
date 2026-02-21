@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type EventStatus = 'all' | 'active' | 'draft' | 'pending_approval' | 'published' | 'past';
+export type EventStatus = 'all' | 'draft' | 'pending_approval' | 'active' | 'completed';
 
 export interface Event {
   id: string;
