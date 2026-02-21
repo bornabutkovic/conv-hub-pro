@@ -86,7 +86,7 @@ const editEventSchema = z.object({
   supported_languages: z.array(z.string()).default(['hr']),
   
   // Additional fields
-  status: z.enum(['draft', 'pending_approval', 'published', 'active', 'past']),
+  status: z.enum(['draft', 'pending_approval', 'active', 'completed']),
 }).refine((data) => {
   const startDateTime = new Date(data.start_date);
   const [startHours, startMinutes] = data.start_time.split(':').map(Number);
@@ -191,7 +191,7 @@ export function EditEventModal({
         support_phone: event.support_phone || '',
         additional_admins: additionalAdminsStr,
         supported_languages: event.supported_languages || ['hr'],
-        status: (event.status as 'draft' | 'pending_approval' | 'published' | 'active' | 'past') || 'draft',
+        status: (event.status as 'draft' | 'pending_approval' | 'active' | 'completed') || 'draft',
       });
     }
   }, [event, open, form]);

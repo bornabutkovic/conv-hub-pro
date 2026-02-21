@@ -95,7 +95,7 @@ export default function EventDetails() {
 
       const labels: Record<string, string> = {
         pending_approval: 'submitted for review',
-        published: 'approved and published',
+        active: 'approved and activated',
         draft: 'returned to draft',
       };
       toast.success(`Event ${labels[newStatus] || 'updated'}!`);
@@ -109,22 +109,20 @@ export default function EventDetails() {
 
   const getStatusVariant = (status: string | null) => {
     switch (status) {
-      case 'published': return 'default';
       case 'active': return 'default';
       case 'pending_approval': return 'outline';
+      case 'completed': return 'outline';
       case 'draft': return 'secondary';
-      case 'past': return 'outline';
       default: return 'secondary';
     }
   };
 
   const getStatusLabel = (status: string | null) => {
     switch (status) {
-      case 'published': return 'Published';
       case 'active': return 'Active';
       case 'pending_approval': return 'Pending Approval';
+      case 'completed': return 'Completed';
       case 'draft': return 'Draft';
-      case 'past': return 'Past';
       default: return 'Draft';
     }
   };
@@ -207,11 +205,11 @@ export default function EventDetails() {
           {userIsAdmin && event.status === 'pending_approval' && (
             <>
               <Button 
-                onClick={() => handleStatusChange('published')}
+                onClick={() => handleStatusChange('active')}
                 disabled={isUpdatingStatus}
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Approve & Publish
+                Approve Event
               </Button>
               <Button 
                 variant="outline"
@@ -223,10 +221,13 @@ export default function EventDetails() {
             </>
           )}
 
-          <Button onClick={() => setIsEditModalOpen(true)}>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Event
-          </Button>
+          {/* Edit — admins can always edit, organizers only when draft */}
+          {(userIsAdmin || event.status === 'draft') && (
+            <Button onClick={() => setIsEditModalOpen(true)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Event
+            </Button>
+          )}
         </div>
       </div>
 

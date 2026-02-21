@@ -47,9 +47,8 @@ export default function Events() {
           {userIsAdmin && (
             <TabsTrigger value="pending_approval">Pending Approval</TabsTrigger>
           )}
-          <TabsTrigger value="published">Published</TabsTrigger>
           <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="past">Past</TabsTrigger>
+          <TabsTrigger value="completed">Completed</TabsTrigger>
         </TabsList>
       </Tabs>
 

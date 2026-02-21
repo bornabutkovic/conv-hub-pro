@@ -26,16 +26,14 @@ export function EventCard({ event }: EventCardProps) {
 
   const getStatusVariant = (status: string | null) => {
     switch (status) {
-      case 'published':
-        return 'default';
       case 'active':
         return 'default';
       case 'pending_approval':
         return 'outline' as const;
+      case 'completed':
+        return 'outline';
       case 'draft':
         return 'secondary';
-      case 'past':
-        return 'outline';
       default:
         return 'secondary';
     }
@@ -43,16 +41,14 @@ export function EventCard({ event }: EventCardProps) {
 
   const getStatusLabel = (status: string | null) => {
     switch (status) {
-      case 'published':
-        return 'Published';
       case 'active':
         return 'Active';
       case 'pending_approval':
         return 'Pending Approval';
+      case 'completed':
+        return 'Completed';
       case 'draft':
         return 'Draft';
-      case 'past':
-        return 'Past';
       default:
         return 'Draft';
     }

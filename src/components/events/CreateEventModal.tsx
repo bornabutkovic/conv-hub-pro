@@ -88,7 +88,7 @@ const createEventSchema = z.object({
   institution_uuid: z.string().optional(),
   
   // Additional fields
-  status: z.enum(['draft', 'pending_approval', 'published', 'active']).default('draft'),
+  status: z.enum(['draft', 'pending_approval', 'active', 'completed']).default('draft'),
 }).refine((data) => {
   const startDateTime = new Date(data.start_date);
   const [startHours, startMinutes] = data.start_time.split(':').map(Number);
