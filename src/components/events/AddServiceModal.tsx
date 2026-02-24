@@ -32,10 +32,10 @@ interface AddServiceModalProps {
 export function AddServiceModal({ open, onOpenChange, eventId, currency, editService }: AddServiceModalProps) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    capacity: '',
+    name: editService?.name || '',
+    description: editService?.description || '',
+    price: editService?.price?.toString() || '',
+    capacity: editService?.capacity?.toString() || '',
   });
 
   const createMutation = useMutation({
