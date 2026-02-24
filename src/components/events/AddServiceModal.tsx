@@ -86,9 +86,9 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add Service</DialogTitle>
+          <DialogTitle>{editService ? 'Edit Service' : 'Add Service'}</DialogTitle>
           <DialogDescription>
-            Create a new purchasable service for this event.
+            {editService ? 'Update details for this service.' : 'Create a new purchasable service for this event.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
