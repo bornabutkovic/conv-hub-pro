@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Trash2, Package } from 'lucide-react';
+import { Plus, Trash2, Package, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -26,6 +26,7 @@ interface EventServicesTableProps {
 
 export function EventServicesTable({ eventId, currency }: EventServicesTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editService, setEditService] = useState<any | null>(null);
   const [deleteServiceId, setDeleteServiceId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -131,11 +132,19 @@ export function EventServicesTable({ eventId, currency }: EventServicesTableProp
                     <TableCell className="text-right">
                       {service.capacity ?? 'Unlimited'}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="flex justify-end gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-destructive hover:text-destructive"
+                        className="hover:bg-muted"
+                        onClick={() => setEditService(service)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => setDeleteServiceId(service.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -161,6 +170,16 @@ export function EventServicesTable({ eventId, currency }: EventServicesTableProp
         eventId={eventId}
         currency={currency}
       />
+
+      {editService && (
+        <AddServiceModal
+          open={!!editService}
+          onOpenChange={(open) => !open && setEditService(null)}
+          eventId={eventId}
+          currency={currency}
+          editService={editService}
+        />
+      )}
 
       <AlertDialog open={!!deleteServiceId} onOpenChange={() => setDeleteServiceId(null)}>
         <AlertDialogContent>

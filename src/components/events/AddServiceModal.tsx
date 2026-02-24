@@ -20,38 +20,56 @@ interface AddServiceModalProps {
   onOpenChange: (open: boolean) => void;
   eventId: string;
   currency: string;
+  editService?: {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number;
+    capacity: number | null;
+  } | null;
 }
 
-export function AddServiceModal({ open, onOpenChange, eventId, currency }: AddServiceModalProps) {
+export function AddServiceModal({ open, onOpenChange, eventId, currency, editService }: AddServiceModalProps) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    capacity: '',
+    name: editService?.name || '',
+    description: editService?.description || '',
+    price: editService?.price?.toString() || '',
+    capacity: editService?.capacity?.toString() || '',
   });
 
-  const createMutation = useMutation({
+  const mutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('event_services').insert({
+      const serviceData = {
         event_id: eventId,
         name: formData.name,
         description: formData.description || null,
         price: parseFloat(formData.price) || 0,
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
         currency: currency,
-      });
-      
-      if (error) throw error;
+      };
+
+      if (editService) {
+        const { error } = await supabase
+          .from('event_services')
+          .update(serviceData)
+          .eq('id', editService.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('event_services')
+          .insert(serviceData);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event-services', eventId] });
-      toast.success('Service added successfully');
+      toast.success(editService ? 'Service updated successfully' : 'Service added successfully');
       onOpenChange(false);
       setFormData({ name: '', description: '', price: '', capacity: '' });
     },
     onError: (error) => {
-      toast.error('Failed to add service: ' + error.message);
+      toast.error(`Failed to ${editService ? 'update' : 'add'} service: ` + error.message);
     },
   });
 
@@ -61,16 +79,16 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency }: AddSe
       toast.error('Service name is required');
       return;
     }
-    createMutation.mutate();
+    mutation.mutate();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add Service</DialogTitle>
+          <DialogTitle>{editService ? 'Edit Service' : 'Add Service'}</DialogTitle>
           <DialogDescription>
-            Create a new purchasable service for this event.
+            {editService ? 'Update details for this service.' : 'Create a new purchasable service for this event.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -123,8 +141,8 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency }: AddSe
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending ? 'Adding...' : 'Add Service'}
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? (editService ? 'Updating...' : 'Adding...') : (editService ? 'Update Service' : 'Add Service')}
             </Button>
           </DialogFooter>
         </form>

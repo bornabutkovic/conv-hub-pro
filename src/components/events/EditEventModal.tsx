@@ -358,9 +358,26 @@ export function EditEventModal({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Država *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Hrvatska" {...field} />
-                        </FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select country" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Hrvatska">Hrvatska</SelectItem>
+                            <SelectItem value="Slovenija">Slovenija</SelectItem>
+                            <SelectItem value="Srbija">Srbija</SelectItem>
+                            <SelectItem value="Bosna i Hercegovina">Bosna i Hercegovina</SelectItem>
+                            <SelectItem value="Crna Gora">Crna Gora</SelectItem>
+                            <SelectItem value="Makedonija">Makedonija</SelectItem>
+                            <SelectItem value="Kosovo">Kosovo</SelectItem>
+                            <SelectItem value="Njemačka">Njemačka</SelectItem>
+                            <SelectItem value="Austrija">Austrija</SelectItem>
+                            <SelectItem value="Švicarska">Švicarska</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -497,7 +514,7 @@ export function EditEventModal({
                   name="early_bird_deadline"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Early bird rokovi</FormLabel>
+                      <FormLabel>Early bird rok</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -573,9 +590,8 @@ export function EditEventModal({
                         <SelectContent>
                           <SelectItem value="draft">Draft</SelectItem>
                           <SelectItem value="pending_approval">Pending Approval</SelectItem>
-                          <SelectItem value="published">Published</SelectItem>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="past">Past</SelectItem>
+                          <SelectItem value="active">Active (Published)</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -627,9 +643,18 @@ export function EditEventModal({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Porezna lokacija</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Croatia" {...field} />
-                        </FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select tax location" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Hrvatska">Hrvatska</SelectItem>
+                            <SelectItem value="EU">EU</SelectItem>
+                            <SelectItem value="Izvan EU">Izvan EU</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}

@@ -15,6 +15,9 @@ interface Institution {
   name: string;
   oib: string;
   address: string;
+  city: string | null;
+  postal_code: string | null;
+  country: string | null;
   invoice_email: string;
 }
 
@@ -51,7 +54,7 @@ export default function Settings() {
       try {
         const { data, error } = await supabase
           .from('institutions')
-          .select('id, name, oib, address, invoice_email')
+          .select('id, name, oib, address, city, postal_code, country, invoice_email')
           .eq('id', profile.institution_uuid)
           .single();
 
@@ -265,6 +268,8 @@ export default function Settings() {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Address</label>
                   <p>{institution.address}</p>
+                  <p>{institution.postal_code} {institution.city}</p>
+                  <p>{institution.country}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Invoice Email</label>

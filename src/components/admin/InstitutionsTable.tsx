@@ -58,6 +58,8 @@ export function InstitutionsTable() {
               <TableHead>Name</TableHead>
               <TableHead>OIB</TableHead>
               <TableHead>Address</TableHead>
+              <TableHead>City</TableHead>
+              <TableHead>Country</TableHead>
               <TableHead>Invoice Email</TableHead>
             </TableRow>
           </TableHeader>
@@ -67,6 +69,8 @@ export function InstitutionsTable() {
                 <TableCell className="font-medium">{institution.name}</TableCell>
                 <TableCell>{institution.oib}</TableCell>
                 <TableCell>{institution.address}</TableCell>
+                <TableCell>{institution.postal_code} {institution.city}</TableCell>
+                <TableCell>{institution.country}</TableCell>
                 <TableCell>{institution.invoice_email}</TableCell>
               </TableRow>
             ))}

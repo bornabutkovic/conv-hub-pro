@@ -26,6 +26,9 @@ const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   oib: z.string().min(11, 'OIB must be 11 digits').max(11, 'OIB must be 11 digits'),
   address: z.string().min(5, 'Address is required'),
+  city: z.string().min(1, 'City is required'),
+  postal_code: z.string().min(1, 'Postal code is required'),
+  country: z.string().min(1, 'Country is required'),
   invoice_email: z.string().email('Valid email is required'),
 });
 
@@ -46,6 +49,9 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
       name: '',
       oib: '',
       address: '',
+      city: '',
+      postal_code: '',
+      country: 'Hrvatska',
       invoice_email: '',
     },
   });
@@ -57,6 +63,9 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
         name: data.name,
         oib: data.oib,
         address: data.address,
+        city: data.city,
+        postal_code: data.postal_code,
+        country: data.country,
         invoice_email: data.invoice_email,
       });
 
@@ -118,6 +127,50 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
                   <FormLabel>Address</FormLabel>
                   <FormControl>
                     <Input placeholder="Ilica 123, 10000 Zagreb" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="postal_code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Postal Code</FormLabel>
+                    <FormControl>
+                      <Input placeholder="10000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>City</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Zagreb" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="country"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Country</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Hrvatska" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
