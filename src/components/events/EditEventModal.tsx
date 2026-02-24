@@ -626,9 +626,18 @@ export function EditEventModal({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Porezna lokacija</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Croatia" {...field} />
-                        </FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select tax location" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Hrvatska">Hrvatska</SelectItem>
+                            <SelectItem value="EU">EU</SelectItem>
+                            <SelectItem value="Izvan EU">Izvan EU</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
