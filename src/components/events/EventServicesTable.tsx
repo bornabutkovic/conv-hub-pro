@@ -132,11 +132,19 @@ export function EventServicesTable({ eventId, currency }: EventServicesTableProp
                     <TableCell className="text-right">
                       {service.capacity ?? 'Unlimited'}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="flex justify-end gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-destructive hover:text-destructive"
+                        className="hover:bg-muted"
+                        onClick={() => setEditService(service)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => setDeleteServiceId(service.id)}
                       >
                         <Trash2 className="h-4 w-4" />
