@@ -15,6 +15,9 @@ interface Institution {
   name: string;
   oib: string;
   address: string;
+  city: string | null;
+  postal_code: string | null;
+  country: string | null;
   invoice_email: string;
 }
 
