@@ -26,6 +26,7 @@ interface EventServicesTableProps {
 
 export function EventServicesTable({ eventId, currency }: EventServicesTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editService, setEditService] = useState<any | null>(null);
   const [deleteServiceId, setDeleteServiceId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
