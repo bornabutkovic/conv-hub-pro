@@ -63,6 +63,9 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
         name: data.name,
         oib: data.oib,
         address: data.address,
+        city: data.city,
+        postal_code: data.postal_code,
+        country: data.country,
         invoice_email: data.invoice_email,
       });
 
