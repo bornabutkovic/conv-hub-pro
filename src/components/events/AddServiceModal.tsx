@@ -38,27 +38,38 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
     capacity: editService?.capacity?.toString() || '',
   });
 
-  const createMutation = useMutation({
+  const mutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('event_services').insert({
+      const serviceData = {
         event_id: eventId,
         name: formData.name,
         description: formData.description || null,
         price: parseFloat(formData.price) || 0,
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
         currency: currency,
-      });
-      
-      if (error) throw error;
+      };
+
+      if (editService) {
+        const { error } = await supabase
+          .from('event_services')
+          .update(serviceData)
+          .eq('id', editService.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('event_services')
+          .insert(serviceData);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event-services', eventId] });
-      toast.success('Service added successfully');
+      toast.success(editService ? 'Service updated successfully' : 'Service added successfully');
       onOpenChange(false);
       setFormData({ name: '', description: '', price: '', capacity: '' });
     },
     onError: (error) => {
-      toast.error('Failed to add service: ' + error.message);
+      toast.error(`Failed to ${editService ? 'update' : 'add'} service: ` + error.message);
     },
   });
 
