@@ -49,6 +49,9 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
       name: '',
       oib: '',
       address: '',
+      city: '',
+      postal_code: '',
+      country: 'Hrvatska',
       invoice_email: '',
     },
   });
