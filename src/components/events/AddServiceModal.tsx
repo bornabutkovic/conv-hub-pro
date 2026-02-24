@@ -20,9 +20,16 @@ interface AddServiceModalProps {
   onOpenChange: (open: boolean) => void;
   eventId: string;
   currency: string;
+  editService?: {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number;
+    capacity: number | null;
+  } | null;
 }
 
-export function AddServiceModal({ open, onOpenChange, eventId, currency }: AddServiceModalProps) {
+export function AddServiceModal({ open, onOpenChange, eventId, currency, editService }: AddServiceModalProps) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: '',
