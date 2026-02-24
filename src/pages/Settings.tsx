@@ -268,6 +268,8 @@ export default function Settings() {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Address</label>
                   <p>{institution.address}</p>
+                  <p>{institution.postal_code} {institution.city}</p>
+                  <p>{institution.country}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Invoice Email</label>

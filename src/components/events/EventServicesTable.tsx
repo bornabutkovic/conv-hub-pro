@@ -171,6 +171,16 @@ export function EventServicesTable({ eventId, currency }: EventServicesTableProp
         currency={currency}
       />
 
+      {editService && (
+        <AddServiceModal
+          open={!!editService}
+          onOpenChange={(open) => !open && setEditService(null)}
+          eventId={eventId}
+          currency={currency}
+          editService={editService}
+        />
+      )}
+
       <AlertDialog open={!!deleteServiceId} onOpenChange={() => setDeleteServiceId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

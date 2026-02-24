@@ -406,11 +406,14 @@ export type Database = {
           bc_payment_method_bank: string | null
           bc_payment_method_card: string | null
           billing_email: string | null
+          city: string | null
+          country: string | null
           created_at: string | null
           id: string | null
           invoice_email: string
           name: string
           oib: string
+          postal_code: string | null
           stripe_connect_id: string | null
         }
         Insert: {
@@ -419,11 +422,14 @@ export type Database = {
           bc_payment_method_bank?: string | null
           bc_payment_method_card?: string | null
           billing_email?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string | null
           id?: string | null
           invoice_email: string
           name: string
           oib: string
+          postal_code?: string | null
           stripe_connect_id?: string | null
         }
         Update: {
@@ -432,11 +438,14 @@ export type Database = {
           bc_payment_method_bank?: string | null
           bc_payment_method_card?: string | null
           billing_email?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string | null
           id?: string | null
           invoice_email?: string
           name?: string
           oib?: string
+          postal_code?: string | null
           stripe_connect_id?: string | null
         }
         Relationships: []

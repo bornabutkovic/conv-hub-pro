@@ -141,8 +141,8 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending ? 'Adding...' : 'Add Service'}
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? (editService ? 'Updating...' : 'Adding...') : (editService ? 'Update Service' : 'Add Service')}
             </Button>
           </DialogFooter>
         </form>
