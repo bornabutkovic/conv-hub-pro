@@ -26,6 +26,9 @@ const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   oib: z.string().min(11, 'OIB must be 11 digits').max(11, 'OIB must be 11 digits'),
   address: z.string().min(5, 'Address is required'),
+  city: z.string().min(1, 'City is required'),
+  postal_code: z.string().min(1, 'Postal code is required'),
+  country: z.string().min(1, 'Country is required'),
   invoice_email: z.string().email('Valid email is required'),
 });
 
