@@ -573,9 +573,8 @@ export function EditEventModal({
                         <SelectContent>
                           <SelectItem value="draft">Draft</SelectItem>
                           <SelectItem value="pending_approval">Pending Approval</SelectItem>
-                          <SelectItem value="published">Published</SelectItem>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="past">Past</SelectItem>
+                          <SelectItem value="active">Active (Published)</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
