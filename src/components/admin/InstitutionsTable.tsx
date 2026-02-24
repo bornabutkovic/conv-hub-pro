@@ -58,6 +58,8 @@ export function InstitutionsTable() {
               <TableHead>Name</TableHead>
               <TableHead>OIB</TableHead>
               <TableHead>Address</TableHead>
+              <TableHead>City</TableHead>
+              <TableHead>Country</TableHead>
               <TableHead>Invoice Email</TableHead>
             </TableRow>
           </TableHeader>
