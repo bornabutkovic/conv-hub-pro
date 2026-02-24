@@ -497,7 +497,7 @@ export function EditEventModal({
                   name="early_bird_deadline"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Early bird rokovi</FormLabel>
+                      <FormLabel>Early bird rok</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
