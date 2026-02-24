@@ -54,7 +54,7 @@ export default function Settings() {
       try {
         const { data, error } = await supabase
           .from('institutions')
-          .select('id, name, oib, address, invoice_email')
+          .select('id, name, oib, address, city, postal_code, country, invoice_email')
           .eq('id', profile.institution_uuid)
           .single();
 
