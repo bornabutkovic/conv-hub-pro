@@ -79,7 +79,7 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
       toast.error('Service name is required');
       return;
     }
-    createMutation.mutate();
+    mutation.mutate();
   };
 
   return (
