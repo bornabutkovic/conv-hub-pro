@@ -560,11 +560,13 @@ export type Database = {
           created_at: string | null
           event_id: string | null
           id: string
+          is_group_order: boolean | null
           order_number: number
           payer_address: string | null
           payer_name: string
           payer_oib: string | null
           payer_type: Database["public"]["Enums"]["payer_type"]
+          payment_method: string | null
           pdf_url: string | null
           po_number: string | null
           status: Database["public"]["Enums"]["payment_status"] | null
@@ -578,11 +580,13 @@ export type Database = {
           created_at?: string | null
           event_id?: string | null
           id?: string
+          is_group_order?: boolean | null
           order_number?: number
           payer_address?: string | null
           payer_name: string
           payer_oib?: string | null
           payer_type: Database["public"]["Enums"]["payer_type"]
+          payment_method?: string | null
           pdf_url?: string | null
           po_number?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
@@ -596,11 +600,13 @@ export type Database = {
           created_at?: string | null
           event_id?: string | null
           id?: string
+          is_group_order?: boolean | null
           order_number?: number
           payer_address?: string | null
           payer_name?: string
           payer_oib?: string | null
           payer_type?: Database["public"]["Enums"]["payer_type"]
+          payment_method?: string | null
           pdf_url?: string | null
           po_number?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
