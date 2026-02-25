@@ -221,13 +221,11 @@ export default function EventDetails() {
             </>
           )}
 
-          {/* Edit — admins can always edit, organizers only when draft */}
-          {(userIsAdmin || event.status === 'draft') && (
-            <Button onClick={() => setIsEditModalOpen(true)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Event
-            </Button>
-          )}
+          {/* Edit — always available for admins and organizers */}
+          <Button onClick={() => setIsEditModalOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Event
+          </Button>
         </div>
       </div>
 
