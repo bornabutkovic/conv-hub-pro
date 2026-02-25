@@ -13,7 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAttendees } from '@/hooks/useAttendees';
+import { useEvents } from '@/hooks/useEvents';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
 import { format } from 'date-fns';
@@ -47,6 +49,7 @@ export default function Attendees() {
   }, [searchParams]);
 
   const { data: attendees, isLoading } = useAttendees(searchQuery);
+  const { data: events } = useEvents();
 
   // Filter attendees by status and event if filters are active
   const filteredAttendees = attendees?.filter(a => {
@@ -136,7 +139,8 @@ export default function Attendees() {
       'Status'
     ];
 
-    const rows = attendees.map((attendee) => [
+    const dataToExport = filteredAttendees || attendees;
+    const rows = dataToExport.map((attendee) => [
       formatCsvCell(attendee.first_name || ''),
       formatCsvCell(attendee.last_name || ''),
       formatCsvCell(attendee.email || ''),
@@ -199,6 +203,31 @@ export default function Attendees() {
             className="pl-10"
           />
         </div>
+        <Select
+          value={eventFilter || 'all'}
+          onValueChange={(value) => {
+            const newFilter = value === 'all' ? null : value;
+            setEventFilter(newFilter);
+            if (newFilter) {
+              searchParams.set('event', newFilter);
+            } else {
+              searchParams.delete('event');
+            }
+            setSearchParams(searchParams);
+          }}
+        >
+          <SelectTrigger className="w-[220px]">
+            <SelectValue placeholder="All Events" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Events</SelectItem>
+            {events?.map((event) => (
+              <SelectItem key={event.id} value={event.id}>
+                {event.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {(statusFilter || eventFilter) && (
           <div className="flex items-center gap-2 flex-wrap">
             {statusFilter && (
