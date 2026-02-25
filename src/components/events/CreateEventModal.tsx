@@ -60,6 +60,7 @@ const createEventSchema = z.object({
   // Section 2: Location
   venue_name: z.string().min(1, 'Venue is required').max(200),
   location_city: z.string().min(1, 'City is required').max(100),
+  location_postal_code: z.string().max(20).optional(),
   location_country: z.string().min(1, 'Country is required').max(100),
   
   // Section 3: Dates & Billing
@@ -67,7 +68,6 @@ const createEventSchema = z.object({
   start_time: z.string().min(1, 'Start time is required'),
   end_date: z.date({ required_error: 'End date is required' }),
   end_time: z.string().min(1, 'End time is required'),
-  early_bird_deadline: z.date().optional(),
   payment_due_days: z.coerce.number().min(1, 'Must be at least 1 day').default(7),
   
   // Section 4: Financials & Business Central
@@ -143,6 +143,7 @@ export function CreateEventModal({
       website_url: '',
       venue_name: '',
       location_city: '',
+      location_postal_code: '',
       location_country: '',
       start_time: '09:00',
       end_time: '18:00',
@@ -212,10 +213,10 @@ export function CreateEventModal({
           venue_name: data.venue_name,
           location_city: data.location_city,
           location_country: data.location_country,
+          location_postal_code: data.location_postal_code || null,
           slug: generateSlug(data.name),
           start_date: startDateTime.toISOString(),
           end_date: endDateTime.toISOString(),
-          early_bird_deadline: data.early_bird_deadline?.toISOString() || null,
           payment_due_days: data.payment_due_days,
           currency: data.currency,
           tax_location: data.tax_location || null,
@@ -391,35 +392,49 @@ export function CreateEventModal({
 
                   <FormField
                     control={form.control}
-                    name="location_country"
+                    name="location_postal_code"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Country *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select country" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Croatia">Croatia</SelectItem>
-                            <SelectItem value="Slovenia">Slovenia</SelectItem>
-                            <SelectItem value="Serbia">Serbia</SelectItem>
-                            <SelectItem value="Bosnia and Herzegovina">Bosnia and Herzegovina</SelectItem>
-                            <SelectItem value="Montenegro">Montenegro</SelectItem>
-                            <SelectItem value="North Macedonia">North Macedonia</SelectItem>
-                            <SelectItem value="Kosovo">Kosovo</SelectItem>
-                            <SelectItem value="Germany">Germany</SelectItem>
-                            <SelectItem value="Austria">Austria</SelectItem>
-                            <SelectItem value="Switzerland">Switzerland</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>ZIP / Postal Code</FormLabel>
+                        <FormControl>
+                          <Input placeholder="10000" {...field} />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="location_country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Country *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select country" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Croatia">Croatia</SelectItem>
+                          <SelectItem value="Slovenia">Slovenia</SelectItem>
+                          <SelectItem value="Serbia">Serbia</SelectItem>
+                          <SelectItem value="Bosnia and Herzegovina">Bosnia and Herzegovina</SelectItem>
+                          <SelectItem value="Montenegro">Montenegro</SelectItem>
+                          <SelectItem value="North Macedonia">North Macedonia</SelectItem>
+                          <SelectItem value="Kosovo">Kosovo</SelectItem>
+                          <SelectItem value="Germany">Germany</SelectItem>
+                          <SelectItem value="Austria">Austria</SelectItem>
+                          <SelectItem value="Switzerland">Switzerland</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Section 3: Dates & Billing Settings */}
@@ -547,46 +562,6 @@ export function CreateEventModal({
                   />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="early_bird_deadline"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Early Bird Deadline</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, 'PPP')
-                              ) : (
-                                <span>Pick a deadline</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <FormField
                   control={form.control}

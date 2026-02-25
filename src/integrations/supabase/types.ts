@@ -267,6 +267,7 @@ export type Database = {
           institution_uuid: string | null
           location_city: string | null
           location_country: string | null
+          location_postal_code: string | null
           name: string
           notification_sender_email: string | null
           notification_sender_name: string | null
@@ -298,6 +299,7 @@ export type Database = {
           institution_uuid?: string | null
           location_city?: string | null
           location_country?: string | null
+          location_postal_code?: string | null
           name: string
           notification_sender_email?: string | null
           notification_sender_name?: string | null
@@ -329,6 +331,7 @@ export type Database = {
           institution_uuid?: string | null
           location_city?: string | null
           location_country?: string | null
+          location_postal_code?: string | null
           name?: string
           notification_sender_email?: string | null
           notification_sender_name?: string | null
