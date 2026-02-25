@@ -51,7 +51,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
       address: '',
       city: '',
       postal_code: '',
-      country: 'Hrvatska',
+      country: 'Croatia',
       invoice_email: '',
     },
   });
@@ -170,7 +170,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
                 <FormItem>
                   <FormLabel>Country</FormLabel>
                   <FormControl>
-                    <Input placeholder="Hrvatska" {...field} />
+                    <Input placeholder="Croatia" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

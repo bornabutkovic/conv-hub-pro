@@ -46,9 +46,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tables } from '@/integrations/supabase/types';
 
 const LANGUAGE_OPTIONS = [
-  { value: 'hr', label: 'HR - Hrvatski' },
+  { value: 'hr', label: 'HR - Croatian' },
   { value: 'en', label: 'EN - English' },
-  { value: 'de', label: 'DE - Deutsch' },
+  { value: 'de', label: 'DE - German' },
 ];
 
 const editEventSchema = z.object({
@@ -291,7 +291,7 @@ export function EditEventModal({
                   name="short_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Skraćeno ime događaja</FormLabel>
+                      <FormLabel>Short Name</FormLabel>
                       <FormControl>
                         <Input placeholder="CONF2026" {...field} />
                       </FormControl>
@@ -305,7 +305,7 @@ export function EditEventModal({
                   name="website_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Web stranica</FormLabel>
+                      <FormLabel>Website</FormLabel>
                       <FormControl>
                         <Input type="url" placeholder="https://example.com" {...field} />
                       </FormControl>
@@ -328,7 +328,7 @@ export function EditEventModal({
                   name="venue_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Lokacija *</FormLabel>
+                      <FormLabel>Venue *</FormLabel>
                       <FormControl>
                         <Input placeholder="Hotel Westin" {...field} />
                       </FormControl>
@@ -343,7 +343,7 @@ export function EditEventModal({
                     name="location_city"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Grad *</FormLabel>
+                        <FormLabel>City *</FormLabel>
                         <FormControl>
                           <Input placeholder="Zagreb" {...field} />
                         </FormControl>
@@ -357,7 +357,7 @@ export function EditEventModal({
                     name="location_country"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Država *</FormLabel>
+                        <FormLabel>Country *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -365,16 +365,16 @@ export function EditEventModal({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Hrvatska">Hrvatska</SelectItem>
-                            <SelectItem value="Slovenija">Slovenija</SelectItem>
-                            <SelectItem value="Srbija">Srbija</SelectItem>
-                            <SelectItem value="Bosna i Hercegovina">Bosna i Hercegovina</SelectItem>
-                            <SelectItem value="Crna Gora">Crna Gora</SelectItem>
-                            <SelectItem value="Makedonija">Makedonija</SelectItem>
+                            <SelectItem value="Croatia">Croatia</SelectItem>
+                            <SelectItem value="Slovenia">Slovenia</SelectItem>
+                            <SelectItem value="Serbia">Serbia</SelectItem>
+                            <SelectItem value="Bosnia and Herzegovina">Bosnia and Herzegovina</SelectItem>
+                            <SelectItem value="Montenegro">Montenegro</SelectItem>
+                            <SelectItem value="North Macedonia">North Macedonia</SelectItem>
                             <SelectItem value="Kosovo">Kosovo</SelectItem>
-                            <SelectItem value="Njemačka">Njemačka</SelectItem>
-                            <SelectItem value="Austrija">Austrija</SelectItem>
-                            <SelectItem value="Švicarska">Švicarska</SelectItem>
+                            <SelectItem value="Germany">Germany</SelectItem>
+                            <SelectItem value="Austria">Austria</SelectItem>
+                            <SelectItem value="Switzerland">Switzerland</SelectItem>
                             <SelectItem value="Other">Other</SelectItem>
                           </SelectContent>
                         </Select>
@@ -514,7 +514,7 @@ export function EditEventModal({
                   name="early_bird_deadline"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Early bird rok</FormLabel>
+                      <FormLabel>Early Bird Deadline</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -554,7 +554,7 @@ export function EditEventModal({
                   name="payment_due_days"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rok isteka ponuda – dana *</FormLabel>
+                      <FormLabel>Payment Due Days *</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -564,7 +564,7 @@ export function EditEventModal({
                         />
                       </FormControl>
                       <FormDescription>
-                        Koliko dana vrijedi rezervacija za virmansko plaćanje
+                        Number of days a bank-transfer reservation remains valid
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -642,7 +642,7 @@ export function EditEventModal({
                     name="tax_location"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Porezna lokacija</FormLabel>
+                        <FormLabel>Tax Location</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -650,9 +650,9 @@ export function EditEventModal({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Hrvatska">Hrvatska</SelectItem>
+                            <SelectItem value="Croatia">Croatia</SelectItem>
                             <SelectItem value="EU">EU</SelectItem>
-                            <SelectItem value="Izvan EU">Izvan EU</SelectItem>
+                            <SelectItem value="Outside EU">Outside EU</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -704,7 +704,7 @@ export function EditEventModal({
                     name="notification_sender_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Pošiljatelj ime *</FormLabel>
+                        <FormLabel>Sender Name *</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g. Ivan Horvat" {...field} />
                         </FormControl>
@@ -718,7 +718,7 @@ export function EditEventModal({
                     name="notification_sender_email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Pošiljatelj mail *</FormLabel>
+                        <FormLabel>Sender Email *</FormLabel>
                         <FormControl>
                           <Input type="email" placeholder="email@example.com" {...field} />
                         </FormControl>
@@ -733,7 +733,7 @@ export function EditEventModal({
                   name="support_phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Kontakt mobitel</FormLabel>
+                      <FormLabel>Support Phone</FormLabel>
                       <FormControl>
                         <Input placeholder="+385 91 234 5678" {...field} />
                       </FormControl>

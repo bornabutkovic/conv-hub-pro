@@ -262,7 +262,7 @@ export default function Settings() {
                   <p className="text-lg font-medium">{institution.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">OIB</label>
+                  <label className="text-sm font-medium text-muted-foreground">VAT Number / OIB</label>
                   <p className="font-mono">{institution.oib}</p>
                 </div>
                 <div>
