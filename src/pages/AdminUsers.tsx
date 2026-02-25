@@ -14,7 +14,8 @@ import {
   LogIn,
   Settings,
   Crown,
-  UserPlus
+  UserPlus,
+  Clock
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -31,6 +32,7 @@ import {
 } from '@/components/ui/table';
 import { UserDetailsModal } from '@/components/admin/UserDetailsModal';
 import { InviteUserModal } from '@/components/admin/InviteUserModal';
+import { ApproveUserModal } from '@/components/admin/ApproveUserModal';
 import type { Tables } from '@/integrations/supabase/types';
 import { isAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
@@ -42,14 +44,15 @@ type ProfileWithInstitution = Profile & {
   institutions?: Institution | null;
 };
 
-type TabType = 'organizers' | 'attendees' | 'team';
+type TabType = 'pending' | 'organizers' | 'attendees' | 'team';
 
 export default function AdminUsers() {
   const { profile: currentUserProfile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<TabType>('organizers');
+  const [activeTab, setActiveTab] = useState<TabType>('pending');
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [approveUser, setApproveUser] = useState<Profile | null>(null);
   
   const isSuperAdmin = isAdmin(currentUserProfile?.role);
 
@@ -94,14 +97,20 @@ export default function AdminUsers() {
     },
   });
 
+  // Pending approval: no institution_uuid and not admin
+  const pendingUsers = useMemo(() =>
+    users?.filter(u => !u.institution_uuid && !isAdmin(u.role)) || [],
+    [users]
+  );
+
   // Filter users by role category
   const organizers = useMemo(() => 
-    users?.filter(u => u.role === 'event_organizer' || u.role === 'admin' || u.role === 'organizer_admin') || [],
+    users?.filter(u => (u.role === 'event_organizer' || u.role === 'admin' || u.role === 'organizer_admin') && u.institution_uuid) || [],
     [users]
   );
 
   const attendees = useMemo(() => 
-    users?.filter(u => u.role === 'user' || !u.role) || [],
+    users?.filter(u => (u.role === 'user' || !u.role) && !isAdmin(u.role) && u.institution_uuid) || [],
     [users]
   );
 
@@ -123,6 +132,7 @@ export default function AdminUsers() {
     });
   };
 
+  const filteredPending = useMemo(() => getFilteredUsers(pendingUsers, searchQuery), [pendingUsers, searchQuery]);
   const filteredOrganizers = useMemo(() => getFilteredUsers(organizers, searchQuery), [organizers, searchQuery]);
   const filteredAttendees = useMemo(() => getFilteredUsers(attendees, searchQuery), [attendees, searchQuery]);
   const filteredSuperAdmins = useMemo(() => getFilteredUsers(superAdmins, searchQuery), [superAdmins, searchQuery]);
@@ -131,23 +141,24 @@ export default function AdminUsers() {
   useEffect(() => {
     if (!searchQuery.trim()) return;
     
-    // Check which tab has results
+    const hasPending = filteredPending.length > 0;
     const hasOrganizers = filteredOrganizers.length > 0;
     const hasAttendees = filteredAttendees.length > 0;
     const hasSuperAdmins = filteredSuperAdmins.length > 0;
 
-    // If current tab has no results but another does, switch
     const currentTabEmpty = 
+      (activeTab === 'pending' && !hasPending) ||
       (activeTab === 'organizers' && !hasOrganizers) ||
       (activeTab === 'attendees' && !hasAttendees) ||
       (activeTab === 'team' && !hasSuperAdmins);
 
     if (currentTabEmpty) {
-      if (hasAttendees) setActiveTab('attendees');
+      if (hasPending) setActiveTab('pending');
       else if (hasOrganizers) setActiveTab('organizers');
+      else if (hasAttendees) setActiveTab('attendees');
       else if (hasSuperAdmins) setActiveTab('team');
     }
-  }, [searchQuery, filteredOrganizers.length, filteredAttendees.length, filteredSuperAdmins.length, activeTab]);
+  }, [searchQuery, filteredPending.length, filteredOrganizers.length, filteredAttendees.length, filteredSuperAdmins.length, activeTab]);
 
   const handleImpersonate = (user: Profile) => {
     toast.info(`Impersonation feature coming soon for ${user.email || user.first_name}`);
@@ -190,7 +201,18 @@ export default function AdminUsers() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setActiveTab('pending')}>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/10">
+              <Clock className="h-5 w-5 text-amber-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{pendingUsers.length}</p>
+              <p className="text-sm text-muted-foreground">Pending Approval</p>
+            </div>
+          </CardContent>
+        </Card>
         <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setActiveTab('organizers')}>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-blue-500/10">
@@ -243,23 +265,94 @@ export default function AdminUsers() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="pending" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            <span className="hidden sm:inline">Pending</span>
+            <Badge variant={pendingUsers.length > 0 ? "destructive" : "secondary"} className="ml-1">{filteredPending.length}</Badge>
+          </TabsTrigger>
           <TabsTrigger value="organizers" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Platform Clients</span>
+            <span className="hidden sm:inline">Clients</span>
             <Badge variant="secondary" className="ml-1">{filteredOrganizers.length}</Badge>
           </TabsTrigger>
           <TabsTrigger value="attendees" className="flex items-center gap-2">
             <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">WhatsApp Attendees</span>
+            <span className="hidden sm:inline">Attendees</span>
             <Badge variant="secondary" className="ml-1">{filteredAttendees.length}</Badge>
           </TabsTrigger>
           <TabsTrigger value="team" className="flex items-center gap-2">
             <Crown className="h-4 w-4" />
-            <span className="hidden sm:inline">Conveyo Team</span>
+            <span className="hidden sm:inline">Team</span>
             <Badge variant="secondary" className="ml-1">{filteredSuperAdmins.length}</Badge>
           </TabsTrigger>
         </TabsList>
+
+        {/* Tab 0: Pending Approvals */}
+        <TabsContent value="pending">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Clock className="h-5 w-5 text-amber-500" />
+                Pending Approvals
+              </CardTitle>
+              <CardDescription>
+                New registrations awaiting institution assignment and approval.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {filteredPending.length === 0 ? (
+                <div className="p-8 text-center">
+                  <UserCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    {searchQuery ? 'No pending users match your search.' : 'No pending approvals. All clear!'}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Registered</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredPending.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">
+                            {user.first_name || user.last_name
+                              ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                              : '—'}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {user.email || '—'}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {user.created_at
+                              ? format(new Date(user.created_at), 'dd MMM yyyy')
+                              : '—'}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              onClick={() => setApproveUser(user)}
+                            >
+                              <UserCheck className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Tab 1: Platform Clients (Organizers) */}
         <TabsContent value="organizers">
@@ -522,6 +615,18 @@ export default function AdminUsers() {
         open={inviteModalOpen}
         onOpenChange={setInviteModalOpen}
       />
+
+      {/* Approve User Modal */}
+      {approveUser && (
+        <ApproveUserModal
+          open={!!approveUser}
+          onOpenChange={(open) => { if (!open) setApproveUser(null); }}
+          user={approveUser}
+          onApproved={() => {
+            setApproveUser(null);
+          }}
+        />
+      )}
     </div>
   );
 }
