@@ -9,25 +9,26 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, profile, loading, profileLoading } = useAuth();
 
-  // Wait for BOTH session and profile to finish loading
+  // 1. Wait for BOTH session AND profile to resolve — no redirects while loading
   if (loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
 
+  // 2. No session → login
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Super Admins / Admins always pass through — never check institution
+  // 3. Super Admin / Admin → always allowed, never check institution
   if (isAdmin(profile?.role)) {
     return <>{children}</>;
   }
 
-  // Non-admin users without an institution are pending approval
+  // 4. Regular users without an institution → pending approval
   if (!profile?.institution_uuid) {
     return <Navigate to="/pending-approval" replace />;
   }

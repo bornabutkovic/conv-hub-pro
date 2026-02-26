@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -32,88 +32,87 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  // Track the latest fetch to avoid stale/duplicate results
+  const fetchIdRef = useRef(0);
+  const initialised = useRef(false);
+
+  const fetchProfile = useCallback(async (userId: string) => {
+    const id = ++fetchIdRef.current;
     setProfileLoading(true);
+
     const { data, error } = await supabase
       .from('profiles')
       .select('id, email, first_name, last_name, phone, institution_uuid, role')
       .eq('id', userId)
       .single();
-    
-    setProfileLoading(false);
+
+    // Only apply if this is still the latest request
+    if (id !== fetchIdRef.current) return;
+
     if (error) {
       console.error('Error fetching profile:', error);
-      return null;
+      setProfile(null);
+    } else {
+      setProfile(data);
     }
-    return data;
-  };
+    setProfileLoading(false);
+  }, []);
+
+  const handleSession = useCallback((s: Session | null) => {
+    setSession(s);
+    setUser(s?.user ?? null);
+
+    if (s?.user) {
+      // Always clear stale profile first so guards never act on old data
+      setProfile(null);
+      setProfileLoading(true);
+      fetchProfile(s.user.id);
+    } else {
+      setProfile(null);
+      setProfileLoading(false);
+    }
+  }, [fetchProfile]);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // 1. Subscribe to auth changes first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Defer profile fetch to avoid deadlock
-        if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id).then((p) => {
-              setProfile(p);
-              setLoading(false);
-            });
-          }, 0);
-        } else {
-          setProfile(null);
-          setLoading(false);
-        }
+      (_event, s) => {
+        // Skip the first INITIAL_SESSION event — we handle it via getSession below
+        if (!initialised.current) return;
+        handleSession(s);
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchProfile(session.user.id).then((p) => {
-          setProfile(p);
-          setLoading(false);
-        });
-      } else {
-        setLoading(false);
-      }
+    // 2. Seed with current session (runs once)
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      handleSession(s);
+      setLoading(false);
+      initialised.current = true;
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [handleSession]);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error as Error | null };
   };
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: {
-          first_name: firstName,
-          last_name: lastName,
-        },
+        data: { first_name: firstName, last_name: lastName },
       },
     });
     return { error: error as Error | null };
   };
 
   const signOut = async () => {
+    fetchIdRef.current++; // Invalidate any in-flight fetches
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
