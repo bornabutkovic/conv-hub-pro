@@ -29,7 +29,7 @@ export default function PendingApproval() {
               Once approved and assigned to an institution, you'll have full access to the Conwayo dashboard.
             </p>
           </div>
-          <Button variant="outline" onClick={() => signOut()} className="gap-2">
+          <Button variant="outline" onClick={handleSignOut} className="gap-2">
             <LogOut className="h-4 w-4" />
             Sign Out
           </Button>
