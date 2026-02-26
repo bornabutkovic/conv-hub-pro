@@ -29,14 +29,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const fetchProfile = async (userId: string) => {
+    setProfileLoading(true);
     const { data, error } = await supabase
       .from('profiles')
       .select('id, email, first_name, last_name, phone, institution_uuid, role')
       .eq('id', userId)
       .single();
     
+    setProfileLoading(false);
     if (error) {
       console.error('Error fetching profile:', error);
       return null;
@@ -54,12 +57,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Defer profile fetch to avoid deadlock
         if (session?.user) {
           setTimeout(() => {
-            fetchProfile(session.user.id).then(setProfile);
+            fetchProfile(session.user.id).then((p) => {
+              setProfile(p);
+              setLoading(false);
+            });
           }, 0);
         } else {
           setProfile(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
@@ -69,9 +75,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile);
+        fetchProfile(session.user.id).then((p) => {
+          setProfile(p);
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
