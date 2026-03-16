@@ -773,6 +773,11 @@ export function EditEventModal({
                 />
               </div>
 
+              {/* ERP Code Section - Admin only, visible for pending_approval events */}
+              {userIsAdmin && event.status === 'pending_approval' && (
+                <ErpCodeSection eventId={event.id} />
+              )}
+
               <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button
                   type="button"
