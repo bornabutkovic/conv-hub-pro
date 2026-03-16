@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 
 export type EventStatus = 'all' | 'draft' | 'pending_approval' | 'active' | 'completed';
 
@@ -26,15 +27,47 @@ export function useEvents(statusFilter: EventStatus = 'all') {
   return useQuery({
     queryKey: ['events', user?.id, profile?.role, statusFilter],
     queryFn: async (): Promise<Event[]> => {
-      // RLS now handles visibility (super_admin sees all, others see
-      // events via institution_uuid or event_memberships).
-      // We just query all events and let RLS filter.
+      // For event_organizer: only show events they have membership for
+      if (!isAdmin(profile?.role)) {
+        const { data: memberships, error: memErr } = await supabase
+          .from('event_memberships')
+          .select('event_id')
+          .eq('user_id', user!.id);
+
+        if (memErr) {
+          console.error('[useEvents] Membership fetch error:', memErr);
+          throw memErr;
+        }
+
+        const eventIds = (memberships || [])
+          .map((m) => m.event_id)
+          .filter(Boolean) as string[];
+
+        if (eventIds.length === 0) return [];
+
+        let query = supabase
+          .from('events')
+          .select(`*, institutions:institution_uuid (name)`)
+          .in('id', eventIds)
+          .order('start_date', { ascending: false });
+
+        if (statusFilter !== 'all') {
+          query = query.eq('status', statusFilter);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        return (data || []).map((event: any) => ({
+          ...event,
+          institution_name: event.institutions?.name || null,
+        })) as Event[];
+      }
+
+      // Admin: see all events
       let query = supabase
         .from('events')
-        .select(`
-          *,
-          institutions:institution_uuid (name)
-        `)
+        .select(`*, institutions:institution_uuid (name)`)
         .order('start_date', { ascending: false });
 
       if (statusFilter !== 'all') {
@@ -42,15 +75,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
       }
 
       const { data, error } = await query;
-
-      if (error) {
-        console.error('[useEvents] Supabase error:', error.code, error.message, error.details);
-        throw error;
-      }
-
-      if (!data || data.length === 0) {
-        console.warn('[useEvents] No events returned. This may be an RLS issue. User role:', profile?.role, 'Institution:', profile?.institution_uuid);
-      }
+      if (error) throw error;
 
       return (data || []).map((event: any) => ({
         ...event,

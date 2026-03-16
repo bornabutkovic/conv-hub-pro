@@ -24,18 +24,22 @@ export function EventCard({ event }: EventCardProps) {
   const { profile } = useAuth();
   const isSuperAdmin = isAdmin(profile?.role);
 
-  const getStatusVariant = (status: string | null) => {
+  const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'active':
-        return 'default';
+        return <Badge variant="default">{getStatusLabel(status)}</Badge>;
       case 'pending_approval':
-        return 'outline' as const;
+        return (
+          <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30 hover:bg-amber-500/25">
+            {getStatusLabel(status)}
+          </Badge>
+        );
       case 'completed':
-        return 'outline';
+        return <Badge variant="outline">{getStatusLabel(status)}</Badge>;
       case 'draft':
-        return 'secondary';
+        return <Badge variant="secondary">{getStatusLabel(status)}</Badge>;
       default:
-        return 'secondary';
+        return <Badge variant="secondary">{getStatusLabel(status)}</Badge>;
     }
   };
 
@@ -91,9 +95,9 @@ export function EventCard({ event }: EventCardProps) {
               </div>
             )}
           </div>
-          <Badge variant={getStatusVariant(event.status)} className="shrink-0 ml-2">
-            {getStatusLabel(event.status)}
-          </Badge>
+          <div className="shrink-0 ml-2">
+            {getStatusBadge(event.status)}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
