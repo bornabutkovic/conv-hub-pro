@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InstitutionsTable } from '@/components/admin/InstitutionsTable';
 import { UsersManager } from '@/components/admin/UsersManager';
 import { CreateInstitutionModal } from '@/components/admin/CreateInstitutionModal';
+import { PendingApprovalsSection } from '@/components/admin/PendingApprovalsSection';
 import { Button } from '@/components/ui/button';
 import { Plus, Building2, Users } from 'lucide-react';
 
@@ -17,6 +18,8 @@ export default function Admin() {
           <p className="text-muted-foreground mt-1">Manage institutions and users</p>
         </div>
       </div>
+
+      <PendingApprovalsSection />
 
       <Tabs defaultValue="institutions" className="space-y-6">
         <TabsList>
