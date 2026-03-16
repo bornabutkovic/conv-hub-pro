@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InstitutionsTable } from '@/components/admin/InstitutionsTable';
 import { UsersManager } from '@/components/admin/UsersManager';
 import { CreateInstitutionModal } from '@/components/admin/CreateInstitutionModal';
+import { PendingApprovalsSection } from '@/components/admin/PendingApprovalsSection';
 import { Button } from '@/components/ui/button';
 import { Plus, Building2, Users } from 'lucide-react';
 
