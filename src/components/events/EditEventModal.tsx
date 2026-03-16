@@ -800,3 +800,163 @@ export function EditEventModal({
     </Dialog>
   );
 }
+
+/* ── ERP Code inline editor for pending_approval events (admin only) ── */
+
+function ErpCodeSection({ eventId }: { eventId: string }) {
+  const [savingTiers, setSavingTiers] = useState(false);
+  const [savingServices, setSavingServices] = useState(false);
+
+  const { data: ticketTiers, refetch: refetchTiers } = useQuery({
+    queryKey: ['edit-event-tiers', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('ticket_tiers')
+        .select('id, name, erp_code')
+        .eq('event_id', eventId)
+        .order('name');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { data: eventServices, refetch: refetchServices } = useQuery({
+    queryKey: ['edit-event-services', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('event_services')
+        .select('id, name, erp_code')
+        .eq('event_id', eventId)
+        .order('name');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const [tierErpCodes, setTierErpCodes] = useState<Record<string, string>>({});
+  const [serviceErpCodes, setServiceErpCodes] = useState<Record<string, string>>({});
+
+  // Sync local state when data loads
+  useEffect(() => {
+    if (ticketTiers) {
+      const map: Record<string, string> = {};
+      ticketTiers.forEach((t) => { map[t.id] = t.erp_code || ''; });
+      setTierErpCodes(map);
+    }
+  }, [ticketTiers]);
+
+  useEffect(() => {
+    if (eventServices) {
+      const map: Record<string, string> = {};
+      eventServices.forEach((s) => { map[s.id] = s.erp_code || ''; });
+      setServiceErpCodes(map);
+    }
+  }, [eventServices]);
+
+  const saveTierErpCodes = async () => {
+    setSavingTiers(true);
+    try {
+      const updates = Object.entries(tierErpCodes).map(([id, erp_code]) =>
+        supabase.from('ticket_tiers').update({ erp_code: erp_code || null }).eq('id', id)
+      );
+      await Promise.all(updates);
+      toast.success('Ticket tier ERP codes saved');
+      refetchTiers();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save ERP codes');
+    } finally {
+      setSavingTiers(false);
+    }
+  };
+
+  const saveServiceErpCodes = async () => {
+    setSavingServices(true);
+    try {
+      const updates = Object.entries(serviceErpCodes).map(([id, erp_code]) =>
+        supabase.from('event_services').update({ erp_code: erp_code || null }).eq('id', id)
+      );
+      await Promise.all(updates);
+      toast.success('Service ERP codes saved');
+      refetchServices();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save ERP codes');
+    } finally {
+      setSavingServices(false);
+    }
+  };
+
+  const hasTiers = ticketTiers && ticketTiers.length > 0;
+  const hasServices = eventServices && eventServices.length > 0;
+
+  if (!hasTiers && !hasServices) return null;
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-sm font-semibold text-foreground">ERP Codes (Admin)</h3>
+        <p className="text-sm text-muted-foreground">Assign ERP codes before approving this event</p>
+      </div>
+      <Separator />
+
+      {hasTiers && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-foreground">Ticket Tiers</p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={saveTierErpCodes}
+              disabled={savingTiers}
+            >
+              {savingTiers ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
+              Save
+            </Button>
+          </div>
+          {ticketTiers.map((tier) => (
+            <div key={tier.id} className="grid grid-cols-2 gap-3 items-center">
+              <span className="text-sm text-muted-foreground truncate">{tier.name}</span>
+              <Input
+                placeholder="ERP Code"
+                value={tierErpCodes[tier.id] || ''}
+                onChange={(e) =>
+                  setTierErpCodes((prev) => ({ ...prev, [tier.id]: e.target.value }))
+                }
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {hasServices && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-foreground">Services</p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={saveServiceErpCodes}
+              disabled={savingServices}
+            >
+              {savingServices ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
+              Save
+            </Button>
+          </div>
+          {eventServices.map((svc) => (
+            <div key={svc.id} className="grid grid-cols-2 gap-3 items-center">
+              <span className="text-sm text-muted-foreground truncate">{svc.name}</span>
+              <Input
+                placeholder="ERP Code"
+                value={serviceErpCodes[svc.id] || ''}
+                onChange={(e) =>
+                  setServiceErpCodes((prev) => ({ ...prev, [svc.id]: e.target.value }))
+                }
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
