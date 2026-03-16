@@ -19,6 +19,8 @@ export default function Admin() {
         </div>
       </div>
 
+      <PendingApprovalsSection />
+
       <Tabs defaultValue="institutions" className="space-y-6">
         <TabsList>
           <TabsTrigger value="institutions" className="flex items-center gap-2">
