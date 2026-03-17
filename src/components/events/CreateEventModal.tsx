@@ -119,8 +119,19 @@ export function CreateEventModal({
   onEventCreated,
 }: CreateEventModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [branding, setBranding] = useState({
+    branding_primary_color: '#6366f1',
+    branding_secondary_color: '#ffffff',
+    branding_text_color: '#1f2937',
+    branding_logo_url: null as string | null,
+    branding_banner_url: null as string | null,
+  });
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
+
+  const handleBrandingChange = useCallback((values: typeof branding) => {
+    setBranding(values);
+  }, []);
 
   // Fetch institutions for admin users to select from
   const { data: institutions } = useQuery({
