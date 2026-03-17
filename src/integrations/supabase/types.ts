@@ -257,6 +257,12 @@ export type Database = {
           additional_admins: string[] | null
           bc_position: string | null
           bc_reference: string | null
+          branding_banner_url: string | null
+          branding_favicon_url: string | null
+          branding_logo_url: string | null
+          branding_primary_color: string | null
+          branding_secondary_color: string | null
+          branding_text_color: string | null
           created_at: string | null
           currency: string | null
           early_bird_deadline: string | null
@@ -289,6 +295,12 @@ export type Database = {
           additional_admins?: string[] | null
           bc_position?: string | null
           bc_reference?: string | null
+          branding_banner_url?: string | null
+          branding_favicon_url?: string | null
+          branding_logo_url?: string | null
+          branding_primary_color?: string | null
+          branding_secondary_color?: string | null
+          branding_text_color?: string | null
           created_at?: string | null
           currency?: string | null
           early_bird_deadline?: string | null
@@ -321,6 +333,12 @@ export type Database = {
           additional_admins?: string[] | null
           bc_position?: string | null
           bc_reference?: string | null
+          branding_banner_url?: string | null
+          branding_favicon_url?: string | null
+          branding_logo_url?: string | null
+          branding_primary_color?: string | null
+          branding_secondary_color?: string | null
+          branding_text_color?: string | null
           created_at?: string | null
           currency?: string | null
           early_bird_deadline?: string | null

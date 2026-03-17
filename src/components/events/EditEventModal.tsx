@@ -45,6 +45,7 @@ import { isAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tables } from '@/integrations/supabase/types';
+import { BrandingSection } from './BrandingSection';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -122,6 +123,14 @@ export function EditEventModal({
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
 
+  const [branding, setBranding] = useState({
+    branding_primary_color: '#6366f1',
+    branding_secondary_color: '#ffffff',
+    branding_text_color: '#1f2937',
+    branding_logo_url: null as string | null,
+    branding_banner_url: null as string | null,
+  });
+
   const form = useForm<EditEventForm>({
     resolver: zodResolver(editEventSchema),
     defaultValues: {
@@ -190,6 +199,14 @@ export function EditEventModal({
         supported_languages: event.supported_languages || ['hr'],
         status: (event.status as 'draft' | 'pending_approval' | 'active' | 'completed') || 'draft',
       });
+
+      setBranding({
+        branding_primary_color: event.branding_primary_color || '#6366f1',
+        branding_secondary_color: event.branding_secondary_color || '#ffffff',
+        branding_text_color: event.branding_text_color || '#1f2937',
+        branding_logo_url: event.branding_logo_url || null,
+        branding_banner_url: event.branding_banner_url || null,
+      });
     }
   }, [event, open, form]);
 
@@ -235,6 +252,11 @@ export function EditEventModal({
           additional_admins: additionalAdminsArray,
           supported_languages: data.supported_languages,
           status: data.status,
+          branding_primary_color: branding.branding_primary_color,
+          branding_secondary_color: branding.branding_secondary_color,
+          branding_text_color: branding.branding_text_color,
+          branding_logo_url: branding.branding_logo_url,
+          branding_banner_url: branding.branding_banner_url,
         })
         .eq('id', event.id);
 
@@ -772,6 +794,13 @@ export function EditEventModal({
                   )}
                 />
               </div>
+
+              {/* Branding Section */}
+              <BrandingSection
+                eventId={event.id}
+                values={branding}
+                onChange={setBranding}
+              />
 
               {/* ERP Code Section - Admin only, visible for pending_approval events */}
               {userIsAdmin && event.status === 'pending_approval' && (
