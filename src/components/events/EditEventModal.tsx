@@ -199,6 +199,14 @@ export function EditEventModal({
         supported_languages: event.supported_languages || ['hr'],
         status: (event.status as 'draft' | 'pending_approval' | 'active' | 'completed') || 'draft',
       });
+
+      setBranding({
+        branding_primary_color: event.branding_primary_color || '#6366f1',
+        branding_secondary_color: event.branding_secondary_color || '#ffffff',
+        branding_text_color: event.branding_text_color || '#1f2937',
+        branding_logo_url: event.branding_logo_url || null,
+        branding_banner_url: event.branding_banner_url || null,
+      });
     }
   }, [event, open, form]);
 
