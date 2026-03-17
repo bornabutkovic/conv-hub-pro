@@ -795,6 +795,13 @@ export function EditEventModal({
                 />
               </div>
 
+              {/* Branding Section */}
+              <BrandingSection
+                eventId={event.id}
+                values={branding}
+                onChange={setBranding}
+              />
+
               {/* ERP Code Section - Admin only, visible for pending_approval events */}
               {userIsAdmin && event.status === 'pending_approval' && (
                 <ErpCodeSection eventId={event.id} />
