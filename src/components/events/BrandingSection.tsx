@@ -16,12 +16,13 @@ interface BrandingValues {
 }
 
 interface BrandingSectionProps {
-  eventId: string;
+  eventId?: string;
   values: BrandingValues;
   onChange: (values: BrandingValues) => void;
 }
 
 export function BrandingSection({ eventId, values, onChange }: BrandingSectionProps) {
+  const uploadPrefix = eventId || `temp-${Date.now()}`;
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
