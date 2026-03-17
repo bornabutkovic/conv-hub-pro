@@ -16,12 +16,13 @@ interface BrandingValues {
 }
 
 interface BrandingSectionProps {
-  eventId: string;
+  eventId?: string;
   values: BrandingValues;
   onChange: (values: BrandingValues) => void;
 }
 
 export function BrandingSection({ eventId, values, onChange }: BrandingSectionProps) {
+  const uploadPrefix = eventId || `temp-${Date.now()}`;
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -43,7 +44,7 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
     setLoading(true);
     try {
       const ext = file.name.split('.').pop() || 'png';
-      const path = `${eventId}/${folder}/${Date.now()}.${ext}`;
+      const path = `${uploadPrefix}/${folder}/${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from('event-branding')

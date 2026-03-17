@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -44,6 +44,7 @@ import { isAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQuery } from '@tanstack/react-query';
+import { BrandingSection } from '@/components/events/BrandingSection';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -118,8 +119,19 @@ export function CreateEventModal({
   onEventCreated,
 }: CreateEventModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [branding, setBranding] = useState({
+    branding_primary_color: '#6366f1',
+    branding_secondary_color: '#ffffff',
+    branding_text_color: '#1f2937',
+    branding_logo_url: null as string | null,
+    branding_banner_url: null as string | null,
+  });
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
+
+  const handleBrandingChange = useCallback((values: typeof branding) => {
+    setBranding(values);
+  }, []);
 
   // Fetch institutions for admin users to select from
   const { data: institutions } = useQuery({
@@ -229,6 +241,11 @@ export function CreateEventModal({
           supported_languages: data.supported_languages,
           status: data.status,
           institution_uuid: resolvedInstitutionUuid,
+          branding_primary_color: branding.branding_primary_color,
+          branding_secondary_color: branding.branding_secondary_color,
+          branding_text_color: branding.branding_text_color,
+          branding_logo_url: branding.branding_logo_url,
+          branding_banner_url: branding.branding_banner_url,
         })
         .select('id')
         .single();
@@ -801,6 +818,12 @@ export function CreateEventModal({
                   )}
                 />
               </div>
+
+              {/* Branding Section */}
+              <BrandingSection
+                values={branding}
+                onChange={handleBrandingChange}
+              />
 
               <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button
