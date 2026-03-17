@@ -252,6 +252,11 @@ export function EditEventModal({
           additional_admins: additionalAdminsArray,
           supported_languages: data.supported_languages,
           status: data.status,
+          branding_primary_color: branding.branding_primary_color,
+          branding_secondary_color: branding.branding_secondary_color,
+          branding_text_color: branding.branding_text_color,
+          branding_logo_url: branding.branding_logo_url,
+          branding_banner_url: branding.branding_banner_url,
         })
         .eq('id', event.id);
 
