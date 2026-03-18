@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, Lock } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -61,9 +61,10 @@ interface TicketTierModalProps {
   eventId: string;
   tier?: TicketTier | null;
   eventStatus?: string | null;
+  isLocked?: boolean;
 }
 
-export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus }: TicketTierModalProps) {
+export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus, isLocked = false }: TicketTierModalProps) {
   const queryClient = useQueryClient();
   const isEditing = !!tier;
 
@@ -167,6 +168,13 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {isLocked && isEditing && (
+              <div className="flex items-center gap-2 rounded-md border border-amber-500/50 bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/20 dark:text-amber-200">
+                <Lock className="h-4 w-4 shrink-0" />
+                <span>Name and price are locked — tickets already sold. You can change capacity or end sales early.</span>
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="name"
@@ -174,7 +182,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
                 <FormItem>
                   <FormLabel>Name *</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Early Bird, Regular, VIP" {...field} />
+                    <Input placeholder="e.g., Early Bird, Regular, VIP" {...field} disabled={isLocked && isEditing} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -193,6 +201,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
                       step="0.01"
                       min="0"
                       placeholder="0.00"
+                      disabled={isLocked && isEditing}
                       {...field}
                     />
                   </FormControl>

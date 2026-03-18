@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CalendarIcon, Loader2, ArrowLeft, Save } from 'lucide-react';
+import { CalendarIcon, Loader2, ArrowLeft, Save, AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import {
@@ -33,6 +33,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -192,6 +193,23 @@ export default function EditEvent() {
       });
     }
   }, [event, form]);
+
+  // Check if event has sold tickets (paid attendees)
+  const { data: paidAttendeesCount = 0 } = useQuery({
+    queryKey: ['edit-event-paid-attendees', id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('attendees')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_id', id!)
+        .eq('payment_status', 'paid');
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!id,
+  });
+
+  const isLockedEvent = event?.status === 'active' && paidAttendeesCount > 0;
 
   // ERP Code section data
   const { data: ticketTiers, refetch: refetchTiers } = useQuery({
@@ -371,6 +389,14 @@ export default function EditEvent() {
             <CardTitle className="text-xl">Edit Event</CardTitle>
           </CardHeader>
           <CardContent>
+            {isLockedEvent && (
+              <Alert className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800 dark:text-amber-200">
+                  ⚠️ Some fields are locked because tickets have already been sold. You can still update description, branding, support info, and ticket tier availability.
+                </AlertDescription>
+              </Alert>
+            )}
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Section 1: Event Details */}
@@ -388,7 +414,7 @@ export default function EditEvent() {
                       <FormItem>
                         <FormLabel>Event Name *</FormLabel>
                         <FormControl>
-                          <Input placeholder="My Conference 2026" {...field} />
+                          <Input placeholder="My Conference 2026" {...field} disabled={isLockedEvent} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -439,6 +465,7 @@ export default function EditEvent() {
                               <button
                                 key={option.value}
                                 type="button"
+                                disabled={isLockedEvent}
                                 onClick={() => field.onChange(option.value)}
                                 className={cn(
                                   'flex flex-col items-center gap-1 rounded-lg border-2 p-3 text-sm font-medium transition-colors',
@@ -474,7 +501,7 @@ export default function EditEvent() {
                       <FormItem>
                         <FormLabel>Venue *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Hotel Westin" {...field} />
+                          <Input placeholder="Hotel Westin" {...field} disabled={isLockedEvent} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -489,7 +516,7 @@ export default function EditEvent() {
                         <FormItem>
                           <FormLabel>Venue Address / Adresa mjesta {form.watch('event_type') === 'face2face' ? '*' : ''}</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ilica 1 / Street and number" {...field} />
+                            <Input placeholder="Ilica 1 / Street and number" {...field} disabled={isLockedEvent} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -505,7 +532,7 @@ export default function EditEvent() {
                         <FormItem>
                           <FormLabel>City *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Zagreb" {...field} />
+                            <Input placeholder="Zagreb" {...field} disabled={isLockedEvent} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -533,7 +560,7 @@ export default function EditEvent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Country *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isLockedEvent}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select country" />
@@ -579,6 +606,7 @@ export default function EditEvent() {
                               <FormControl>
                                 <Button
                                   variant="outline"
+                                  disabled={isLockedEvent}
                                   className={cn(
                                     'w-full pl-3 text-left font-normal',
                                     !field.value && 'text-muted-foreground'
@@ -611,7 +639,7 @@ export default function EditEvent() {
                         <FormItem>
                           <FormLabel>Start Time *</FormLabel>
                           <FormControl>
-                            <Input type="time" {...field} />
+                            <Input type="time" {...field} disabled={isLockedEvent} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -631,6 +659,7 @@ export default function EditEvent() {
                               <FormControl>
                                 <Button
                                   variant="outline"
+                                  disabled={isLockedEvent}
                                   className={cn(
                                     'w-full pl-3 text-left font-normal',
                                     !field.value && 'text-muted-foreground'
@@ -667,7 +696,7 @@ export default function EditEvent() {
                         <FormItem>
                           <FormLabel>End Time *</FormLabel>
                           <FormControl>
-                            <Input type="time" {...field} />
+                            <Input type="time" {...field} disabled={isLockedEvent} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

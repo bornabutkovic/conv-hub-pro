@@ -67,17 +67,19 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
     enabled: !!eventId,
   });
 
-  // Check which tiers have sales (exist in order_items)
+  // Check which tiers have paid attendees
   const { data: tiersWithSales } = useQuery({
     queryKey: ['ticket-tiers-sales', eventId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('order_items')
-        .select('ticket_type_id')
-        .not('ticket_type_id', 'is', null);
+        .from('attendees')
+        .select('ticket_tier_id')
+        .eq('event_id', eventId)
+        .eq('payment_status', 'paid')
+        .not('ticket_tier_id', 'is', null);
 
       if (error) throw error;
-      const tierIds = new Set((data || []).map(oi => oi.ticket_type_id).filter(Boolean));
+      const tierIds = new Set((data || []).map(a => a.ticket_tier_id).filter(Boolean));
       return tierIds;
     },
     enabled: !!eventId,
@@ -282,13 +284,15 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                           {locked ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span>
-                                  <Button variant="ghost" size="icon" disabled>
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleEdit(tier)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Cannot edit — tickets already sold</TooltipContent>
+                              <TooltipContent>Cannot edit name/price — tickets already sold. You can change capacity or end sales early.</TooltipContent>
                             </Tooltip>
                           ) : (
                             <Button
@@ -325,6 +329,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
         eventId={eventId}
         tier={editingTier}
         eventStatus={eventStatus}
+        isLocked={editingTier ? isTierLocked(editingTier.id) : false}
       />
 
       <AlertDialog open={!!deletingTierId} onOpenChange={() => setDeletingTierId(null)}>
