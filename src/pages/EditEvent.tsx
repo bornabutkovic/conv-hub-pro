@@ -297,8 +297,10 @@ export default function EditEvent() {
         .update({
           name: data.name,
           short_name: data.short_name || null,
+          event_type: (data as any).event_type,
           website_url: data.website_url || null,
           venue_name: data.venue_name,
+          location_address: (data as any).location_address || null,
           location_city: data.location_city,
           location_country: data.location_country,
           location_postal_code: data.location_postal_code || null,
