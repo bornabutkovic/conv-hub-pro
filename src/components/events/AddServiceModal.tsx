@@ -61,21 +61,32 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
           .eq('id', editService.id);
         if (error) throw error;
       } else {
+        // Set status based on role
+        const insertPayload = userIsAdmin
+          ? { ...serviceData, status: 'active', approved_by: profile?.id, approved_at: new Date().toISOString() }
+          : { ...serviceData, status: 'pending_approval' };
+
         const { error } = await supabase
           .from('event_services')
-          .insert(serviceData);
+          .insert(insertPayload);
         if (error) throw error;
 
-        // If adding to an active event and user is NOT admin, revert to pending_approval
-        if (eventStatus === 'active' && !userIsAdmin) {
-          await supabase
-            .from('events')
-            .update({ status: 'pending_approval' })
-            .eq('id', eventId);
+        // Non-admin: create notification, do NOT change event status
+        if (!userIsAdmin) {
+          const profileName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'An organizer';
+          const { data: eventData } = await supabase.from('events').select('name').eq('id', eventId).single();
+          const eventName = eventData?.name || 'an event';
 
-          queryClient.invalidateQueries({ queryKey: ['event', eventId] });
-          queryClient.invalidateQueries({ queryKey: ['events'] });
-          toast.info('Your new service has been submitted for review. The event will go back on sale once approved by the admin.');
+          await supabase.from('admin_notifications').insert({
+            event_id: eventId,
+            type: 'new_service',
+            message: `${profileName} added a new service "${formData.name}" to "${eventName}" — review required`,
+            created_by: profile?.id,
+          });
+
+          queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
+          queryClient.invalidateQueries({ queryKey: ['events-with-pending-items'] });
+          toast.info('New service submitted for review. It will appear once approved.');
         }
       }
     },

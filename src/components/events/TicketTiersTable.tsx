@@ -126,6 +126,14 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
   };
 
   const getStatusBadge = (tier: TicketTier) => {
+    // Show approval status if not active
+    if (tier.status === 'pending_approval') {
+      return <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30">Pending Approval</Badge>;
+    }
+    if (tier.status === 'rejected') {
+      return <Badge variant="destructive">Rejected</Badge>;
+    }
+
     const now = new Date();
     const salesStart = tier.sales_start ? new Date(tier.sales_start) : null;
     const salesEnd = tier.sales_end ? new Date(tier.sales_end) : null;

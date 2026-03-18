@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
+import { useEventsWithPendingItems } from '@/hooks/useAdminNotifications';
 
 interface EventCardProps {
   event: {
@@ -23,6 +24,9 @@ export function EventCard({ event }: EventCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const userIsAdminRole = isAdmin(profile?.role);
+  const { data: eventsWithPending } = useEventsWithPendingItems();
+
+  const hasPendingItems = userIsAdminRole && eventsWithPending?.has(event.id);
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
@@ -99,6 +103,11 @@ export function EventCard({ event }: EventCardProps) {
             {getStatusBadge(event.status)}
             {userIsAdminRole && event.status === 'pending_approval' && (
               <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                Needs Review
+              </Badge>
+            )}
+            {hasPendingItems && event.status !== 'pending_approval' && (
+              <Badge className="text-[10px] px-1.5 py-0 bg-amber-500 text-white hover:bg-amber-600">
                 Needs Review
               </Badge>
             )}

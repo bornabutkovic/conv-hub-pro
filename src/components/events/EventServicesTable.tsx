@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Trash2, Package, Pencil, AlertTriangle, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -160,6 +161,7 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Capacity</TableHead>
+                  <TableHead>Status</TableHead>
                   {userIsAdmin && <TableHead>ERP Code</TableHead>}
                   <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
@@ -183,6 +185,15 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
                       </TableCell>
                       <TableCell className="text-right">
                         {service.capacity ?? 'Unlimited'}
+                      </TableCell>
+                      <TableCell>
+                        {service.status === 'pending_approval' ? (
+                          <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30">Pending</Badge>
+                        ) : service.status === 'rejected' ? (
+                          <Badge variant="destructive">Rejected</Badge>
+                        ) : (
+                          <Badge variant="default">Active</Badge>
+                        )}
                       </TableCell>
                       {userIsAdmin && (
                         <TableCell>

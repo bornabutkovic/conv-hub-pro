@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          event_id: string | null
+          id: string
+          message: string
+          read_by: string[] | null
+          resolved_at: string | null
+          resolved_by: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          event_id?: string | null
+          id?: string
+          message: string
+          read_by?: string[] | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          event_id?: string | null
+          id?: string
+          message?: string
+          read_by?: string[] | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_notifications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notifications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notifications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notifications_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendees: {
         Row: {
           badge_printed: boolean | null
@@ -350,6 +415,9 @@ export type Database = {
       }
       event_services: {
         Row: {
+          approval_note: string | null
+          approved_at: string | null
+          approved_by: string | null
           capacity: number | null
           created_at: string | null
           currency: string | null
@@ -360,8 +428,12 @@ export type Database = {
           id: string
           name: string
           price: number
+          status: string | null
         }
         Insert: {
+          approval_note?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           capacity?: number | null
           created_at?: string | null
           currency?: string | null
@@ -372,8 +444,12 @@ export type Database = {
           id?: string
           name: string
           price?: number
+          status?: string | null
         }
         Update: {
+          approval_note?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           capacity?: number | null
           created_at?: string | null
           currency?: string | null
@@ -384,8 +460,16 @@ export type Database = {
           id?: string
           name?: string
           price?: number
+          status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "event_services_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_services_event_id_fkey"
             columns: ["event_id"]
@@ -1067,6 +1151,9 @@ export type Database = {
       }
       ticket_tiers: {
         Row: {
+          approval_note: string | null
+          approved_at: string | null
+          approved_by: string | null
           capacity: number | null
           created_at: string | null
           description: string | null
@@ -1080,6 +1167,9 @@ export type Database = {
           status: string | null
         }
         Insert: {
+          approval_note?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           capacity?: number | null
           created_at?: string | null
           description?: string | null
@@ -1093,6 +1183,9 @@ export type Database = {
           status?: string | null
         }
         Update: {
+          approval_note?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           capacity?: number | null
           created_at?: string | null
           description?: string | null
@@ -1106,6 +1199,13 @@ export type Database = {
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ticket_tiers_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ticket_tiers_event_id_fkey"
             columns: ["event_id"]

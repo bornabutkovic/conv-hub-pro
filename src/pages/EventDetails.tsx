@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { ArrowLeft, Calendar, Tag, Users, DollarSign, Edit, Send, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, Users, DollarSign, Edit, Send, CheckCircle, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,13 +11,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventAttendeesTable } from '@/components/events/EventAttendeesTable';
 import { EventServicesTable } from '@/components/events/EventServicesTable';
 import { TicketTiersTable } from '@/components/events/TicketTiersTable';
+import { ApprovalsTab } from '@/components/events/ApprovalsTab';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
+import { usePendingApprovalItems } from '@/hooks/useAdminNotifications';
 import { toast } from 'sonner';
 
 export default function EventDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'attendees';
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
@@ -70,7 +74,8 @@ export default function EventDetails() {
     enabled: !!id,
   });
 
-  // Remove unused memberships query — revenue now comes from attendees
+  const { data: pendingItems } = usePendingApprovalItems(id || '');
+  const pendingCount = (pendingItems?.tiers.length || 0) + (pendingItems?.services.length || 0);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!event) return;
@@ -260,12 +265,23 @@ export default function EventDetails() {
         </Card>
       </div>
 
-      {/* Tabs for Attendees, Tickets & Services */}
-      <Tabs defaultValue="attendees" className="w-full">
+      {/* Tabs for Attendees, Tickets, Services & Approvals */}
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList>
           <TabsTrigger value="attendees">Attendees</TabsTrigger>
           <TabsTrigger value="ticket-tiers">Ticket Tiers</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
+          {userIsAdmin && (
+            <TabsTrigger value="approvals" className="relative">
+              <ShieldCheck className="h-4 w-4 mr-1" />
+              Approvals
+              {pendingCount > 0 && (
+                <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                  {pendingCount}
+                </span>
+              )}
+            </TabsTrigger>
+          )}
         </TabsList>
         <TabsContent value="attendees" className="mt-4">
           <EventAttendeesTable 
@@ -288,6 +304,11 @@ export default function EventDetails() {
             eventStatus={event.status}
           />
         </TabsContent>
+        {userIsAdmin && (
+          <TabsContent value="approvals" className="mt-4">
+            <ApprovalsTab eventId={event.id} currency={event.currency || 'EUR'} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
