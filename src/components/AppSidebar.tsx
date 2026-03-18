@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
-import conwayoLogo from '@/assets/conwayo-logo.png';
+import conwayoLogoDark from '@/assets/conwayo-logo-dark.jpeg';
 import {
   Sidebar,
   SidebarContent,
@@ -56,7 +56,7 @@ export function AppSidebar() {
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <img src={conwayoLogo} alt="CONWAYO" className="h-9 w-auto" />
+            <img src={conwayoLogoDark} alt="CONWAYO" className="h-9 w-auto" />
           </div>
         )}
       </Link>
