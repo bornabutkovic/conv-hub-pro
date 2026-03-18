@@ -194,6 +194,23 @@ export default function EditEvent() {
     }
   }, [event, form]);
 
+  // Check if event has sold tickets (paid attendees)
+  const { data: paidAttendeesCount = 0 } = useQuery({
+    queryKey: ['edit-event-paid-attendees', id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('attendees')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_id', id!)
+        .eq('payment_status', 'paid');
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!id,
+  });
+
+  const isLockedEvent = event?.status === 'active' && paidAttendeesCount > 0;
+
   // ERP Code section data
   const { data: ticketTiers, refetch: refetchTiers } = useQuery({
     queryKey: ['edit-event-tiers', id],
