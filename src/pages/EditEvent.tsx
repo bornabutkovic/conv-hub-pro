@@ -121,8 +121,10 @@ export default function EditEvent() {
     defaultValues: {
       name: '',
       short_name: '',
+      event_type: 'face2face',
       website_url: '',
       venue_name: '',
+      location_address: '',
       location_city: '',
       location_postal_code: '',
       location_country: '',
