@@ -55,7 +55,7 @@ export function AppSidebar() {
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <img src={conwayoLogoWhite} alt="CONWAYO" className="h-9 w-auto" />
+            <img src={conwayoLogoDark} alt="CONWAYO" className="h-9 w-auto" />
           </div>
         )}
       </Link>
