@@ -481,19 +481,21 @@ export default function EditEvent() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="location_address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Venue Address / Adresa mjesta</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Izidora Kršnjavog 1" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {form.watch('event_type') !== 'virtual' && (
+                    <FormField
+                      control={form.control}
+                      name="location_address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Venue Address / Adresa mjesta {form.watch('event_type') === 'face2face' ? '*' : ''}</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ilica 1 / Street and number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
