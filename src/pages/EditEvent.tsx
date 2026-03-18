@@ -164,6 +164,7 @@ export default function EditEvent() {
         name: event.name || '',
         short_name: event.short_name || '',
         event_type: ((event as any).event_type as 'face2face' | 'virtual' | 'hybrid') || 'face2face',
+        description: event.description || '',
         website_url: event.website_url || '',
         venue_name: event.venue_name || '',
         location_address: (event as any).location_address || '',
