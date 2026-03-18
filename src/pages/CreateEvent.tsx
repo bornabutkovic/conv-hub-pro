@@ -51,8 +51,10 @@ const LANGUAGE_OPTIONS = [
 const createEventSchema = z.object({
   name: z.string().min(1, 'Event name is required').max(100),
   short_name: z.string().max(50).optional(),
+  event_type: z.enum(['face2face', 'virtual', 'hybrid'], { required_error: 'Event type is required' }),
   website_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   venue_name: z.string().min(1, 'Venue is required').max(200),
+  location_address: z.string().max(300).optional(),
   location_city: z.string().min(1, 'City is required').max(100),
   location_postal_code: z.string().max(20).optional(),
   location_country: z.string().min(1, 'Country is required').max(100),
