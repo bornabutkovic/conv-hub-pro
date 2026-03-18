@@ -108,6 +108,9 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
 
   const mutation = useMutation({
     mutationFn: async (data: TicketTierFormData) => {
+      // Determine status based on role
+      const tierStatus = userIsAdmin ? 'active' : 'pending_approval';
+
       const payload = {
         name: data.name,
         price: data.price,
@@ -126,22 +129,35 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
 
         if (error) throw error;
       } else {
+        // For new tiers: set status based on role
+        const insertPayload = userIsAdmin
+          ? { ...payload, status: 'active', approved_by: profile?.id, approved_at: new Date().toISOString() }
+          : { ...payload, status: 'pending_approval' };
+
         const { error } = await supabase
           .from('ticket_tiers')
-          .insert(payload);
+          .insert(insertPayload);
 
         if (error) throw error;
 
-        // If adding to an active event and user is NOT admin, revert to pending_approval
-        if (eventStatus === 'active' && !userIsAdmin) {
-          await supabase
-            .from('events')
-            .update({ status: 'pending_approval' })
-            .eq('id', eventId);
-          
-          queryClient.invalidateQueries({ queryKey: ['event', eventId] });
-          queryClient.invalidateQueries({ queryKey: ['events'] });
-          toast.info('Your new ticket type has been submitted for review. The event will go back on sale once approved by the admin.');
+        // Non-admin: create notification, do NOT change event status
+        if (!userIsAdmin) {
+          const profileName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'An organizer';
+
+          // Fetch event name for notification message
+          const { data: eventData } = await supabase.from('events').select('name').eq('id', eventId).single();
+          const eventName = eventData?.name || 'an event';
+
+          await supabase.from('admin_notifications').insert({
+            event_id: eventId,
+            type: 'new_tier',
+            message: `${profileName} added a new ticket type "${data.name}" to "${eventName}" — review required`,
+            created_by: profile?.id,
+          });
+
+          queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
+          queryClient.invalidateQueries({ queryKey: ['events-with-pending-items'] });
+          toast.info('New ticket type submitted for review. It will appear on sale once approved.');
         }
       }
     },
