@@ -422,9 +422,11 @@ export type Database = {
           early_bird_deadline: string | null
           end_date: string | null
           event_id: string | null
+          event_type: string | null
           id: string
           institution_id: string | null
           institution_uuid: string | null
+          location_address: string | null
           location_city: string | null
           location_country: string | null
           location_postal_code: string | null
@@ -464,9 +466,11 @@ export type Database = {
           early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
+          event_type?: string | null
           id?: string
           institution_id?: string | null
           institution_uuid?: string | null
+          location_address?: string | null
           location_city?: string | null
           location_country?: string | null
           location_postal_code?: string | null
@@ -506,9 +510,11 @@ export type Database = {
           early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
+          event_type?: string | null
           id?: string
           institution_id?: string | null
           institution_uuid?: string | null
+          location_address?: string | null
           location_city?: string | null
           location_country?: string | null
           location_postal_code?: string | null

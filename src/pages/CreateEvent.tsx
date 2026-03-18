@@ -40,6 +40,7 @@ import { isAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { BrandingSection } from '@/components/events/BrandingSection';
+import { PhoneInput } from '@/components/ui/phone-input';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -50,8 +51,10 @@ const LANGUAGE_OPTIONS = [
 const createEventSchema = z.object({
   name: z.string().min(1, 'Event name is required').max(100),
   short_name: z.string().max(50).optional(),
+  event_type: z.enum(['face2face', 'virtual', 'hybrid'], { required_error: 'Event type is required' }),
   website_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   venue_name: z.string().min(1, 'Venue is required').max(200),
+  location_address: z.string().max(300).optional(),
   location_city: z.string().min(1, 'City is required').max(100),
   location_postal_code: z.string().max(20).optional(),
   location_country: z.string().min(1, 'Country is required').max(100),
@@ -122,8 +125,10 @@ export default function CreateEvent() {
     defaultValues: {
       name: '',
       short_name: '',
+      event_type: 'face2face',
       website_url: '',
       venue_name: '',
+      location_address: '',
       location_city: '',
       location_postal_code: '',
       location_country: '',
@@ -186,8 +191,10 @@ export default function CreateEvent() {
         .insert({
           name: data.name,
           short_name: data.short_name || null,
+          event_type: data.event_type,
           website_url: data.website_url || null,
           venue_name: data.venue_name,
+          location_address: (data as any).location_address || null,
           location_city: data.location_city,
           location_country: data.location_country,
           location_postal_code: data.location_postal_code || null,
@@ -333,6 +340,29 @@ export default function CreateEvent() {
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="event_type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Event Type *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select event type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="face2face">Face2Face</SelectItem>
+                            <SelectItem value="virtual">Virtual</SelectItem>
+                            <SelectItem value="hybrid">Hybrid</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 {/* Section 2: Location */}
@@ -351,6 +381,20 @@ export default function CreateEvent() {
                         <FormLabel>Venue *</FormLabel>
                         <FormControl>
                           <Input placeholder="Hotel Westin" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="location_address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Venue Address / Adresa mjesta</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Izidora Kršnjavog 1" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -682,7 +726,7 @@ export default function CreateEvent() {
                       <FormItem>
                         <FormLabel>Support Phone</FormLabel>
                         <FormControl>
-                          <Input placeholder="+385 91 234 5678" {...field} />
+                          <PhoneInput value={field.value} onChange={field.onChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
