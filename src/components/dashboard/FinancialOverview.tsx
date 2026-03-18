@@ -195,11 +195,16 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Total Paid Revenue</p>
                   <p className="text-3xl font-bold text-primary">{formatCurrency(revenue.totalRevenue)}</p>
-                  {revenue.totalPending > 0 && (
-                    <p className="text-sm font-medium text-warning">
-                      Total Pending: {formatCurrency(revenue.totalPending)}
+                  <div className="mt-2 space-y-0.5">
+                    <p className="text-sm text-emerald-600">
+                      ✅ Confirmed: {formatCurrency(revenue.totalRevenue)}
                     </p>
-                  )}
+                    {revenue.totalPending > 0 && (
+                      <p className="text-sm text-amber-600">
+                        ⏳ Pending: {formatCurrency(revenue.totalPending)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
