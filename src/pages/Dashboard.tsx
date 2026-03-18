@@ -71,7 +71,7 @@ export default function Dashboard() {
         institution_name: event.institutions?.name || null,
       }));
     },
-    enabled: !!profile && (isSuperAdmin || !!institutionUuid),
+    enabled: !!profile && (userIsSuperAdmin || !!institutionUuid),
   });
 
   // Auto-select the most recent active event on load
