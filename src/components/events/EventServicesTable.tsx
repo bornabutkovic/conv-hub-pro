@@ -191,6 +191,15 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
                       <TableCell className="text-right">
                         {service.capacity ?? 'Unlimited'}
                       </TableCell>
+                      <TableCell>
+                        {service.status === 'pending_approval' ? (
+                          <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30">Pending</Badge>
+                        ) : service.status === 'rejected' ? (
+                          <Badge variant="destructive">Rejected</Badge>
+                        ) : (
+                          <Badge variant="default">Active</Badge>
+                        )}
+                      </TableCell>
                       {userIsAdmin && (
                         <TableCell>
                           <div className="flex items-center gap-1.5">
