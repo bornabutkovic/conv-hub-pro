@@ -39,6 +39,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
 import { BrandingSection } from '@/components/events/BrandingSection';
+import { PhoneInput } from '@/components/ui/phone-input';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
