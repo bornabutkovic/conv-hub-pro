@@ -67,17 +67,19 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
     enabled: !!eventId,
   });
 
-  // Check which tiers have sales (exist in order_items)
+  // Check which tiers have paid attendees
   const { data: tiersWithSales } = useQuery({
     queryKey: ['ticket-tiers-sales', eventId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('order_items')
-        .select('ticket_type_id')
-        .not('ticket_type_id', 'is', null);
+        .from('attendees')
+        .select('ticket_tier_id')
+        .eq('event_id', eventId)
+        .eq('payment_status', 'paid')
+        .not('ticket_tier_id', 'is', null);
 
       if (error) throw error;
-      const tierIds = new Set((data || []).map(oi => oi.ticket_type_id).filter(Boolean));
+      const tierIds = new Set((data || []).map(a => a.ticket_tier_id).filter(Boolean));
       return tierIds;
     },
     enabled: !!eventId,
