@@ -41,6 +41,7 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
