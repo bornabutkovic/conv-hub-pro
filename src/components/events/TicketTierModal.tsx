@@ -6,6 +6,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2, Lock } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import {
   Dialog,
   DialogContent,
