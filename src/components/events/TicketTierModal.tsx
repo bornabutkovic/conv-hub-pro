@@ -61,9 +61,10 @@ interface TicketTierModalProps {
   eventId: string;
   tier?: TicketTier | null;
   eventStatus?: string | null;
+  isLocked?: boolean;
 }
 
-export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus }: TicketTierModalProps) {
+export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus, isLocked = false }: TicketTierModalProps) {
   const queryClient = useQueryClient();
   const isEditing = !!tier;
 
