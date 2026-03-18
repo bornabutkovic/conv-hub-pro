@@ -109,7 +109,7 @@ export default function Dashboard() {
             <p className="text-muted-foreground">
               Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
             </p>
-            {!isSuperAdmin && institutionName && (
+            {!userIsSuperAdmin && institutionName && (
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
                 <Building2 className="h-4 w-4" />
                 <span>Managing: <strong className="text-foreground">{institutionName}</strong></span>
