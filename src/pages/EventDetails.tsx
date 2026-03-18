@@ -70,19 +70,7 @@ export default function EventDetails() {
     enabled: !!id,
   });
 
-  const { data: memberships } = useQuery({
-    queryKey: ['event-memberships-revenue', id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('event_memberships')
-        .select('*')
-        .eq('event_id', id!);
-      
-      if (error) throw error;
-      return data as Array<{ price_paid?: number }>;
-    },
-    enabled: !!id,
-  });
+  // Remove unused memberships query — revenue now comes from attendees
 
   const handleStatusChange = async (newStatus: string) => {
     if (!event) return;
