@@ -340,6 +340,29 @@ export default function CreateEvent() {
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="event_type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Event Type *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select event type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="face2face">Face2Face</SelectItem>
+                            <SelectItem value="virtual">Virtual</SelectItem>
+                            <SelectItem value="hybrid">Hybrid</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 {/* Section 2: Location */}
@@ -358,6 +381,20 @@ export default function CreateEvent() {
                         <FormLabel>Venue *</FormLabel>
                         <FormControl>
                           <Input placeholder="Hotel Westin" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="location_address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Venue Address / Adresa mjesta</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Izidora Kršnjavog 1" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
