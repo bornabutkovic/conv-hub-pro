@@ -59,7 +59,7 @@ export default function Dashboard() {
         `)
         .order('start_date', { ascending: false });
       
-      if (!isSuperAdmin && institutionUuid) {
+      if (!userIsSuperAdmin && institutionUuid) {
         query = query.eq('institution_uuid', institutionUuid);
       }
       
