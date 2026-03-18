@@ -51,13 +51,11 @@ export function AppSidebar() {
       <Link to="/" className="block p-4 border-b border-sidebar-border hover:opacity-90 transition-opacity">
         {collapsed ? (
           <div className="flex items-center justify-center">
-            <div className="h-9 w-9 rounded-xl bg-brand-gradient flex items-center justify-center">
-              <span className="text-white font-heading font-bold text-lg">C</span>
-            </div>
+            <img src={conwayoIcon} alt="CONWAYO" className="h-9 w-auto" />
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <img src={conwayoLogoDark} alt="CONWAYO" className="h-9 w-auto" />
+            <img src={conwayoLogoWhite} alt="CONWAYO" className="h-9 w-auto" />
           </div>
         )}
       </Link>
