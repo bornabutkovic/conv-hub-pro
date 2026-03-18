@@ -635,12 +635,17 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string | null
+          facebook_url: string | null
           id: string | null
+          instagram_url: string | null
           invoice_email: string
+          linkedin_url: string | null
           name: string
           oib: string
+          phone: string | null
           postal_code: string | null
           stripe_connect_id: string | null
+          website: string | null
         }
         Insert: {
           address: string
@@ -651,12 +656,17 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string | null
+          facebook_url?: string | null
           id?: string | null
+          instagram_url?: string | null
           invoice_email: string
+          linkedin_url?: string | null
           name: string
           oib: string
+          phone?: string | null
           postal_code?: string | null
           stripe_connect_id?: string | null
+          website?: string | null
         }
         Update: {
           address?: string
@@ -667,12 +677,17 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string | null
+          facebook_url?: string | null
           id?: string | null
+          instagram_url?: string | null
           invoice_email?: string
+          linkedin_url?: string | null
           name?: string
           oib?: string
+          phone?: string | null
           postal_code?: string | null
           stripe_connect_id?: string | null
+          website?: string | null
         }
         Relationships: []
       }
