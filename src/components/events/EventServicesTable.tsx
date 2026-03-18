@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Trash2, Package, Pencil } from 'lucide-react';
+import { Plus, Trash2, Package, Pencil, AlertTriangle, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { AddServiceModal } from './AddServiceModal';
 import {
@@ -18,17 +24,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 
 interface EventServicesTableProps {
   eventId: string;
   currency: string;
+  eventStatus?: string | null;
 }
 
-export function EventServicesTable({ eventId, currency }: EventServicesTableProps) {
+export function EventServicesTable({ eventId, currency, eventStatus }: EventServicesTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editService, setEditService] = useState<any | null>(null);
   const [deleteServiceId, setDeleteServiceId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const userIsAdmin = isAdmin(profile?.role);
 
   const { data: services, isLoading } = useQuery({
     queryKey: ['event-services', eventId],
@@ -43,6 +54,39 @@ export function EventServicesTable({ eventId, currency }: EventServicesTableProp
       return data;
     },
     enabled: !!eventId,
+  });
+
+  // Check which services have sales
+  const { data: servicesWithSales } = useQuery({
+    queryKey: ['event-services-sales', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('order_items')
+        .select('service_id')
+        .not('service_id', 'is', null);
+      if (error) throw error;
+      return new Set((data || []).map(oi => oi.service_id).filter(Boolean));
+    },
+    enabled: !!eventId,
+  });
+
+  const isServiceLocked = (serviceId: string) => {
+    return eventStatus === 'active' && servicesWithSales?.has(serviceId);
+  };
+
+  const erpMutation = useMutation({
+    mutationFn: async ({ serviceId, erpCode }: { serviceId: string; erpCode: string }) => {
+      const { error } = await supabase
+        .from('event_services')
+        .update({ erp_code: erpCode || null })
+        .eq('id', serviceId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-services', eventId] });
+      toast.success('ERP code updated');
+    },
+    onError: () => toast.error('Failed to update ERP code'),
   });
 
   const deleteMutation = useMutation({
@@ -116,42 +160,90 @@ export function EventServicesTable({ eventId, currency }: EventServicesTableProp
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Capacity</TableHead>
+                  {userIsAdmin && <TableHead>ERP Code</TableHead>}
                   <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {services.map((service) => (
-                  <TableRow key={service.id}>
-                    <TableCell className="font-medium">{service.name}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {service.description || '—'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(service.price)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {service.capacity ?? 'Unlimited'}
-                    </TableCell>
-                    <TableCell className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="hover:bg-muted"
-                        onClick={() => setEditService(service)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => setDeleteServiceId(service.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {services.map((service) => {
+                  const locked = isServiceLocked(service.id);
+                  return (
+                    <TableRow key={service.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+                          {service.name}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {service.description || '—'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(service.price)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {service.capacity ?? 'Unlimited'}
+                      </TableCell>
+                      {userIsAdmin && (
+                        <TableCell>
+                          <div className="flex items-center gap-1.5">
+                            <Input
+                              className="h-8 w-28 text-xs font-mono"
+                              placeholder="ERP code"
+                              defaultValue={service.erp_code || ''}
+                              onBlur={(e) => {
+                                const val = e.target.value.trim();
+                                if (val !== (service.erp_code || '')) {
+                                  erpMutation.mutate({ serviceId: service.id, erpCode: val });
+                                }
+                              }}
+                            />
+                            {eventStatus === 'active' && !service.erp_code && (
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                </TooltipTrigger>
+                                <TooltipContent>Missing ERP Code</TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                      <TableCell className="flex justify-end gap-2">
+                        {locked ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span>
+                                <Button variant="ghost" size="icon" disabled>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>Cannot edit — items already sold</TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hover:bg-muted"
+                            onClick={() => setEditService(service)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteServiceId(service.id)}
+                          disabled={locked}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           ) : (
@@ -169,6 +261,7 @@ export function EventServicesTable({ eventId, currency }: EventServicesTableProp
         onOpenChange={setIsAddModalOpen}
         eventId={eventId}
         currency={currency}
+        eventStatus={eventStatus}
       />
 
       {editService && (
@@ -178,6 +271,7 @@ export function EventServicesTable({ eventId, currency }: EventServicesTableProp
           eventId={eventId}
           currency={currency}
           editService={editService}
+          eventStatus={eventStatus}
         />
       )}
 

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Calendar, Users, Settings, LogOut, Shield, MessageCircle, Phone } from 'lucide-react';
+import { LayoutDashboard, Calendar, Settings, LogOut, Shield, MessageCircle, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button';
 const navItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
   { title: 'Events', url: '/events', icon: Calendar },
-  { title: 'Attendees', url: '/attendees', icon: Users },
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
 

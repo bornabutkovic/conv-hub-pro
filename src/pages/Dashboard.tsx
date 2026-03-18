@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Users, Clock, Plus, Calendar, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -51,41 +51,62 @@ export default function Dashboard() {
   const { data: allEvents, isLoading: loadingEvents } = useQuery({
     queryKey: ['dashboard-events-selector', institutionUuid, userIsSuperAdmin],
     queryFn: async () => {
-      let query = supabase
-        .from('events')
-        .select(`
-          id, name, slug, start_date, status,
-          institutions:institution_uuid (name)
-        `)
-        .order('start_date', { ascending: false });
-      
-      if (!userIsSuperAdmin && institutionUuid) {
-        query = query.eq('institution_uuid', institutionUuid);
+      // super_admin sees ALL events
+      if (userIsSuperAdmin) {
+        const { data, error } = await supabase
+          .from('events')
+          .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+          .order('start_date', { ascending: false });
+        if (error) throw error;
+        return (data || []).map((event: any) => ({
+          ...event,
+          institution_name: event.institutions?.name || null,
+        }));
       }
-      
-      const { data, error } = await query;
+
+      // admin sees own institution + pending_approval
+      if (userIsAdmin && institutionUuid) {
+        const [instRes, pendingRes] = await Promise.all([
+          supabase.from('events')
+            .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+            .eq('institution_uuid', institutionUuid)
+            .order('start_date', { ascending: false }),
+          supabase.from('events')
+            .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+            .eq('status', 'pending_approval')
+            .order('start_date', { ascending: false }),
+        ]);
+        if (instRes.error) throw instRes.error;
+        if (pendingRes.error) throw pendingRes.error;
+        const all = [...(instRes.data || []), ...(pendingRes.data || [])];
+        const seen = new Set<string>();
+        return all.filter(e => { if (seen.has(e.id)) return false; seen.add(e.id); return true; })
+          .map((event: any) => ({ ...event, institution_name: event.institutions?.name || null }));
+      }
+
+      // event_organizer sees only their events via memberships
+      const { data: memberships, error: memErr } = await supabase
+        .from('event_memberships')
+        .select('event_id')
+        .eq('user_id', profile!.id);
+      if (memErr) throw memErr;
+      const eventIds = (memberships || []).map(m => m.event_id).filter(Boolean) as string[];
+      if (eventIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from('events')
+        .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+        .in('id', eventIds)
+        .order('start_date', { ascending: false });
       if (error) throw error;
-      
       return (data || []).map((event: any) => ({
         ...event,
         institution_name: event.institutions?.name || null,
       }));
     },
-    enabled: !!profile && (userIsSuperAdmin || !!institutionUuid),
+    enabled: !!profile,
   });
 
-  // Auto-select the most recent active event on load
-  useEffect(() => {
-    if (allEvents && allEvents.length > 0 && selectedEventId === 'all') {
-      const activeEvent = allEvents.find(e => e.status === 'active');
-      if (activeEvent) {
-        setSelectedEventId(activeEvent.id);
-      } else {
-        // Fall back to first event if no active ones
-        setSelectedEventId(allEvents[0].id);
-      }
-    }
-  }, [allEvents]);
+  // Default to "All Events" aggregate view — no auto-select
 
   const { data: stats, isLoading: loadingStats } = useDashboardStats(selectedEventId);
 
@@ -195,7 +216,7 @@ export default function Dashboard() {
             : `For ${selectedEvent?.name || 'this event'}`
           }
           loading={loadingStats}
-          href={selectedEventId === 'all' ? "/attendees" : `/attendees?event=${selectedEventId}`}
+          href={selectedEventId !== 'all' ? `/events/${selectedEventId}` : undefined}
         />
         <KPICard
           title="Pending Income"
@@ -204,7 +225,7 @@ export default function Dashboard() {
           description="Awaiting payment"
           loading={loadingStats}
           variant={(stats?.pendingIncome || 0) > 0 ? 'warning' : 'default'}
-          href={selectedEventId === 'all' ? "/attendees?status=pending" : `/attendees?status=pending&event=${selectedEventId}`}
+          href={selectedEventId !== 'all' ? `/events/${selectedEventId}` : undefined}
         />
       </div>
 

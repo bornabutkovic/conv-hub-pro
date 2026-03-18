@@ -27,9 +27,10 @@ interface AddServiceModalProps {
     price: number;
     capacity: number | null;
   } | null;
+  eventStatus?: string | null;
 }
 
-export function AddServiceModal({ open, onOpenChange, eventId, currency, editService }: AddServiceModalProps) {
+export function AddServiceModal({ open, onOpenChange, eventId, currency, editService, eventStatus }: AddServiceModalProps) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: editService?.name || '',
@@ -60,6 +61,18 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
           .from('event_services')
           .insert(serviceData);
         if (error) throw error;
+
+        // If adding to an active event, revert to pending_approval
+        if (eventStatus === 'active') {
+          await supabase
+            .from('events')
+            .update({ status: 'pending_approval' })
+            .eq('id', eventId);
+
+          queryClient.invalidateQueries({ queryKey: ['event', eventId] });
+          queryClient.invalidateQueries({ queryKey: ['events'] });
+          toast.info('Event status changed to "Pending Approval" — new items require admin review.');
+        }
       }
     },
     onSuccess: () => {

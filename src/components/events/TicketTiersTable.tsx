@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isAfter, isBefore, isWithinInterval } from 'date-fns';
-import { Plus, Pencil, Trash2, Ticket, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Ticket, Loader2, AlertTriangle, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -24,22 +25,32 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { Tables } from '@/integrations/supabase/types';
 import { TicketTierModal } from './TicketTierModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 
 type TicketTier = Tables<'ticket_tiers'>;
 
 interface TicketTiersTableProps {
   eventId: string;
   currency?: string;
+  eventStatus?: string | null;
 }
 
-export function TicketTiersTable({ eventId, currency = 'EUR' }: TicketTiersTableProps) {
+export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: TicketTiersTableProps) {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTier, setEditingTier] = useState<TicketTier | null>(null);
   const [deletingTierId, setDeletingTierId] = useState<string | null>(null);
+  const { profile } = useAuth();
+  const userIsAdmin = isAdmin(profile?.role);
 
   const { data: tiers, isLoading } = useQuery({
     queryKey: ['ticket-tiers', eventId],
@@ -54,6 +65,38 @@ export function TicketTiersTable({ eventId, currency = 'EUR' }: TicketTiersTable
       return data as TicketTier[];
     },
     enabled: !!eventId,
+  });
+
+  // Check which tiers have sales (exist in order_items)
+  const { data: tiersWithSales } = useQuery({
+    queryKey: ['ticket-tiers-sales', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('order_items')
+        .select('ticket_type_id')
+        .not('ticket_type_id', 'is', null);
+
+      if (error) throw error;
+      const tierIds = new Set((data || []).map(oi => oi.ticket_type_id).filter(Boolean));
+      return tierIds;
+    },
+    enabled: !!eventId,
+  });
+
+  // ERP code inline update
+  const erpMutation = useMutation({
+    mutationFn: async ({ tierId, erpCode }: { tierId: string; erpCode: string }) => {
+      const { error } = await supabase
+        .from('ticket_tiers')
+        .update({ erp_code: erpCode || null })
+        .eq('id', tierId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket-tiers', eventId] });
+      toast.success('ERP code updated');
+    },
+    onError: () => toast.error('Failed to update ERP code'),
   });
 
   const deleteMutation = useMutation({
@@ -75,6 +118,10 @@ export function TicketTiersTable({ eventId, currency = 'EUR' }: TicketTiersTable
       console.error(error);
     },
   });
+
+  const isTierLocked = (tierId: string) => {
+    return eventStatus === 'active' && tiersWithSales?.has(tierId);
+  };
 
   const getStatusBadge = (tier: TicketTier) => {
     const now = new Date();
@@ -111,7 +158,6 @@ export function TicketTiersTable({ eventId, currency = 'EUR' }: TicketTiersTable
     if (capacity === null || capacity === undefined) {
       return 'Unlimited';
     }
-    // TODO: Add sold count when we track ticket sales
     return `${capacity}`;
   };
 
@@ -178,49 +224,95 @@ export function TicketTiersTable({ eventId, currency = 'EUR' }: TicketTiersTable
                   <TableHead>Capacity</TableHead>
                   <TableHead>Sales Period</TableHead>
                   <TableHead>Status</TableHead>
+                  {userIsAdmin && <TableHead>ERP Code</TableHead>}
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tiers.map((tier) => (
-                  <TableRow key={tier.id}>
-                    <TableCell className="font-medium">
-                      <div>
-                        {tier.name}
-                        {tier.description && (
-                          <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                            {tier.description}
-                          </p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatPrice(Number(tier.price))}</TableCell>
-                    <TableCell>{formatCapacity(tier.capacity)}</TableCell>
-                    <TableCell className="text-sm">
-                      {formatSalesPeriod(tier.sales_start, tier.sales_end)}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(tier)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(tier)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setDeletingTierId(tier.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {tiers.map((tier) => {
+                  const locked = isTierLocked(tier.id);
+                  return (
+                    <TableRow key={tier.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+                          <div>
+                            {tier.name}
+                            {tier.description && (
+                              <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                {tier.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatPrice(Number(tier.price))}</TableCell>
+                      <TableCell>{formatCapacity(tier.capacity)}</TableCell>
+                      <TableCell className="text-sm">
+                        {formatSalesPeriod(tier.sales_start, tier.sales_end)}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(tier)}</TableCell>
+                      {userIsAdmin && (
+                        <TableCell>
+                          <div className="flex items-center gap-1.5">
+                            <Input
+                              className="h-8 w-28 text-xs font-mono"
+                              placeholder="ERP code"
+                              defaultValue={tier.erp_code || ''}
+                              onBlur={(e) => {
+                                const val = e.target.value.trim();
+                                if (val !== (tier.erp_code || '')) {
+                                  erpMutation.mutate({ tierId: tier.id, erpCode: val });
+                                }
+                              }}
+                            />
+                            {eventStatus === 'active' && !tier.erp_code && (
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                </TooltipTrigger>
+                                <TooltipContent>Missing ERP Code</TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {locked ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  <Button variant="ghost" size="icon" disabled>
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>Cannot edit — tickets already sold</TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(tier)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeletingTierId(tier.id)}
+                            disabled={locked}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -232,6 +324,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR' }: TicketTiersTable
         onOpenChange={handleModalClose}
         eventId={eventId}
         tier={editingTier}
+        eventStatus={eventStatus}
       />
 
       <AlertDialog open={!!deletingTierId} onOpenChange={() => setDeletingTierId(null)}>

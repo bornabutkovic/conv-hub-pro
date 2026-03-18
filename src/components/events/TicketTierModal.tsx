@@ -60,9 +60,10 @@ interface TicketTierModalProps {
   onOpenChange: (open: boolean) => void;
   eventId: string;
   tier?: TicketTier | null;
+  eventStatus?: string | null;
 }
 
-export function TicketTierModal({ open, onOpenChange, eventId, tier }: TicketTierModalProps) {
+export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus }: TicketTierModalProps) {
   const queryClient = useQueryClient();
   const isEditing = !!tier;
 
@@ -125,6 +126,18 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier }: TicketTie
           .insert(payload);
 
         if (error) throw error;
+
+        // If adding to an active/approved event, revert to pending_approval
+        if (eventStatus === 'active') {
+          await supabase
+            .from('events')
+            .update({ status: 'pending_approval' })
+            .eq('id', eventId);
+          
+          queryClient.invalidateQueries({ queryKey: ['event', eventId] });
+          queryClient.invalidateQueries({ queryKey: ['events'] });
+          toast.info('Event status changed to "Pending Approval" — new items require admin review.');
+        }
       }
     },
     onSuccess: () => {
