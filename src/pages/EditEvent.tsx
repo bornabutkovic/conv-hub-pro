@@ -320,6 +320,7 @@ export default function EditEvent() {
           name: data.name,
           short_name: data.short_name || null,
           event_type: (data as any).event_type,
+          description: data.description || null,
           website_url: data.website_url || null,
           venue_name: data.venue_name,
           location_address: (data as any).location_address || null,

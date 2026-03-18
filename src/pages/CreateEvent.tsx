@@ -380,6 +380,31 @@ export default function CreateEvent() {
                   />
                 </div>
 
+                {/* About / Description */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">About the Event / O eventu</h3>
+                    <p className="text-sm text-muted-foreground">Describe your event for attendees</p>
+                  </div>
+                  <Separator />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <RichTextEditor
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            placeholder="Tell attendees about this event..."
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 {/* Section 2: Location */}
                 <div className="space-y-4">
                   <div>
