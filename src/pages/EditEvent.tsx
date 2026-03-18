@@ -695,7 +695,7 @@ export default function EditEvent() {
                         <FormItem>
                           <FormLabel>End Time *</FormLabel>
                           <FormControl>
-                            <Input type="time" {...field} />
+                            <Input type="time" {...field} disabled={isLockedEvent} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
