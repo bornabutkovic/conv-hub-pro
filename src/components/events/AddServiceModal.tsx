@@ -34,6 +34,8 @@ interface AddServiceModalProps {
 
 export function AddServiceModal({ open, onOpenChange, eventId, currency, editService, eventStatus }: AddServiceModalProps) {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const userIsAdmin = isAdmin(profile?.role);
   const [formData, setFormData] = useState({
     name: editService?.name || '',
     description: editService?.description || '',
