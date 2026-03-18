@@ -23,9 +23,9 @@ interface ActivityFeedProps {
 export function ActivityFeed({ activities, loading }: ActivityFeedProps) {
   if (loading) {
     return (
-      <Card>
+      <Card className="shadow-brand">
         <CardHeader>
-          <CardTitle className="text-lg">Recent Activity</CardTitle>
+          <CardTitle className="text-lg font-heading">Recent Activity</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {[1, 2, 3, 4, 5].map(i => (
@@ -43,13 +43,13 @@ export function ActivityFeed({ activities, loading }: ActivityFeedProps) {
   }
 
   return (
-    <Card>
+    <Card className="shadow-brand glow-hover">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
-          <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+          <CardTitle className="text-lg font-heading font-semibold">Recent Activity</CardTitle>
           <p className="text-sm text-muted-foreground">Latest registrations and purchases</p>
         </div>
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" asChild className="rounded-xl">
           <Link to="/attendees?status=pending" className="gap-2">
             Review Pending
             <ArrowRight className="h-4 w-4" />
@@ -66,12 +66,12 @@ export function ActivityFeed({ activities, loading }: ActivityFeedProps) {
             {activities.map(activity => (
               <div 
                 key={activity.id} 
-                className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors"
               >
-                <div className={`p-2 rounded-full ${
+                <div className={`p-2 rounded-xl ${
                   activity.type === 'registration' 
-                    ? 'bg-primary/10 text-primary' 
-                    : 'bg-green-500/10 text-green-600'
+                    ? 'bg-brand-gradient text-white' 
+                    : 'bg-emerald-500/10 text-emerald-600'
                 }`}>
                   {activity.type === 'registration' 
                     ? <UserPlus className="h-4 w-4" />

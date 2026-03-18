@@ -51,7 +51,6 @@ export default function Dashboard() {
   const { data: allEvents, isLoading: loadingEvents } = useQuery({
     queryKey: ['dashboard-events-selector', institutionUuid, userIsSuperAdmin],
     queryFn: async () => {
-      // super_admin sees ALL events
       if (userIsSuperAdmin) {
         const { data, error } = await supabase
           .from('events')
@@ -64,7 +63,6 @@ export default function Dashboard() {
         }));
       }
 
-      // admin sees own institution + pending_approval
       if (userIsAdmin && institutionUuid) {
         const [instRes, pendingRes] = await Promise.all([
           supabase.from('events')
@@ -84,7 +82,6 @@ export default function Dashboard() {
           .map((event: any) => ({ ...event, institution_name: event.institutions?.name || null }));
       }
 
-      // event_organizer sees only their events via memberships
       const { data: memberships, error: memErr } = await supabase
         .from('event_memberships')
         .select('event_id')
@@ -106,8 +103,6 @@ export default function Dashboard() {
     enabled: !!profile,
   });
 
-  // Default to "All Events" aggregate view — no auto-select
-
   const { data: stats, isLoading: loadingStats } = useDashboardStats(selectedEventId);
 
   const formatCurrency = (amount: number) => {
@@ -122,13 +117,18 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Event Selector */}
+      {/* Header */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">
-              Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
+            <h1 className="text-3xl font-heading font-bold tracking-tight">
+              Welcome back
+              {profile?.first_name ? (
+                <>, <span className="text-brand-gradient">{profile.first_name}</span>!</>
+              ) : '!'}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Here's what's happening with your events today.
             </p>
             {!userIsSuperAdmin && institutionName && (
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
@@ -137,7 +137,7 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-          <Button asChild className="gap-2 rounded-xl">
+          <Button asChild className="gap-2 rounded-xl bg-brand-gradient hover:opacity-90 transition-opacity text-white border-0 shadow-brand">
             <Link to="/events">
               <Plus className="h-4 w-4" />
               Create Event
@@ -145,8 +145,8 @@ export default function Dashboard() {
           </Button>
         </div>
 
-        {/* Event Selector */}
-        <div className="flex items-center gap-3 p-4 rounded-lg border bg-card">
+        {/* Event Selector - Glassmorphism */}
+        <div className="flex items-center gap-3 p-4 rounded-xl glass shadow-brand">
           <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
             Viewing Event:
           </span>
@@ -154,7 +154,7 @@ export default function Dashboard() {
             <Skeleton className="h-10 w-64" />
           ) : (
             <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-              <SelectTrigger className="w-full max-w-md">
+              <SelectTrigger className="w-full max-w-md bg-background/50 backdrop-blur-sm border-border/50">
                 <SelectValue placeholder="Select an event" />
               </SelectTrigger>
               <SelectContent>
@@ -182,7 +182,7 @@ export default function Dashboard() {
           {selectedEvent && (
             <Link 
               to={`/events/${selectedEvent.id}`}
-              className="text-sm text-primary hover:underline whitespace-nowrap"
+              className="text-sm text-primary hover:underline whitespace-nowrap font-medium"
             >
               View Details →
             </Link>
@@ -190,7 +190,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Financial Overview Section */}
+      {/* Financial Overview */}
       <FinancialOverview
         revenue={stats?.revenue || {
           ticketRevenue: 0,
@@ -205,7 +205,7 @@ export default function Dashboard() {
         selectedEventId={selectedEventId}
       />
 
-      {/* KPI Cards Row - Now 2 cards spanning wider */}
+      {/* KPI Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         <KPICard
           title="Total Attendees"
@@ -229,7 +229,7 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Charts Row */}
+      {/* Charts */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         <RegistrationChart 
           data={stats?.registrationTimeline || []} 
@@ -242,17 +242,16 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Bottom Section: Activity Feed + Recent Events */}
+      {/* Activity + Recent Events */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         <ActivityFeed 
           activities={stats?.recentActivity || []} 
           loading={loadingStats} 
         />
 
-        {/* Recent Events */}
-        <Card>
+        <Card className="shadow-brand glow-hover">
           <div className="p-6 pb-2">
-            <h3 className="text-lg font-semibold">Recent Events</h3>
+            <h3 className="text-lg font-heading font-semibold">Recent Events</h3>
             <p className="text-sm text-muted-foreground">Your latest created events</p>
           </div>
           <CardContent>
@@ -269,7 +268,7 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {allEvents.slice(0, 3).map((event) => (
                   <Link key={event.id} to={`/events/${event.id}`}>
-                    <div className="p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer">
+                    <div className="p-3 rounded-lg border border-border/50 hover:bg-muted/50 hover:shadow-sm transition-all cursor-pointer">
                       <div className="flex items-center justify-between">
                         <h4 className="font-medium truncate">{event.name}</h4>
                         <Badge variant={event.status === 'active' ? 'default' : 'secondary'}>
@@ -295,7 +294,7 @@ export default function Dashboard() {
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <Calendar className="h-10 w-10 text-muted-foreground/50 mb-3" />
                 <p className="text-sm text-muted-foreground mb-3">No events yet</p>
-                <Button asChild size="sm" variant="outline">
+                <Button asChild size="sm" className="bg-brand-gradient text-white border-0">
                   <Link to="/events">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Event

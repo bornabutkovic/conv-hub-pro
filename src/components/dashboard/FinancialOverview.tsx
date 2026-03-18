@@ -4,7 +4,7 @@ import { Ticket, Gift, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { RevenueBreakdown } from '@/hooks/useDashboardStats';
 import { cn } from '@/lib/utils';
 
@@ -18,8 +18,8 @@ interface FinancialOverviewProps {
 type MetricType = 'total' | 'tickets' | 'addons';
 
 const COLORS = {
-  paid: 'hsl(142.1, 76.2%, 36.3%)', // green
-  pending: 'hsl(263, 70%, 58%)', // purple
+  paid: 'hsl(187, 94%, 43%)',   // brand cyan
+  pending: 'hsl(263, 70%, 58%)', // brand purple
 };
 
 export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEventId }: FinancialOverviewProps) {
@@ -35,7 +35,6 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
     }).format(amount);
   };
 
-  // Get chart data based on selected metric
   const getChartData = () => {
     let paid = 0;
     let pending = 0;
@@ -79,9 +78,9 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
       const data = payload[0].payload;
       const percentage = chartInfo.total > 0 ? ((data.value / chartInfo.total) * 100).toFixed(1) : 0;
       return (
-        <div className="bg-background border rounded-lg shadow-lg p-3">
+        <div className="bg-card border border-border/50 rounded-xl shadow-brand p-3 backdrop-blur-sm">
           <p className="font-medium text-sm">{data.name}</p>
-          <p className="text-lg font-bold">{formatCurrency(data.value)}</p>
+          <p className="text-lg font-heading font-bold">{formatCurrency(data.value)}</p>
           <p className="text-sm text-muted-foreground">{percentage}% of {chartInfo.label.toLowerCase()}</p>
         </div>
       );
@@ -108,7 +107,7 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
 
   if (loading) {
     return (
-      <Card>
+      <Card className="shadow-brand">
         <CardHeader>
           <Skeleton className="h-6 w-40" />
         </CardHeader>
@@ -127,34 +126,38 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
   }
 
   return (
-    <Card>
+    <Card className="shadow-brand glow-hover relative overflow-hidden">
+      {/* Subtle watermark C */}
+      <div className="absolute -right-16 -top-16 text-[200px] font-heading font-bold text-primary/[0.03] pointer-events-none select-none leading-none">
+        C
+      </div>
+
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 font-heading">
+          <div className="p-1.5 rounded-lg bg-brand-gradient text-white">
+            <TrendingUp className="h-4 w-4" />
+          </div>
           {isSuperAdmin ? 'Platform Financial Overview' : 'Financial Overview'}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-          {/* Revenue Breakdown Cards */}
+          {/* Revenue Cards */}
           <div className="space-y-4">
             {/* Ticket Revenue */}
             <div 
-              className={cn(
-                "p-4 rounded-lg border bg-card transition-all",
-                "cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
-              )}
+              className="p-4 rounded-xl border border-border/50 bg-card shadow-sm transition-all cursor-pointer hover:scale-[1.02] hover:shadow-brand active:scale-[0.98]"
               onClick={() => navigate(`/attendees?status=approved${filterParam}`)}
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-primary/10">
-                  <Ticket className="h-5 w-5 text-primary" />
+                <div className="p-2 rounded-xl bg-brand-gradient text-white">
+                  <Ticket className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Ticket Revenue</p>
-                  <p className="text-2xl font-bold">{formatCurrency(revenue.ticketRevenue)}</p>
+                  <p className="text-2xl font-heading font-bold">{formatCurrency(revenue.ticketRevenue)}</p>
                   {revenue.ticketPending > 0 && (
-                    <p className="text-sm text-warning">
+                    <p className="text-sm text-amber-600">
                       Pending: {formatCurrency(revenue.ticketPending)}
                     </p>
                   )}
@@ -164,21 +167,18 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
 
             {/* Add-on Revenue */}
             <div 
-              className={cn(
-                "p-4 rounded-lg border bg-card transition-all",
-                "cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
-              )}
+              className="p-4 rounded-xl border border-border/50 bg-card shadow-sm transition-all cursor-pointer hover:scale-[1.02] hover:shadow-brand active:scale-[0.98]"
               onClick={() => navigate(`/attendees?status=approved${filterParam}`)}
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-accent">
-                  <Gift className="h-5 w-5 text-accent-foreground" />
+                <div className="p-2 rounded-xl bg-brand-gradient text-white">
+                  <Gift className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Add-on Revenue</p>
-                  <p className="text-2xl font-bold">{formatCurrency(revenue.addonRevenue)}</p>
+                  <p className="text-2xl font-heading font-bold">{formatCurrency(revenue.addonRevenue)}</p>
                   {revenue.addonPending > 0 && (
-                    <p className="text-sm text-warning">
+                    <p className="text-sm text-amber-600">
                       Pending: {formatCurrency(revenue.addonPending)}
                     </p>
                   )}
@@ -187,14 +187,14 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
             </div>
 
             {/* Total Revenue */}
-            <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-primary/20">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+            <div className="p-4 rounded-xl border-2 border-primary/30 bg-primary/5 relative overflow-hidden">
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="p-2 rounded-xl bg-brand-gradient text-white">
+                  <TrendingUp className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Total Paid Revenue</p>
-                  <p className="text-3xl font-bold text-primary">{formatCurrency(revenue.totalRevenue)}</p>
+                  <p className="text-3xl font-heading font-bold text-brand-gradient">{formatCurrency(revenue.totalRevenue)}</p>
                   <div className="mt-2 space-y-0.5">
                     <p className="text-sm text-emerald-600">
                       ✅ Confirmed: {formatCurrency(revenue.totalRevenue)}
@@ -210,9 +210,8 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
             </div>
           </div>
 
-          {/* Donut Chart with Metric Selector */}
+          {/* Donut Chart */}
           <div className="flex flex-col">
-            {/* Metric Selector */}
             <div className="flex flex-col items-center mb-4">
               <h4 className="text-sm font-medium text-muted-foreground mb-3">
                 Revenue Breakdown
@@ -230,7 +229,6 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
               </Tabs>
             </div>
 
-            {/* Chart */}
             <div className="flex-1 flex flex-col items-center justify-center">
               {chartInfo.data.length > 0 ? (
                 <>
@@ -253,11 +251,10 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
                         <Tooltip content={<CustomTooltip />} />
                       </PieChart>
                     </ResponsiveContainer>
-                    {/* Center Label */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="text-center">
                         <p className="text-xs text-muted-foreground">{chartInfo.label}</p>
-                        <p className="text-lg font-bold">{formatCurrency(chartInfo.total)}</p>
+                        <p className="text-lg font-heading font-bold">{formatCurrency(chartInfo.total)}</p>
                       </div>
                     </div>
                   </div>
