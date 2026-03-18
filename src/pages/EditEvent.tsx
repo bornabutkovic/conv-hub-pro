@@ -465,6 +465,7 @@ export default function EditEvent() {
                               <button
                                 key={option.value}
                                 type="button"
+                                disabled={isLockedEvent}
                                 onClick={() => field.onChange(option.value)}
                                 className={cn(
                                   'flex flex-col items-center gap-1 rounded-lg border-2 p-3 text-sm font-medium transition-colors',
