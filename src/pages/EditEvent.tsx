@@ -41,6 +41,7 @@ import { isAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -52,6 +53,7 @@ const editEventSchema = z.object({
   name: z.string().min(1, 'Event name is required').max(100),
   short_name: z.string().max(50).optional(),
   event_type: z.enum(['face2face', 'virtual', 'hybrid'], { required_error: 'Event type is required' }),
+  description: z.string().optional(),
   website_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   venue_name: z.string().min(1, 'Venue is required').max(200),
   location_address: z.string().max(300).optional(),
@@ -123,6 +125,7 @@ export default function EditEvent() {
       name: '',
       short_name: '',
       event_type: 'face2face',
+      description: '',
       website_url: '',
       venue_name: '',
       location_address: '',
@@ -161,6 +164,7 @@ export default function EditEvent() {
         name: event.name || '',
         short_name: event.short_name || '',
         event_type: ((event as any).event_type as 'face2face' | 'virtual' | 'hybrid') || 'face2face',
+        description: event.description || '',
         website_url: event.website_url || '',
         venue_name: event.venue_name || '',
         location_address: (event as any).location_address || '',
@@ -316,6 +320,7 @@ export default function EditEvent() {
           name: data.name,
           short_name: data.short_name || null,
           event_type: (data as any).event_type,
+          description: data.description || null,
           website_url: data.website_url || null,
           venue_name: data.venue_name,
           location_address: (data as any).location_address || null,
@@ -479,6 +484,31 @@ export default function EditEvent() {
                               </button>
                             ))}
                           </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* About / Description */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">About the Event / O eventu</h3>
+                    <p className="text-sm text-muted-foreground">Describe your event for attendees</p>
+                  </div>
+                  <Separator />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <RichTextEditor
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            placeholder="Tell attendees about this event..."
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
