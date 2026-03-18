@@ -28,7 +28,8 @@ import { useDashboardStats } from '@/hooks/useDashboardStats';
 export default function Dashboard() {
   const { profile } = useAuth();
   const institutionUuid = profile?.institution_uuid;
-  const isSuperAdmin = isAdmin(profile?.role);
+  const userIsSuperAdmin = isSuperAdmin(profile?.role);
+  const userIsAdmin = isAdmin(profile?.role);
   const [selectedEventId, setSelectedEventId] = useState<string>('all');
 
   // Fetch institution name for organizers
