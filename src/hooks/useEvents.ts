@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin } from '@/lib/roles';
+import { isSuperAdmin, isAdmin } from '@/lib/roles';
 
 export type EventStatus = 'all' | 'draft' | 'pending_approval' | 'active' | 'completed';
 
@@ -25,30 +25,15 @@ export function useEvents(statusFilter: EventStatus = 'all') {
   const { profile, user } = useAuth();
 
   return useQuery({
-    queryKey: ['events', user?.id, profile?.role, statusFilter],
+    queryKey: ['events', user?.id, profile?.role, profile?.institution_uuid, statusFilter],
     queryFn: async (): Promise<Event[]> => {
-      // For event_organizer: only show events they have membership for
-      if (!isAdmin(profile?.role)) {
-        const { data: memberships, error: memErr } = await supabase
-          .from('event_memberships')
-          .select('event_id')
-          .eq('user_id', user!.id);
+      const role = profile?.role;
 
-        if (memErr) {
-          console.error('[useEvents] Membership fetch error:', memErr);
-          throw memErr;
-        }
-
-        const eventIds = (memberships || [])
-          .map((m) => m.event_id)
-          .filter(Boolean) as string[];
-
-        if (eventIds.length === 0) return [];
-
+      // super_admin: see ALL events
+      if (isSuperAdmin(role)) {
         let query = supabase
           .from('events')
           .select(`*, institutions:institution_uuid (name)`)
-          .in('id', eventIds)
           .order('start_date', { ascending: false });
 
         if (statusFilter !== 'all') {
@@ -64,10 +49,77 @@ export function useEvents(statusFilter: EventStatus = 'all') {
         })) as Event[];
       }
 
-      // Admin: see all events
+      // admin (Penta Admin): see their institution's events + ALL pending_approval events
+      if (isAdmin(role)) {
+        // Fetch institution events
+        const institutionUuid = profile?.institution_uuid;
+        let institutionEvents: any[] = [];
+
+        if (institutionUuid) {
+          let q = supabase
+            .from('events')
+            .select(`*, institutions:institution_uuid (name)`)
+            .eq('institution_uuid', institutionUuid)
+            .order('start_date', { ascending: false });
+
+          if (statusFilter !== 'all') {
+            q = q.eq('status', statusFilter);
+          }
+
+          const { data, error } = await q;
+          if (error) throw error;
+          institutionEvents = data || [];
+        }
+
+        // Also fetch ALL pending_approval events (from any institution)
+        let pendingEvents: any[] = [];
+        if (statusFilter === 'all' || statusFilter === 'pending_approval') {
+          const { data, error } = await supabase
+            .from('events')
+            .select(`*, institutions:institution_uuid (name)`)
+            .eq('status', 'pending_approval')
+            .order('start_date', { ascending: false });
+
+          if (error) throw error;
+          pendingEvents = data || [];
+        }
+
+        // Merge and deduplicate
+        const allEvents = [...institutionEvents, ...pendingEvents];
+        const seen = new Set<string>();
+        const unique = allEvents.filter(e => {
+          if (seen.has(e.id)) return false;
+          seen.add(e.id);
+          return true;
+        });
+
+        return unique.map((event: any) => ({
+          ...event,
+          institution_name: event.institutions?.name || null,
+        })) as Event[];
+      }
+
+      // event_organizer: only show events they have membership for
+      const { data: memberships, error: memErr } = await supabase
+        .from('event_memberships')
+        .select('event_id')
+        .eq('user_id', user!.id);
+
+      if (memErr) {
+        console.error('[useEvents] Membership fetch error:', memErr);
+        throw memErr;
+      }
+
+      const eventIds = (memberships || [])
+        .map((m) => m.event_id)
+        .filter(Boolean) as string[];
+
+      if (eventIds.length === 0) return [];
+
       let query = supabase
         .from('events')
         .select(`*, institutions:institution_uuid (name)`)
+        .in('id', eventIds)
         .order('start_date', { ascending: false });
 
       if (statusFilter !== 'all') {
