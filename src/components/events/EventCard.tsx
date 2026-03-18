@@ -22,7 +22,7 @@ interface EventCardProps {
 export function EventCard({ event }: EventCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const isSuperAdmin = isAdmin(profile?.role);
+  const userIsAdminRole = isAdmin(profile?.role);
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
@@ -88,15 +88,20 @@ export function EventCard({ event }: EventCardProps) {
                 <span className="text-sm font-mono">{event.event_id}</span>
               </div>
             )}
-            {isSuperAdmin && event.institution_name && (
+            {userIsAdminRole && event.institution_name && (
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Building2 className="h-3.5 w-3.5" />
                 <span className="text-sm truncate">{event.institution_name}</span>
               </div>
             )}
           </div>
-          <div className="shrink-0 ml-2">
+          <div className="shrink-0 ml-2 flex flex-col items-end gap-1">
             {getStatusBadge(event.status)}
+            {userIsAdminRole && event.status === 'pending_approval' && (
+              <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                Needs Review
+              </Badge>
+            )}
           </div>
         </div>
       </CardHeader>

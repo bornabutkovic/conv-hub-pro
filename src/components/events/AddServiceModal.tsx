@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -32,6 +34,8 @@ interface AddServiceModalProps {
 
 export function AddServiceModal({ open, onOpenChange, eventId, currency, editService, eventStatus }: AddServiceModalProps) {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const userIsAdmin = isAdmin(profile?.role);
   const [formData, setFormData] = useState({
     name: editService?.name || '',
     description: editService?.description || '',
@@ -62,8 +66,8 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
           .insert(serviceData);
         if (error) throw error;
 
-        // If adding to an active event, revert to pending_approval
-        if (eventStatus === 'active') {
+        // If adding to an active event and user is NOT admin, revert to pending_approval
+        if (eventStatus === 'active' && !userIsAdmin) {
           await supabase
             .from('events')
             .update({ status: 'pending_approval' })
@@ -71,7 +75,7 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
 
           queryClient.invalidateQueries({ queryKey: ['event', eventId] });
           queryClient.invalidateQueries({ queryKey: ['events'] });
-          toast.info('Event status changed to "Pending Approval" — new items require admin review.');
+          toast.info('Your new service has been submitted for review. The event will go back on sale once approved by the admin.');
         }
       }
     },

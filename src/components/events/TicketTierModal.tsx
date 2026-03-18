@@ -6,6 +6,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2, Lock } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import {
   Dialog,
   DialogContent,
@@ -66,6 +68,8 @@ interface TicketTierModalProps {
 
 export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus, isLocked = false }: TicketTierModalProps) {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const userIsAdmin = isAdmin(profile?.role);
   const isEditing = !!tier;
 
   const form = useForm<TicketTierFormData>({
@@ -128,8 +132,8 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
 
         if (error) throw error;
 
-        // If adding to an active/approved event, revert to pending_approval
-        if (eventStatus === 'active') {
+        // If adding to an active event and user is NOT admin, revert to pending_approval
+        if (eventStatus === 'active' && !userIsAdmin) {
           await supabase
             .from('events')
             .update({ status: 'pending_approval' })
@@ -137,7 +141,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
           
           queryClient.invalidateQueries({ queryKey: ['event', eventId] });
           queryClient.invalidateQueries({ queryKey: ['events'] });
-          toast.info('Event status changed to "Pending Approval" — new items require admin review.');
+          toast.info('Your new ticket type has been submitted for review. The event will go back on sale once approved by the admin.');
         }
       }
     },
