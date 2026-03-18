@@ -74,18 +74,7 @@ export default function Dashboard() {
     enabled: !!profile && (userIsSuperAdmin || !!institutionUuid),
   });
 
-  // Auto-select the most recent active event on load
-  useEffect(() => {
-    if (allEvents && allEvents.length > 0 && selectedEventId === 'all') {
-      const activeEvent = allEvents.find(e => e.status === 'active');
-      if (activeEvent) {
-        setSelectedEventId(activeEvent.id);
-      } else {
-        // Fall back to first event if no active ones
-        setSelectedEventId(allEvents[0].id);
-      }
-    }
-  }, [allEvents]);
+  // Default to "All Events" aggregate view — no auto-select
 
   const { data: stats, isLoading: loadingStats } = useDashboardStats(selectedEventId);
 
