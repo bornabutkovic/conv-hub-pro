@@ -417,8 +417,10 @@ export type Database = {
           branding_primary_color: string | null
           branding_secondary_color: string | null
           branding_text_color: string | null
+          cancellation_policy: string | null
           created_at: string | null
           currency: string | null
+          description: string | null
           early_bird_deadline: string | null
           end_date: string | null
           event_id: string | null
@@ -443,6 +445,7 @@ export type Database = {
           support_phone: string | null
           supported_languages: string[] | null
           tax_location: string | null
+          terms_url: string | null
           vat_rate: number | null
           venue_name: string | null
           website_url: string | null
@@ -461,8 +464,10 @@ export type Database = {
           branding_primary_color?: string | null
           branding_secondary_color?: string | null
           branding_text_color?: string | null
+          cancellation_policy?: string | null
           created_at?: string | null
           currency?: string | null
+          description?: string | null
           early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
@@ -487,6 +492,7 @@ export type Database = {
           support_phone?: string | null
           supported_languages?: string[] | null
           tax_location?: string | null
+          terms_url?: string | null
           vat_rate?: number | null
           venue_name?: string | null
           website_url?: string | null
@@ -505,8 +511,10 @@ export type Database = {
           branding_primary_color?: string | null
           branding_secondary_color?: string | null
           branding_text_color?: string | null
+          cancellation_policy?: string | null
           created_at?: string | null
           currency?: string | null
+          description?: string | null
           early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
@@ -531,6 +539,7 @@ export type Database = {
           support_phone?: string | null
           supported_languages?: string[] | null
           tax_location?: string | null
+          terms_url?: string | null
           vat_rate?: number | null
           venue_name?: string | null
           website_url?: string | null
@@ -812,6 +821,9 @@ export type Database = {
           pdf_url: string | null
           po_number: string | null
           status: Database["public"]["Enums"]["payment_status"] | null
+          terms_accepted: boolean | null
+          terms_accepted_at: string | null
+          terms_ip: string | null
           total_amount: number | null
           vat_bus_posting_group: string | null
         }
@@ -843,6 +855,9 @@ export type Database = {
           pdf_url?: string | null
           po_number?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
+          terms_accepted?: boolean | null
+          terms_accepted_at?: string | null
+          terms_ip?: string | null
           total_amount?: number | null
           vat_bus_posting_group?: string | null
         }
@@ -874,6 +889,9 @@ export type Database = {
           pdf_url?: string | null
           po_number?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
+          terms_accepted?: boolean | null
+          terms_accepted_at?: string | null
+          terms_ip?: string | null
           total_amount?: number | null
           vat_bus_posting_group?: string | null
         }
