@@ -500,7 +500,7 @@ export default function EditEvent() {
                       <FormItem>
                         <FormLabel>Venue *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Hotel Westin" {...field} />
+                          <Input placeholder="Hotel Westin" {...field} disabled={isLockedEvent} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
