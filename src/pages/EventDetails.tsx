@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EditEventModal } from '@/components/events/EditEventModal';
 import { EventAttendeesTable } from '@/components/events/EventAttendeesTable';
 import { EventServicesTable } from '@/components/events/EventServicesTable';
 import { TicketTiersTable } from '@/components/events/TicketTiersTable';
@@ -19,7 +18,6 @@ import { toast } from 'sonner';
 export default function EventDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
@@ -221,8 +219,8 @@ export default function EventDetails() {
             </>
           )}
 
-          {/* Edit — always available for admins and organizers */}
-          <Button onClick={() => setIsEditModalOpen(true)}>
+          {/* Edit — navigates to edit page */}
+          <Button onClick={() => navigate(`/events/${event.id}/edit`)}>
             <Edit className="h-4 w-4 mr-2" />
             Edit Event
           </Button>
@@ -296,14 +294,6 @@ export default function EventDetails() {
           />
         </TabsContent>
       </Tabs>
-
-      {/* Edit Modal */}
-      <EditEventModal
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        event={event}
-        onEventUpdated={refetchEvent}
-      />
     </div>
   );
 }

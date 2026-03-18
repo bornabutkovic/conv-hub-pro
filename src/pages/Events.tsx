@@ -1,26 +1,18 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EventCard } from '@/components/events/EventCard';
-import { CreateEventModal } from '@/components/events/CreateEventModal';
 import { useEvents, EventStatus } from '@/hooks/useEvents';
-import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin } from '@/lib/roles';
 
 export default function Events() {
   const [statusFilter, setStatusFilter] = useState<EventStatus>('all');
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { profile } = useAuth();
-  const userIsAdmin = isAdmin(profile?.role);
+  const navigate = useNavigate();
 
-  const { data: events, isLoading, refetch } = useEvents(statusFilter);
-
-  const handleEventCreated = () => {
-    refetch();
-  };
+  const { data: events, isLoading } = useEvents(statusFilter);
 
   return (
     <div className="space-y-6">
@@ -31,7 +23,7 @@ export default function Events() {
             Manage all your events in one place
           </p>
         </div>
-        <Button className="gap-2" onClick={() => setIsCreateModalOpen(true)}>
+        <Button className="gap-2" onClick={() => navigate('/events/new')}>
           <Plus className="h-4 w-4" />
           Create Event
         </Button>
@@ -85,7 +77,7 @@ export default function Events() {
             </p>
             <Button
               className="gap-2"
-              onClick={() => setIsCreateModalOpen(true)}
+              onClick={() => navigate('/events/new')}
             >
               <Plus className="h-4 w-4" />
               Create Event
@@ -93,12 +85,6 @@ export default function Events() {
           </CardContent>
         </Card>
       )}
-
-      <CreateEventModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-        onEventCreated={handleEventCreated}
-      />
     </div>
   );
 }

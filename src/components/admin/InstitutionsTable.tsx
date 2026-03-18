@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -9,9 +10,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Building2, Edit } from 'lucide-react';
 
 export function InstitutionsTable() {
+  const navigate = useNavigate();
+
   const { data: institutions, isLoading } = useQuery({
     queryKey: ['admin-institutions'],
     queryFn: async () => {
@@ -61,6 +65,7 @@ export function InstitutionsTable() {
               <TableHead>City</TableHead>
               <TableHead>Country</TableHead>
               <TableHead>Invoice Email</TableHead>
+              <TableHead className="w-[80px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -72,6 +77,15 @@ export function InstitutionsTable() {
                 <TableCell>{institution.postal_code} {institution.city}</TableCell>
                 <TableCell>{institution.country}</TableCell>
                 <TableCell>{institution.invoice_email}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate(`/admin/institutions/${institution.id}/edit`)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
