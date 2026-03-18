@@ -180,7 +180,7 @@ export default function Dashboard() {
           totalPending: 0,
         }}
         loading={loadingStats}
-        isSuperAdmin={isSuperAdmin}
+        isSuperAdmin={userIsSuperAdmin}
         selectedEventId={selectedEventId}
       />
 
