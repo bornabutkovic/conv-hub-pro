@@ -137,10 +137,16 @@ export default function EventDetails() {
   }
 
   const totalAttendees = attendees?.length || 0;
-  const totalRevenue = (memberships || []).reduce(
-    (sum, m) => sum + Number(m.price_paid || 0), 
-    0
-  );
+  const paidAttendees = (attendees || []).filter(a => a.payment_status === 'paid');
+  const pendingAttendees = (attendees || []).filter(a => a.payment_status === 'pending');
+  const totalRevenue = paidAttendees.reduce((sum, a) => sum + Number(a.price_paid || 0), 0);
+  const pendingRevenue = pendingAttendees.reduce((sum, a) => sum + Number(a.price_paid || 0), 0);
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: event.currency || 'EUR',
+    }).format(amount);
 
   return (
     <div className="space-y-6">
@@ -179,7 +185,6 @@ export default function EventDetails() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* Submit for Review — only for organizers with draft events */}
           {!userIsAdmin && event.status === 'draft' && (
             <Button 
               variant="outline" 
@@ -190,8 +195,6 @@ export default function EventDetails() {
               Submit for Review
             </Button>
           )}
-
-          {/* Admin approval actions */}
           {userIsAdmin && event.status === 'pending_approval' && (
             <>
               <Button 
@@ -210,8 +213,6 @@ export default function EventDetails() {
               </Button>
             </>
           )}
-
-          {/* Edit — navigates to edit page */}
           <Button onClick={() => navigate(`/events/${event.id}/edit`)}>
             <Edit className="h-4 w-4 mr-2" />
             Edit Event
@@ -230,14 +231,16 @@ export default function EventDetails() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
-              {new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: event.currency || 'EUR',
-              }).format(totalRevenue)}
+              {formatCurrency(totalRevenue)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Based on {totalAttendees} registrations
-            </p>
+            <div className="mt-2 space-y-1">
+              <p className="text-sm text-emerald-600">
+                ✅ Paid: {paidAttendees.length} registrations — {formatCurrency(totalRevenue)}
+              </p>
+              <p className="text-sm text-amber-600">
+                ⏳ Pending: {pendingAttendees.length} registrations — {formatCurrency(pendingRevenue)}
+              </p>
+            </div>
           </CardContent>
         </Card>
 
