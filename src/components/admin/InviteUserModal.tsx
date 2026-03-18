@@ -81,32 +81,29 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
     setIsSubmitting(true);
 
     try {
-      // Step 1: Create user via RPC
-      const { data, error } = await supabase.rpc('create_user_wizard', {
-        email_input: values.email,
-        first_name_input: values.first_name,
-        last_name_input: values.last_name,
-        role_input: values.role,
-        institution_id_input: values.institution_id || null,
+      const { data: fnData, error: fnError } = await supabase.functions.invoke('invite-user', {
+        body: {
+          email: values.email,
+          first_name: values.first_name,
+          last_name: values.last_name,
+          role: values.role,
+          institution_id: values.institution_id || null,
+        },
       });
 
-      if (error) {
-        console.error('Create user error:', error);
-        toast.error(error.message || 'Failed to create user');
+      if (fnError) {
+        console.error('Invite user error:', fnError);
+        toast.error(fnError.message || 'Failed to invite user');
         return;
       }
 
-      // Step 2: Send password reset email
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(values.email, {
-        redirectTo: window.location.origin + '/auth/update-password',
-      });
-
-      if (resetError) {
-        console.error('Password reset email error:', resetError);
-        toast.warning('User created, but failed to send invitation email. Please resend manually.');
-      } else {
-        toast.success('Invitation sent! The user will receive an email to set their password.');
+      if (fnData?.error) {
+        console.error('Invite user error:', fnData.error);
+        toast.error(fnData.error);
+        return;
       }
+
+      toast.success('Invitation sent! The user will receive an email to set their password.');
 
       form.reset();
       onOpenChange(false);
