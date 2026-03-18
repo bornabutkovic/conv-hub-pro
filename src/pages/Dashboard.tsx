@@ -44,7 +44,7 @@ export default function Dashboard() {
       if (error) return null;
       return data?.name || null;
     },
-    enabled: !!institutionUuid && !isSuperAdmin,
+    enabled: !!institutionUuid && !userIsSuperAdmin,
   });
 
   // Fetch all events for the selector
