@@ -389,6 +389,14 @@ export default function EditEvent() {
             <CardTitle className="text-xl">Edit Event</CardTitle>
           </CardHeader>
           <CardContent>
+            {isLockedEvent && (
+              <Alert className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800 dark:text-amber-200">
+                  ⚠️ Some fields are locked because tickets have already been sold. You can still update description, branding, support info, and ticket tier availability.
+                </AlertDescription>
+              </Alert>
+            )}
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Section 1: Event Details */}
@@ -406,7 +414,7 @@ export default function EditEvent() {
                       <FormItem>
                         <FormLabel>Event Name *</FormLabel>
                         <FormControl>
-                          <Input placeholder="My Conference 2026" {...field} />
+                          <Input placeholder="My Conference 2026" {...field} disabled={isLockedEvent} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
