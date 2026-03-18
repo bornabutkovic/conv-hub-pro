@@ -515,7 +515,7 @@ export default function EditEvent() {
                         <FormItem>
                           <FormLabel>Venue Address / Adresa mjesta {form.watch('event_type') === 'face2face' ? '*' : ''}</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ilica 1 / Street and number" {...field} />
+                            <Input placeholder="Ilica 1 / Street and number" {...field} disabled={isLockedEvent} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
