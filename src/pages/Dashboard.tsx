@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin } from '@/lib/roles';
+import { isSuperAdmin, isAdmin } from '@/lib/roles';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
