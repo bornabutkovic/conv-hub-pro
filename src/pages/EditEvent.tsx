@@ -559,7 +559,7 @@ export default function EditEvent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Country *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isLockedEvent}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select country" />
