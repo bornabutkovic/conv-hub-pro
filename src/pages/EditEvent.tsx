@@ -428,19 +428,31 @@ export default function EditEvent() {
                     name="event_type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Event Type *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select event type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="face2face">Face2Face</SelectItem>
-                            <SelectItem value="virtual">Virtual</SelectItem>
-                            <SelectItem value="hybrid">Hybrid</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>Event Type / Vrsta eventa *</FormLabel>
+                        <FormControl>
+                          <div className="grid grid-cols-3 gap-3">
+                            {[
+                              { value: 'face2face', label: 'Face2Face', icon: '🏢' },
+                              { value: 'virtual', label: 'Virtual', icon: '💻' },
+                              { value: 'hybrid', label: 'Hybrid', icon: '🔀' },
+                            ].map((option) => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => field.onChange(option.value)}
+                                className={cn(
+                                  'flex flex-col items-center gap-1 rounded-lg border-2 p-3 text-sm font-medium transition-colors',
+                                  field.value === option.value
+                                    ? 'border-primary bg-primary/10 text-primary'
+                                    : 'border-border bg-background text-muted-foreground hover:border-primary/50'
+                                )}
+                              >
+                                <span className="text-xl">{option.icon}</span>
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
