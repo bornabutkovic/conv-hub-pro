@@ -531,7 +531,7 @@ export default function EditEvent() {
                         <FormItem>
                           <FormLabel>City *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Zagreb" {...field} />
+                            <Input placeholder="Zagreb" {...field} disabled={isLockedEvent} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
