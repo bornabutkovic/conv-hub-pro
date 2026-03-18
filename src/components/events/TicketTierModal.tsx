@@ -201,6 +201,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
                       step="0.01"
                       min="0"
                       placeholder="0.00"
+                      disabled={isLocked && isEditing}
                       {...field}
                     />
                   </FormControl>
