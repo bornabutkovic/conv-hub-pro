@@ -49,6 +49,10 @@ export default function EventDetails() {
           email,
           phone,
           status,
+          payment_status,
+          checked_in,
+          scanned_at,
+          price_paid,
           created_at,
           profile_id,
           profiles:profile_id (
