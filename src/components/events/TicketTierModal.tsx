@@ -68,6 +68,8 @@ interface TicketTierModalProps {
 
 export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus, isLocked = false }: TicketTierModalProps) {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const userIsAdmin = isAdmin(profile?.role);
   const isEditing = !!tier;
 
   const form = useForm<TicketTierFormData>({
