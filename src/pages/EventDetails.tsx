@@ -284,13 +284,15 @@ export default function EventDetails() {
         <TabsContent value="ticket-tiers" className="mt-4">
           <TicketTiersTable 
             eventId={event.id} 
-            currency={event.currency || 'EUR'} 
+            currency={event.currency || 'EUR'}
+            eventStatus={event.status}
           />
         </TabsContent>
         <TabsContent value="services" className="mt-4">
           <EventServicesTable 
             eventId={event.id} 
-            currency={event.currency || 'EUR'} 
+            currency={event.currency || 'EUR'}
+            eventStatus={event.status}
           />
         </TabsContent>
       </Tabs>

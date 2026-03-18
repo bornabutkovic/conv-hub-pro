@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button';
 const navItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
   { title: 'Events', url: '/events', icon: Calendar },
-  { title: 'Attendees', url: '/attendees', icon: Users },
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
 

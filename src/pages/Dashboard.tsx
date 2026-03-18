@@ -216,7 +216,7 @@ export default function Dashboard() {
             : `For ${selectedEvent?.name || 'this event'}`
           }
           loading={loadingStats}
-          href={selectedEventId === 'all' ? "/attendees" : `/attendees?event=${selectedEventId}`}
+          href={selectedEventId !== 'all' ? `/events/${selectedEventId}` : undefined}
         />
         <KPICard
           title="Pending Income"
@@ -225,7 +225,7 @@ export default function Dashboard() {
           description="Awaiting payment"
           loading={loadingStats}
           variant={(stats?.pendingIncome || 0) > 0 ? 'warning' : 'default'}
-          href={selectedEventId === 'all' ? "/attendees?status=pending" : `/attendees?status=pending&event=${selectedEventId}`}
+          href={selectedEventId !== 'all' ? `/events/${selectedEventId}` : undefined}
         />
       </div>
 
