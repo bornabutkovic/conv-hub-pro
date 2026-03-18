@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin } from '@/lib/roles';
+import { isSuperAdmin, isAdmin } from '@/lib/roles';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -28,7 +28,8 @@ import { useDashboardStats } from '@/hooks/useDashboardStats';
 export default function Dashboard() {
   const { profile } = useAuth();
   const institutionUuid = profile?.institution_uuid;
-  const isSuperAdmin = isAdmin(profile?.role);
+  const userIsSuperAdmin = isSuperAdmin(profile?.role);
+  const userIsAdmin = isAdmin(profile?.role);
   const [selectedEventId, setSelectedEventId] = useState<string>('all');
 
   // Fetch institution name for organizers
@@ -43,12 +44,12 @@ export default function Dashboard() {
       if (error) return null;
       return data?.name || null;
     },
-    enabled: !!institutionUuid && !isSuperAdmin,
+    enabled: !!institutionUuid && !userIsSuperAdmin,
   });
 
   // Fetch all events for the selector
   const { data: allEvents, isLoading: loadingEvents } = useQuery({
-    queryKey: ['dashboard-events-selector', institutionUuid, isSuperAdmin],
+    queryKey: ['dashboard-events-selector', institutionUuid, userIsSuperAdmin],
     queryFn: async () => {
       let query = supabase
         .from('events')
@@ -58,7 +59,7 @@ export default function Dashboard() {
         `)
         .order('start_date', { ascending: false });
       
-      if (!isSuperAdmin && institutionUuid) {
+      if (!userIsSuperAdmin && institutionUuid) {
         query = query.eq('institution_uuid', institutionUuid);
       }
       
@@ -70,7 +71,7 @@ export default function Dashboard() {
         institution_name: event.institutions?.name || null,
       }));
     },
-    enabled: !!profile && (isSuperAdmin || !!institutionUuid),
+    enabled: !!profile && (userIsSuperAdmin || !!institutionUuid),
   });
 
   // Auto-select the most recent active event on load
@@ -108,7 +109,7 @@ export default function Dashboard() {
             <p className="text-muted-foreground">
               Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
             </p>
-            {!isSuperAdmin && institutionName && (
+            {!userIsSuperAdmin && institutionName && (
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
                 <Building2 className="h-4 w-4" />
                 <span>Managing: <strong className="text-foreground">{institutionName}</strong></span>
@@ -179,7 +180,7 @@ export default function Dashboard() {
           totalPending: 0,
         }}
         loading={loadingStats}
-        isSuperAdmin={isSuperAdmin}
+        isSuperAdmin={userIsSuperAdmin}
         selectedEventId={selectedEventId}
       />
 
@@ -190,7 +191,7 @@ export default function Dashboard() {
           value={String(stats?.totalAttendees || 0)}
           icon={<Users className="h-5 w-5" />}
           description={selectedEventId === 'all' 
-            ? (isSuperAdmin ? "Across all events" : "Registered users") 
+            ? (userIsSuperAdmin ? "Across all events" : "Registered users") 
             : `For ${selectedEvent?.name || 'this event'}`
           }
           loading={loadingStats}
@@ -259,7 +260,7 @@ export default function Dashboard() {
                         {event.start_date && (
                           <span>• {format(new Date(event.start_date), 'MMM d, yyyy')}</span>
                         )}
-                        {isSuperAdmin && event.institution_name && (
+                        {userIsSuperAdmin && event.institution_name && (
                           <span className="flex items-center gap-1">
                             • <Building2 className="h-3 w-3" /> {event.institution_name}
                           </span>

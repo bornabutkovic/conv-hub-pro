@@ -1,10 +1,14 @@
 /**
  * Role display mapping.
- * DB values: admin (top-level), event_organizer, organizer_admin, user.
- * Legacy: super_admin is treated the same as admin.
+ * DB values: super_admin (global), admin (Penta Admin), event_organizer, organizer_admin, user.
  */
 
-/** Returns true if the user holds a top-level admin role */
+/** Returns true if the user holds the top-level super_admin role (full platform access) */
+export function isSuperAdmin(role: string | null | undefined): boolean {
+  return role === 'super_admin';
+}
+
+/** Returns true for admin-tier roles (super_admin OR admin). Both can approve events, manage users, etc. */
 export function isAdmin(role: string | null | undefined): boolean {
   return role === 'admin' || role === 'super_admin';
 }
@@ -17,6 +21,7 @@ export function isElevatedRole(role: string | null | undefined): boolean {
 export function getRoleDisplayName(role: string | null | undefined): string {
   switch (role) {
     case 'super_admin':
+      return 'Super Admin';
     case 'admin':
       return 'Admin';
     case 'event_organizer':
