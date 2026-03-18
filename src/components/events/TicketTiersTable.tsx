@@ -284,13 +284,15 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                           {locked ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span>
-                                  <Button variant="ghost" size="icon" disabled>
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleEdit(tier)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Cannot edit — tickets already sold</TooltipContent>
+                              <TooltipContent>Cannot edit name/price — tickets already sold. You can change capacity or end sales early.</TooltipContent>
                             </Tooltip>
                           ) : (
                             <Button
