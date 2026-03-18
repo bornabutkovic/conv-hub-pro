@@ -233,11 +233,10 @@ export default function CreateEvent() {
         });
 
       if (membershipError) {
-        console.error('Error creating event membership:', membershipError);
-        toast.warning('Event created, but membership assignment failed');
-      } else {
-        toast.success('Event created successfully!');
+        console.warn('Membership assignment skipped:', membershipError);
       }
+
+      toast.success('Event created successfully!');
 
       navigate(`/events/${newEvent.id}`);
     } catch (error: any) {
