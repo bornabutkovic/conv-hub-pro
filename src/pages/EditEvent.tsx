@@ -837,7 +837,7 @@ export default function EditEvent() {
                       <FormItem>
                         <FormLabel>Support Phone</FormLabel>
                         <FormControl>
-                          <Input placeholder="+385 91 234 5678" {...field} />
+                          <PhoneInput value={field.value} onChange={field.onChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
