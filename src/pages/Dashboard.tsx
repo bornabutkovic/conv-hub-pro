@@ -191,7 +191,7 @@ export default function Dashboard() {
           value={String(stats?.totalAttendees || 0)}
           icon={<Users className="h-5 w-5" />}
           description={selectedEventId === 'all' 
-            ? (isSuperAdmin ? "Across all events" : "Registered users") 
+            ? (userIsSuperAdmin ? "Across all events" : "Registered users") 
             : `For ${selectedEvent?.name || 'this event'}`
           }
           loading={loadingStats}
