@@ -18,15 +18,15 @@ interface KPICardProps {
 }
 
 const variantStyles = {
-  default: 'border-border',
-  success: 'border-l-4 border-l-green-500',
+  default: 'border-border/50',
+  success: 'border-l-4 border-l-emerald-500',
   warning: 'border-l-4 border-l-amber-500',
   muted: 'border-l-4 border-l-muted-foreground',
 };
 
 const valueStyles = {
   default: 'text-foreground',
-  success: 'text-green-600',
+  success: 'text-emerald-600',
   warning: 'text-amber-600',
   muted: 'text-muted-foreground',
 };
@@ -53,9 +53,9 @@ export function KPICard({
   return (
     <Card 
       className={cn(
-        'transition-all hover:shadow-md',
+        'transition-all shadow-brand glow-hover',
         variantStyles[variant],
-        isClickable && 'cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]'
+        isClickable && 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]'
       )}
       onClick={isClickable ? handleClick : undefined}
     >
@@ -63,7 +63,7 @@ export function KPICard({
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <div className="text-primary p-2 bg-primary/10 rounded-lg">
+        <div className="p-2 rounded-xl bg-brand-gradient text-white">
           {icon}
         </div>
       </CardHeader>
@@ -75,7 +75,7 @@ export function KPICard({
           </div>
         ) : (
           <>
-            <div className={cn('text-2xl font-bold', valueStyles[variant])}>
+            <div className={cn('text-2xl font-heading font-bold', valueStyles[variant])}>
               {value}
             </div>
             {description && (
@@ -84,7 +84,7 @@ export function KPICard({
             {trend && (
               <div className={cn(
                 'text-xs mt-2 flex items-center gap-1',
-                trend.value >= 0 ? 'text-green-600' : 'text-destructive'
+                trend.value >= 0 ? 'text-emerald-600' : 'text-destructive'
               )}>
                 <span>{trend.value >= 0 ? '↑' : '↓'} {Math.abs(trend.value)}%</span>
                 <span className="text-muted-foreground">{trend.label}</span>

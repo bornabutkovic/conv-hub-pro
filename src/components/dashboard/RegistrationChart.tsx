@@ -10,9 +10,9 @@ interface RegistrationChartProps {
 export function RegistrationChart({ data, loading }: RegistrationChartProps) {
   if (loading) {
     return (
-      <Card>
+      <Card className="shadow-brand">
         <CardHeader>
-          <CardTitle className="text-lg">Registrations Timeline</CardTitle>
+          <CardTitle className="text-lg font-heading">Registrations Timeline</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[250px] w-full" />
@@ -24,9 +24,9 @@ export function RegistrationChart({ data, loading }: RegistrationChartProps) {
   const maxCount = Math.max(...data.map(d => d.count), 1);
 
   return (
-    <Card>
+    <Card className="shadow-brand glow-hover">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">Registrations Timeline</CardTitle>
+        <CardTitle className="text-lg font-heading font-semibold">Registrations Timeline</CardTitle>
         <p className="text-sm text-muted-foreground">New registrations over the last 14 days</p>
       </CardHeader>
       <CardContent>
@@ -38,6 +38,12 @@ export function RegistrationChart({ data, loading }: RegistrationChartProps) {
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(187, 94%, 43%)" />
+                    <stop offset="100%" stopColor="hsl(263, 70%, 58%)" />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis 
                   dataKey="date" 
@@ -56,16 +62,16 @@ export function RegistrationChart({ data, loading }: RegistrationChartProps) {
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 24px -4px hsl(263 70% 50% / 0.12)',
                   }}
                   labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
                   formatter={(value: number) => [value, 'Registrations']}
                 />
                 <Bar 
                   dataKey="count" 
-                  fill="hsl(24.6, 95%, 53.1%)" 
-                  radius={[4, 4, 0, 0]}
+                  fill="url(#barGradient)" 
+                  radius={[6, 6, 0, 0]}
                   maxBarSize={40}
                 />
               </BarChart>

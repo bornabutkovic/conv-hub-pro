@@ -11,9 +11,9 @@ interface TicketDistributionChartProps {
 export function TicketDistributionChart({ data, loading, eventName }: TicketDistributionChartProps) {
   if (loading) {
     return (
-      <Card>
+      <Card className="shadow-brand">
         <CardHeader>
-          <CardTitle className="text-lg">Ticket Distribution</CardTitle>
+          <CardTitle className="text-lg font-heading">Ticket Distribution</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[250px] w-full" />
@@ -25,9 +25,9 @@ export function TicketDistributionChart({ data, loading, eventName }: TicketDist
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <Card>
+    <Card className="shadow-brand glow-hover">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">Ticket Distribution</CardTitle>
+        <CardTitle className="text-lg font-heading font-semibold">Ticket Distribution</CardTitle>
         <p className="text-sm text-muted-foreground">
           {eventName ? `Breakdown for ${eventName}` : 'Breakdown by ticket type'}
         </p>
@@ -60,8 +60,8 @@ export function TicketDistributionChart({ data, loading, eventName }: TicketDist
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 24px -4px hsl(263 70% 50% / 0.12)',
                   }}
                   formatter={(value: number) => [value, 'Attendees']}
                 />
