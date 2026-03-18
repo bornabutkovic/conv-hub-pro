@@ -49,7 +49,7 @@ export default function Dashboard() {
 
   // Fetch all events for the selector
   const { data: allEvents, isLoading: loadingEvents } = useQuery({
-    queryKey: ['dashboard-events-selector', institutionUuid, isSuperAdmin],
+    queryKey: ['dashboard-events-selector', institutionUuid, userIsSuperAdmin],
     queryFn: async () => {
       let query = supabase
         .from('events')
