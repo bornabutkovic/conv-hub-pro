@@ -658,6 +658,7 @@ export default function EditEvent() {
                               <FormControl>
                                 <Button
                                   variant="outline"
+                                  disabled={isLockedEvent}
                                   className={cn(
                                     'w-full pl-3 text-left font-normal',
                                     !field.value && 'text-muted-foreground'
