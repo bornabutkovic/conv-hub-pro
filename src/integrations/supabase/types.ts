@@ -121,6 +121,156 @@ export type Database = {
           },
         ]
       }
+      bc_customer_posting_groups: {
+        Row: {
+          code: string
+          description: string
+          id: number
+          is_active: boolean | null
+          receivables_account: string | null
+        }
+        Insert: {
+          code: string
+          description: string
+          id?: number
+          is_active?: boolean | null
+          receivables_account?: string | null
+        }
+        Update: {
+          code?: string
+          description?: string
+          id?: number
+          is_active?: boolean | null
+          receivables_account?: string | null
+        }
+        Relationships: []
+      }
+      bc_eu_countries: {
+        Row: {
+          country_code: string
+          country_name: string
+        }
+        Insert: {
+          country_code: string
+          country_name: string
+        }
+        Update: {
+          country_code?: string
+          country_name?: string
+        }
+        Relationships: []
+      }
+      bc_gen_business_posting_groups: {
+        Row: {
+          code: string
+          def_vat_bus_posting_group: string | null
+          description: string
+          id: number
+          is_active: boolean | null
+        }
+        Insert: {
+          code: string
+          def_vat_bus_posting_group?: string | null
+          description: string
+          id?: number
+          is_active?: boolean | null
+        }
+        Update: {
+          code?: string
+          def_vat_bus_posting_group?: string | null
+          description?: string
+          id?: number
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
+      bc_items: {
+        Row: {
+          base_unit_of_measure: string | null
+          blocked: boolean | null
+          description: string
+          description2: string | null
+          gen_prod_posting_group: string | null
+          id: number
+          no: string
+          synced_at: string | null
+          type: string | null
+          unit_price: number | null
+          vat_prod_posting_group: string | null
+        }
+        Insert: {
+          base_unit_of_measure?: string | null
+          blocked?: boolean | null
+          description: string
+          description2?: string | null
+          gen_prod_posting_group?: string | null
+          id?: number
+          no: string
+          synced_at?: string | null
+          type?: string | null
+          unit_price?: number | null
+          vat_prod_posting_group?: string | null
+        }
+        Update: {
+          base_unit_of_measure?: string | null
+          blocked?: boolean | null
+          description?: string
+          description2?: string | null
+          gen_prod_posting_group?: string | null
+          id?: number
+          no?: string
+          synced_at?: string | null
+          type?: string | null
+          unit_price?: number | null
+          vat_prod_posting_group?: string | null
+        }
+        Relationships: []
+      }
+      bc_payment_terms: {
+        Row: {
+          code: string
+          description: string
+          due_date_calculation: string | null
+          id: number
+          is_active: boolean | null
+        }
+        Insert: {
+          code: string
+          description: string
+          due_date_calculation?: string | null
+          id?: number
+          is_active?: boolean | null
+        }
+        Update: {
+          code?: string
+          description?: string
+          due_date_calculation?: string | null
+          id?: number
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
+      bc_vat_business_posting_groups: {
+        Row: {
+          code: string
+          description: string
+          id: number
+          is_active: boolean | null
+        }
+        Insert: {
+          code: string
+          description: string
+          id?: number
+          is_active?: boolean | null
+        }
+        Update: {
+          code?: string
+          description?: string
+          id?: number
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           created_at: string | null
@@ -255,8 +405,12 @@ export type Database = {
       events: {
         Row: {
           additional_admins: string[] | null
+          bc_customer_posting_group: string | null
+          bc_gen_bus_posting_group: string | null
+          bc_payment_terms_code: string | null
           bc_position: string | null
           bc_reference: string | null
+          bc_vat_bus_posting_group: string | null
           branding_banner_url: string | null
           branding_favicon_url: string | null
           branding_logo_url: string | null
@@ -293,8 +447,12 @@ export type Database = {
         }
         Insert: {
           additional_admins?: string[] | null
+          bc_customer_posting_group?: string | null
+          bc_gen_bus_posting_group?: string | null
+          bc_payment_terms_code?: string | null
           bc_position?: string | null
           bc_reference?: string | null
+          bc_vat_bus_posting_group?: string | null
           branding_banner_url?: string | null
           branding_favicon_url?: string | null
           branding_logo_url?: string | null
@@ -331,8 +489,12 @@ export type Database = {
         }
         Update: {
           additional_admins?: string[] | null
+          bc_customer_posting_group?: string | null
+          bc_gen_bus_posting_group?: string | null
+          bc_payment_terms_code?: string | null
           bc_position?: string | null
           bc_reference?: string | null
+          bc_vat_bus_posting_group?: string | null
           branding_banner_url?: string | null
           branding_favicon_url?: string | null
           branding_logo_url?: string | null
@@ -368,6 +530,34 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "events_bc_customer_posting_group_fkey"
+            columns: ["bc_customer_posting_group"]
+            isOneToOne: false
+            referencedRelation: "bc_customer_posting_groups"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "events_bc_gen_bus_posting_group_fkey"
+            columns: ["bc_gen_bus_posting_group"]
+            isOneToOne: false
+            referencedRelation: "bc_gen_business_posting_groups"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "events_bc_payment_terms_code_fkey"
+            columns: ["bc_payment_terms_code"]
+            isOneToOne: false
+            referencedRelation: "bc_payment_terms"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "events_bc_vat_bus_posting_group_fkey"
+            columns: ["bc_vat_bus_posting_group"]
+            isOneToOne: false
+            referencedRelation: "bc_vat_business_posting_groups"
+            referencedColumns: ["code"]
+          },
           {
             foreignKeyName: "events_institution_id_fkey"
             columns: ["institution_id"]
@@ -514,7 +704,9 @@ export type Database = {
         Row: {
           attendee_id: string | null
           description: string
+          erp_code: string | null
           id: string
+          item_type: string | null
           order_id: string | null
           price_at_purchase: number | null
           quantity: number | null
@@ -527,7 +719,9 @@ export type Database = {
         Insert: {
           attendee_id?: string | null
           description: string
+          erp_code?: string | null
           id?: string
+          item_type?: string | null
           order_id?: string | null
           price_at_purchase?: number | null
           quantity?: number | null
@@ -540,7 +734,9 @@ export type Database = {
         Update: {
           attendee_id?: string | null
           description?: string
+          erp_code?: string | null
           id?: string
+          item_type?: string | null
           order_id?: string | null
           price_at_purchase?: number | null
           quantity?: number | null
@@ -592,19 +788,26 @@ export type Database = {
           contact_name: string | null
           contact_phone: string | null
           created_at: string | null
+          customer_posting_group: string | null
           event_id: string | null
+          gen_bus_posting_group: string | null
           id: string
           is_group_order: boolean | null
           order_number: number
           payer_address: string | null
+          payer_city: string | null
+          payer_country_code: string | null
+          payer_country_name: string | null
           payer_name: string
           payer_oib: string | null
+          payer_postal_code: string | null
           payer_type: Database["public"]["Enums"]["payer_type"]
           payment_method: string | null
           pdf_url: string | null
           po_number: string | null
           status: Database["public"]["Enums"]["payment_status"] | null
           total_amount: number | null
+          vat_bus_posting_group: string | null
         }
         Insert: {
           attendee_id?: string | null
@@ -616,19 +819,26 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          customer_posting_group?: string | null
           event_id?: string | null
+          gen_bus_posting_group?: string | null
           id?: string
           is_group_order?: boolean | null
           order_number?: number
           payer_address?: string | null
+          payer_city?: string | null
+          payer_country_code?: string | null
+          payer_country_name?: string | null
           payer_name: string
           payer_oib?: string | null
+          payer_postal_code?: string | null
           payer_type: Database["public"]["Enums"]["payer_type"]
           payment_method?: string | null
           pdf_url?: string | null
           po_number?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           total_amount?: number | null
+          vat_bus_posting_group?: string | null
         }
         Update: {
           attendee_id?: string | null
@@ -640,19 +850,26 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          customer_posting_group?: string | null
           event_id?: string | null
+          gen_bus_posting_group?: string | null
           id?: string
           is_group_order?: boolean | null
           order_number?: number
           payer_address?: string | null
+          payer_city?: string | null
+          payer_country_code?: string | null
+          payer_country_name?: string | null
           payer_name?: string
           payer_oib?: string | null
+          payer_postal_code?: string | null
           payer_type?: Database["public"]["Enums"]["payer_type"]
           payment_method?: string | null
           pdf_url?: string | null
           po_number?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           total_amount?: number | null
+          vat_bus_posting_group?: string | null
         }
         Relationships: [
           {
@@ -1052,6 +1269,16 @@ export type Database = {
           role_input: string
         }
         Returns: string
+      }
+      get_bc_posting_groups: {
+        Args: { p_country_code: string; p_payer_type: string }
+        Returns: {
+          bc_customer_code: string
+          customer_posting_group: string
+          gen_bus_posting_group: string
+          vat_bus_posting_group: string
+          zone: string
+        }[]
       }
       get_user_event_status: {
         Args: { p_event_id: string; p_phone: string }
