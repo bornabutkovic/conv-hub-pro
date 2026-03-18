@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
-import conwayoLogoDark from '@/assets/conwayo-logo-dark.jpeg';
+import conwayoLogoWhite from '@/assets/conwayo-logo-white.png';
+import conwayoIcon from '@/assets/conwayo-icon.png';
 import {
   Sidebar,
   SidebarContent,
