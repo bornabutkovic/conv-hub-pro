@@ -260,7 +260,7 @@ export default function Dashboard() {
                         {event.start_date && (
                           <span>• {format(new Date(event.start_date), 'MMM d, yyyy')}</span>
                         )}
-                        {isSuperAdmin && event.institution_name && (
+                        {userIsSuperAdmin && event.institution_name && (
                           <span className="flex items-center gap-1">
                             • <Building2 className="h-3 w-3" /> {event.institution_name}
                           </span>
