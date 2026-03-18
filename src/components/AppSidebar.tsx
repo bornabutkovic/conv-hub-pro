@@ -1,4 +1,4 @@
-import { LayoutDashboard, Calendar, Users, Settings, LogOut, Shield, MessageCircle, Phone } from 'lucide-react';
+import { LayoutDashboard, Calendar, Settings, LogOut, Shield, MessageCircle, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
