@@ -329,6 +329,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
         eventId={eventId}
         tier={editingTier}
         eventStatus={eventStatus}
+        isLocked={editingTier ? isTierLocked(editingTier.id) : false}
       />
 
       <AlertDialog open={!!deletingTierId} onOpenChange={() => setDeletingTierId(null)}>
