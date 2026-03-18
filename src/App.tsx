@@ -10,10 +10,13 @@ import { AppLayout } from "@/components/AppLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Events from "./pages/Events";
+import CreateEvent from "./pages/CreateEvent";
+import EditEvent from "./pages/EditEvent";
 import EventDetails from "./pages/EventDetails";
-import Attendees from "./pages/Attendees";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
+import CreateInstitution from "./pages/CreateInstitution";
+import EditInstitution from "./pages/EditInstitution";
 import AdminChats from "./pages/AdminChats";
 import AdminUsers from "./pages/AdminUsers";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -54,21 +57,31 @@ const App = () => (
               }
             />
             <Route
-              path="/events/:id"
+              path="/events/new"
               element={
                 <ProtectedRoute>
                   <AppLayout>
-                    <EventDetails />
+                    <CreateEvent />
                   </AppLayout>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/attendees"
+              path="/events/:id/edit"
               element={
                 <ProtectedRoute>
                   <AppLayout>
-                    <Attendees />
+                    <EditEvent />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/:id"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <EventDetails />
                   </AppLayout>
                 </ProtectedRoute>
               }
@@ -89,6 +102,26 @@ const App = () => (
                 <AdminRoute>
                   <AppLayout>
                     <Admin />
+                  </AppLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/institutions/new"
+              element={
+                <AdminRoute>
+                  <AppLayout>
+                    <CreateInstitution />
+                  </AppLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/institutions/:id/edit"
+              element={
+                <AdminRoute>
+                  <AppLayout>
+                    <EditInstitution />
                   </AppLayout>
                 </AdminRoute>
               }

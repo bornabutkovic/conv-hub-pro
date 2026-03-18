@@ -1,14 +1,13 @@
-import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InstitutionsTable } from '@/components/admin/InstitutionsTable';
 import { UsersManager } from '@/components/admin/UsersManager';
-import { CreateInstitutionModal } from '@/components/admin/CreateInstitutionModal';
 import { PendingApprovalsSection } from '@/components/admin/PendingApprovalsSection';
 import { Button } from '@/components/ui/button';
 import { Plus, Building2, Users } from 'lucide-react';
 
 export default function Admin() {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
@@ -35,7 +34,7 @@ export default function Admin() {
 
         <TabsContent value="institutions" className="space-y-4">
           <div className="flex justify-end">
-            <Button onClick={() => setIsCreateModalOpen(true)} className="bg-primary hover:bg-primary/90">
+            <Button onClick={() => navigate('/admin/institutions/new')} className="bg-primary hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
               Create Institution
             </Button>
@@ -47,11 +46,6 @@ export default function Admin() {
           <UsersManager />
         </TabsContent>
       </Tabs>
-
-      <CreateInstitutionModal 
-        open={isCreateModalOpen} 
-        onOpenChange={setIsCreateModalOpen} 
-      />
     </div>
   );
 }
