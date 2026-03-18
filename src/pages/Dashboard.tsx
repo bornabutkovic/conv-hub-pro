@@ -51,27 +51,59 @@ export default function Dashboard() {
   const { data: allEvents, isLoading: loadingEvents } = useQuery({
     queryKey: ['dashboard-events-selector', institutionUuid, userIsSuperAdmin],
     queryFn: async () => {
-      let query = supabase
-        .from('events')
-        .select(`
-          id, name, slug, start_date, status,
-          institutions:institution_uuid (name)
-        `)
-        .order('start_date', { ascending: false });
-      
-      if (!userIsSuperAdmin && institutionUuid) {
-        query = query.eq('institution_uuid', institutionUuid);
+      // super_admin sees ALL events
+      if (userIsSuperAdmin) {
+        const { data, error } = await supabase
+          .from('events')
+          .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+          .order('start_date', { ascending: false });
+        if (error) throw error;
+        return (data || []).map((event: any) => ({
+          ...event,
+          institution_name: event.institutions?.name || null,
+        }));
       }
-      
-      const { data, error } = await query;
+
+      // admin sees own institution + pending_approval
+      if (userIsAdmin && institutionUuid) {
+        const [instRes, pendingRes] = await Promise.all([
+          supabase.from('events')
+            .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+            .eq('institution_uuid', institutionUuid)
+            .order('start_date', { ascending: false }),
+          supabase.from('events')
+            .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+            .eq('status', 'pending_approval')
+            .order('start_date', { ascending: false }),
+        ]);
+        if (instRes.error) throw instRes.error;
+        if (pendingRes.error) throw pendingRes.error;
+        const all = [...(instRes.data || []), ...(pendingRes.data || [])];
+        const seen = new Set<string>();
+        return all.filter(e => { if (seen.has(e.id)) return false; seen.add(e.id); return true; })
+          .map((event: any) => ({ ...event, institution_name: event.institutions?.name || null }));
+      }
+
+      // event_organizer sees only their events via memberships
+      const { data: memberships, error: memErr } = await supabase
+        .from('event_memberships')
+        .select('event_id')
+        .eq('user_id', profile!.id);
+      if (memErr) throw memErr;
+      const eventIds = (memberships || []).map(m => m.event_id).filter(Boolean) as string[];
+      if (eventIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from('events')
+        .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+        .in('id', eventIds)
+        .order('start_date', { ascending: false });
       if (error) throw error;
-      
       return (data || []).map((event: any) => ({
         ...event,
         institution_name: event.institutions?.name || null,
       }));
     },
-    enabled: !!profile && (userIsSuperAdmin || !!institutionUuid),
+    enabled: !!profile,
   });
 
   // Default to "All Events" aggregate view — no auto-select
