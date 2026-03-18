@@ -125,6 +125,7 @@ export default function EditEvent() {
       name: '',
       short_name: '',
       event_type: 'face2face',
+      description: '',
       website_url: '',
       venue_name: '',
       location_address: '',
