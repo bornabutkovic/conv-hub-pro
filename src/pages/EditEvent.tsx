@@ -159,8 +159,10 @@ export default function EditEvent() {
       form.reset({
         name: event.name || '',
         short_name: event.short_name || '',
+        event_type: ((event as any).event_type as 'face2face' | 'virtual' | 'hybrid') || 'face2face',
         website_url: event.website_url || '',
         venue_name: event.venue_name || '',
+        location_address: (event as any).location_address || '',
         location_city: event.location_city || '',
         location_postal_code: (event as any).location_postal_code || '',
         location_country: event.location_country || '',
