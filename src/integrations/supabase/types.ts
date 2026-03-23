@@ -1022,31 +1022,46 @@ export type Database = {
         Row: {
           bc_code: string
           created_at: string
+          description: string | null
           id: number
+          internal_code: string | null
+          is_active: boolean | null
           stripe_brand: string
         }
         Insert: {
           bc_code: string
           created_at?: string
+          description?: string | null
           id?: number
+          internal_code?: string | null
+          is_active?: boolean | null
           stripe_brand: string
         }
         Update: {
           bc_code?: string
           created_at?: string
+          description?: string | null
           id?: number
+          internal_code?: string | null
+          is_active?: boolean | null
           stripe_brand?: string
         }
         Relationships: []
       }
       profiles: {
         Row: {
+          address: string | null
           billing_email: string | null
+          city: string | null
           company_name: string | null
           company_oib: string | null
+          country_code: string | null
+          country_name: string | null
           created_at: string | null
+          date_of_birth: string | null
           email: string | null
           first_name: string | null
+          gender: string | null
           id: string
           institution: string | null
           institution_id: string | null
@@ -1054,17 +1069,24 @@ export type Database = {
           last_name: string | null
           oib: string | null
           phone: string | null
+          postal_code: string | null
           role: string | null
           telegram_id: string | null
           whatsapp_id: string | null
         }
         Insert: {
+          address?: string | null
           billing_email?: string | null
+          city?: string | null
           company_name?: string | null
           company_oib?: string | null
+          country_code?: string | null
+          country_name?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           email?: string | null
           first_name?: string | null
+          gender?: string | null
           id?: string
           institution?: string | null
           institution_id?: string | null
@@ -1072,17 +1094,24 @@ export type Database = {
           last_name?: string | null
           oib?: string | null
           phone?: string | null
+          postal_code?: string | null
           role?: string | null
           telegram_id?: string | null
           whatsapp_id?: string | null
         }
         Update: {
+          address?: string | null
           billing_email?: string | null
+          city?: string | null
           company_name?: string | null
           company_oib?: string | null
+          country_code?: string | null
+          country_name?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           email?: string | null
           first_name?: string | null
+          gender?: string | null
           id?: string
           institution?: string | null
           institution_id?: string | null
@@ -1090,6 +1119,7 @@ export type Database = {
           last_name?: string | null
           oib?: string | null
           phone?: string | null
+          postal_code?: string | null
           role?: string | null
           telegram_id?: string | null
           whatsapp_id?: string | null
@@ -1103,6 +1133,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      salespersons: {
+        Row: {
+          bc_code: string
+          created_at: string | null
+          email: string | null
+          id: number
+          is_active: boolean | null
+          name: string
+        }
+        Insert: {
+          bc_code: string
+          created_at?: string | null
+          email?: string | null
+          id?: number
+          is_active?: boolean | null
+          name: string
+        }
+        Update: {
+          bc_code?: string
+          created_at?: string | null
+          email?: string | null
+          id?: number
+          is_active?: boolean | null
+          name?: string
+        }
+        Relationships: []
       }
       sessions: {
         Row: {
@@ -1222,25 +1279,223 @@ export type Database = {
           },
         ]
       }
-      whatsapp_sessions: {
+      whatsapp_session: {
         Row: {
+          attendees_json: string | null
+          billing_email: string | null
+          cart_items: string | null
+          cart_services: string | null
+          company_address: string | null
+          company_name: string | null
+          company_oib: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          conversation_mode: string | null
+          created_at: string | null
+          draft_order_id: string | null
+          email: string | null
           event_id: string | null
           event_name: string | null
           event_slug: string | null
+          first_name: string | null
+          last_intent: string | null
+          last_message_at: string | null
+          last_message_id: string | null
+          last_name: string | null
+          last_user_message: string | null
+          participants_count: number | null
+          payer_city: string | null
+          payer_country_code: string | null
+          payer_country_name: string | null
+          payer_postal_code: string | null
+          payer_type: string | null
+          payment_method: string | null
+          po_number: string | null
+          registration_type: string | null
+          step: string | null
           updated_at: string | null
           wa_id: string
         }
         Insert: {
+          attendees_json?: string | null
+          billing_email?: string | null
+          cart_items?: string | null
+          cart_services?: string | null
+          company_address?: string | null
+          company_name?: string | null
+          company_oib?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          conversation_mode?: string | null
+          created_at?: string | null
+          draft_order_id?: string | null
+          email?: string | null
           event_id?: string | null
           event_name?: string | null
           event_slug?: string | null
+          first_name?: string | null
+          last_intent?: string | null
+          last_message_at?: string | null
+          last_message_id?: string | null
+          last_name?: string | null
+          last_user_message?: string | null
+          participants_count?: number | null
+          payer_city?: string | null
+          payer_country_code?: string | null
+          payer_country_name?: string | null
+          payer_postal_code?: string | null
+          payer_type?: string | null
+          payment_method?: string | null
+          po_number?: string | null
+          registration_type?: string | null
+          step?: string | null
           updated_at?: string | null
           wa_id: string
         }
         Update: {
+          attendees_json?: string | null
+          billing_email?: string | null
+          cart_items?: string | null
+          cart_services?: string | null
+          company_address?: string | null
+          company_name?: string | null
+          company_oib?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          conversation_mode?: string | null
+          created_at?: string | null
+          draft_order_id?: string | null
+          email?: string | null
           event_id?: string | null
           event_name?: string | null
           event_slug?: string | null
+          first_name?: string | null
+          last_intent?: string | null
+          last_message_at?: string | null
+          last_message_id?: string | null
+          last_name?: string | null
+          last_user_message?: string | null
+          participants_count?: number | null
+          payer_city?: string | null
+          payer_country_code?: string | null
+          payer_country_name?: string | null
+          payer_postal_code?: string | null
+          payer_type?: string | null
+          payment_method?: string | null
+          po_number?: string | null
+          registration_type?: string | null
+          step?: string | null
+          updated_at?: string | null
+          wa_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_sessions: {
+        Row: {
+          attendees_json: string | null
+          billing_email: string | null
+          company_address: string | null
+          company_name: string | null
+          company_oib: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          conversation_mode: string | null
+          draft_order_id: string | null
+          email: string | null
+          event_id: string | null
+          event_name: string | null
+          event_slug: string | null
+          first_name: string | null
+          last_intent: string | null
+          last_name: string | null
+          last_user_message: string | null
+          participants_count: number | null
+          payer_city: string | null
+          payer_country_code: string | null
+          payer_country_name: string | null
+          payer_postal_code: string | null
+          payer_type: string | null
+          payment_method: string | null
+          po_number: string | null
+          registration_type: string | null
+          selected_service_ids: string | null
+          selected_ticket_id: string | null
+          selected_ticket_label: string | null
+          step: string | null
+          updated_at: string | null
+          wa_id: string
+        }
+        Insert: {
+          attendees_json?: string | null
+          billing_email?: string | null
+          company_address?: string | null
+          company_name?: string | null
+          company_oib?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          conversation_mode?: string | null
+          draft_order_id?: string | null
+          email?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          event_slug?: string | null
+          first_name?: string | null
+          last_intent?: string | null
+          last_name?: string | null
+          last_user_message?: string | null
+          participants_count?: number | null
+          payer_city?: string | null
+          payer_country_code?: string | null
+          payer_country_name?: string | null
+          payer_postal_code?: string | null
+          payer_type?: string | null
+          payment_method?: string | null
+          po_number?: string | null
+          registration_type?: string | null
+          selected_service_ids?: string | null
+          selected_ticket_id?: string | null
+          selected_ticket_label?: string | null
+          step?: string | null
+          updated_at?: string | null
+          wa_id: string
+        }
+        Update: {
+          attendees_json?: string | null
+          billing_email?: string | null
+          company_address?: string | null
+          company_name?: string | null
+          company_oib?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          conversation_mode?: string | null
+          draft_order_id?: string | null
+          email?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          event_slug?: string | null
+          first_name?: string | null
+          last_intent?: string | null
+          last_name?: string | null
+          last_user_message?: string | null
+          participants_count?: number | null
+          payer_city?: string | null
+          payer_country_code?: string | null
+          payer_country_name?: string | null
+          payer_postal_code?: string | null
+          payer_type?: string | null
+          payment_method?: string | null
+          po_number?: string | null
+          registration_type?: string | null
+          selected_service_ids?: string | null
+          selected_ticket_id?: string | null
+          selected_ticket_label?: string | null
+          step?: string | null
           updated_at?: string | null
           wa_id?: string
         }
@@ -1280,18 +1535,34 @@ export type Database = {
       view_events_full: {
         Row: {
           additional_admins: string[] | null
+          available_services: Json | null
+          bc_customer_posting_group: string | null
+          bc_gen_bus_posting_group: string | null
+          bc_payment_terms_code: string | null
           bc_position: string | null
           bc_reference: string | null
+          bc_vat_bus_posting_group: string | null
+          branding_banner_url: string | null
+          branding_favicon_url: string | null
+          branding_logo_url: string | null
+          branding_primary_color: string | null
+          branding_secondary_color: string | null
+          branding_text_color: string | null
+          cancellation_policy: string | null
           created_at: string | null
           currency: string | null
+          description: string | null
           early_bird_deadline: string | null
           end_date: string | null
           event_id: string | null
+          event_type: string | null
           id: string | null
           institution_id: string | null
           institution_uuid: string | null
+          location_address: string | null
           location_city: string | null
           location_country: string | null
+          location_postal_code: string | null
           name: string | null
           notification_sender_email: string | null
           notification_sender_name: string | null
@@ -1301,9 +1572,11 @@ export type Database = {
           slug: string | null
           start_date: string | null
           status: string | null
+          stripe_tax_rate_id: string | null
           support_phone: string | null
           supported_languages: string[] | null
           tax_location: string | null
+          terms_url: string | null
           ticket_options: Json | null
           vat_rate: number | null
           venue_name: string | null
@@ -1311,18 +1584,34 @@ export type Database = {
         }
         Insert: {
           additional_admins?: string[] | null
+          available_services?: never
+          bc_customer_posting_group?: string | null
+          bc_gen_bus_posting_group?: string | null
+          bc_payment_terms_code?: string | null
           bc_position?: string | null
           bc_reference?: string | null
+          bc_vat_bus_posting_group?: string | null
+          branding_banner_url?: string | null
+          branding_favicon_url?: string | null
+          branding_logo_url?: string | null
+          branding_primary_color?: string | null
+          branding_secondary_color?: string | null
+          branding_text_color?: string | null
+          cancellation_policy?: string | null
           created_at?: string | null
           currency?: string | null
+          description?: string | null
           early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
+          event_type?: string | null
           id?: string | null
           institution_id?: string | null
           institution_uuid?: string | null
+          location_address?: string | null
           location_city?: string | null
           location_country?: string | null
+          location_postal_code?: string | null
           name?: string | null
           notification_sender_email?: string | null
           notification_sender_name?: string | null
@@ -1332,9 +1621,11 @@ export type Database = {
           slug?: string | null
           start_date?: string | null
           status?: string | null
+          stripe_tax_rate_id?: string | null
           support_phone?: string | null
           supported_languages?: string[] | null
           tax_location?: string | null
+          terms_url?: string | null
           ticket_options?: never
           vat_rate?: number | null
           venue_name?: string | null
@@ -1342,18 +1633,34 @@ export type Database = {
         }
         Update: {
           additional_admins?: string[] | null
+          available_services?: never
+          bc_customer_posting_group?: string | null
+          bc_gen_bus_posting_group?: string | null
+          bc_payment_terms_code?: string | null
           bc_position?: string | null
           bc_reference?: string | null
+          bc_vat_bus_posting_group?: string | null
+          branding_banner_url?: string | null
+          branding_favicon_url?: string | null
+          branding_logo_url?: string | null
+          branding_primary_color?: string | null
+          branding_secondary_color?: string | null
+          branding_text_color?: string | null
+          cancellation_policy?: string | null
           created_at?: string | null
           currency?: string | null
+          description?: string | null
           early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
+          event_type?: string | null
           id?: string | null
           institution_id?: string | null
           institution_uuid?: string | null
+          location_address?: string | null
           location_city?: string | null
           location_country?: string | null
+          location_postal_code?: string | null
           name?: string | null
           notification_sender_email?: string | null
           notification_sender_name?: string | null
@@ -1363,15 +1670,45 @@ export type Database = {
           slug?: string | null
           start_date?: string | null
           status?: string | null
+          stripe_tax_rate_id?: string | null
           support_phone?: string | null
           supported_languages?: string[] | null
           tax_location?: string | null
+          terms_url?: string | null
           ticket_options?: never
           vat_rate?: number | null
           venue_name?: string | null
           website_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "events_bc_customer_posting_group_fkey"
+            columns: ["bc_customer_posting_group"]
+            isOneToOne: false
+            referencedRelation: "bc_customer_posting_groups"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "events_bc_gen_bus_posting_group_fkey"
+            columns: ["bc_gen_bus_posting_group"]
+            isOneToOne: false
+            referencedRelation: "bc_gen_business_posting_groups"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "events_bc_payment_terms_code_fkey"
+            columns: ["bc_payment_terms_code"]
+            isOneToOne: false
+            referencedRelation: "bc_payment_terms"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "events_bc_vat_bus_posting_group_fkey"
+            columns: ["bc_vat_bus_posting_group"]
+            isOneToOne: false
+            referencedRelation: "bc_vat_business_posting_groups"
+            referencedColumns: ["code"]
+          },
           {
             foreignKeyName: "events_institution_id_fkey"
             columns: ["institution_id"]
@@ -1411,13 +1748,7 @@ export type Database = {
       }
       get_bc_posting_groups: {
         Args: { p_country_code: string; p_payer_type: string }
-        Returns: {
-          bc_customer_code: string
-          customer_posting_group: string
-          gen_bus_posting_group: string
-          vat_bus_posting_group: string
-          zone: string
-        }[]
+        Returns: Json
       }
       get_user_event_status: {
         Args: { p_event_id: string; p_phone: string }
@@ -1446,6 +1777,16 @@ export type Database = {
           wa_id: string
         }[]
       }
+      upsert_whatsapp_session:
+        | { Args: { p_event_slug?: string; p_wa_id: string }; Returns: Json }
+        | {
+            Args: {
+              p_event_slug?: string
+              p_last_message?: string
+              p_wa_id: string
+            }
+            Returns: Json
+          }
     }
     Enums: {
       payer_type: "individual" | "company" | "sponsor"
