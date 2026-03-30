@@ -45,27 +45,8 @@ export default function EventDetails() {
     queryKey: ['event-attendees', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('attendees')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          email,
-          phone,
-          status,
-          payment_status,
-          checked_in,
-          scanned_at,
-          price_paid,
-          created_at,
-          profile_id,
-          profiles:profile_id (
-            first_name,
-            last_name,
-            email,
-            phone
-          )
-        `)
+        .from('attendee_invoice_summary')
+        .select('*')
         .eq('event_id', id!);
       
       if (error) throw error;
