@@ -157,7 +157,20 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
               
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Building2 className="h-4 w-4" />
-                <span>{user.institution || 'No institution'}</span>
+                {institutionData ? (
+                  <button
+                    type="button"
+                    className="text-primary underline hover:text-primary/80 cursor-pointer text-left"
+                    onClick={() => {
+                      onOpenChange(false);
+                      navigate(`/admin/institutions/${institutionData.id}`);
+                    }}
+                  >
+                    {institutionData.name}
+                  </button>
+                ) : (
+                  <span>{resolvedCompany || '—'}</span>
+                )}
               </div>
               
               <div className="flex items-center gap-2 text-muted-foreground">
