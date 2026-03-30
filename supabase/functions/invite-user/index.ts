@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user already exists in auth using email lookup
+    // Check if user already exists in profiles
     const { data: existingProfile } = await supabaseAdmin
       .from("profiles")
       .select("id, email")
@@ -100,14 +100,6 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // Also check auth.users via admin API (getUserByEmail is not paginated)
-    const { data: existingAuthUser } = await supabaseAdmin.auth.admin.getUserById(
-      // We can't search by email directly, so use listUsers with page/perPage
-      // Instead, try to create and catch duplicate error gracefully
-      ""
-    ).catch(() => ({ data: null }));
-    // We'll rely on the profiles check above + handle the invite error below
 
     // Validate institution exists if provided
     if (institution_id) {
