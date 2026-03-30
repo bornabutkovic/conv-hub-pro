@@ -32,6 +32,25 @@ interface UserDetailsModalProps {
 }
 
 export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalProps) {
+  const navigate = useNavigate();
+
+  // Fetch linked institution name
+  const { data: institutionData } = useQuery({
+    queryKey: ['user-institution', user?.institution_uuid],
+    queryFn: async () => {
+      if (!user?.institution_uuid) return null;
+      const { data, error } = await supabase
+        .from('institutions')
+        .select('id, name')
+        .eq('id', user.institution_uuid)
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!user?.institution_uuid && open,
+  });
+
+  const resolvedCompany = institutionData?.name || user?.company_name || user?.institution || null;
   // Fetch events this user has attended (via attendees table)
   const { data: attendeeRecords, isLoading: attendeesLoading } = useQuery({
     queryKey: ['user-attendances', user?.id],
