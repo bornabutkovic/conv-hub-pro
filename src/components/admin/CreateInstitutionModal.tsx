@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useFormDraft } from '@/hooks/useFormDraft';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -56,6 +57,8 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
     },
   });
 
+  const { clearDraft } = useFormDraft(form, 'create_institution_modal', { enabled: open });
+
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
@@ -71,6 +74,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
 
       if (error) throw error;
 
+      clearDraft();
       toast.success('Institution created successfully!');
       queryClient.invalidateQueries({ queryKey: ['admin-institutions'] });
       form.reset();

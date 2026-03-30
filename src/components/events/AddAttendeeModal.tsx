@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
+import { useStateDraft } from '@/hooks/useFormDraft';
 
 type RegistrationStatus = Database['public']['Enums']['registration_status'];
 
@@ -39,7 +40,7 @@ interface AddAttendeeModalProps {
 
 export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeModalProps) {
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
+  const initialData = {
     firstName: '',
     lastName: '',
     phone: '',
@@ -47,7 +48,14 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     status: 'pending' as RegistrationStatus,
     ticketTierId: '',
     pricePaid: 0,
-  });
+  };
+  const { restoredData, saveDraft, clearDraft } = useStateDraft(`add_attendee_${eventId}`, initialData, { enabled: open });
+  const [formData, setFormData] = useState(restoredData);
+
+  const updateFormData = (newData: typeof formData) => {
+    setFormData(newData);
+    saveDraft(newData);
+  };
 
   // Fetch ticket tiers for this event
   const { data: ticketTiers } = useQuery({
@@ -67,7 +75,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
 
   const handleTicketTierChange = (tierId: string) => {
     const tier = ticketTiers?.find(t => t.id === tierId);
-    setFormData({
+    updateFormData({
       ...formData,
       ticketTierId: tierId,
       pricePaid: tier?.price || 0,
@@ -160,19 +168,12 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
       if (attendeeError) throw attendeeError;
     },
     onSuccess: () => {
+      clearDraft();
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
       queryClient.invalidateQueries({ queryKey: ['event-memberships', eventId] });
       toast.success('Attendee added successfully');
       onOpenChange(false);
-      setFormData({ 
-        firstName: '', 
-        lastName: '', 
-        phone: '', 
-        email: '', 
-        status: 'pending',
-        ticketTierId: '',
-        pricePaid: 0,
-      });
+      setFormData(initialData);
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to add attendee');
@@ -216,7 +217,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                   id="firstName"
                   placeholder="John"
                   value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  onChange={(e) => updateFormData({ ...formData, firstName: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -225,7 +226,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                   id="lastName"
                   placeholder="Doe"
                   value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  onChange={(e) => updateFormData({ ...formData, lastName: e.target.value })}
                 />
               </div>
             </div>
@@ -236,7 +237,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                 type="tel"
                 placeholder="+385 91 234 5678"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => updateFormData({ ...formData, phone: e.target.value })}
               />
               <p className="text-xs text-muted-foreground">
                 Primary identifier for WhatsApp integration
@@ -249,7 +250,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                 type="email"
                 placeholder="john@example.com"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => updateFormData({ ...formData, email: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -278,7 +279,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                 step="0.01"
                 min="0"
                 value={formData.pricePaid}
-                onChange={(e) => setFormData({ ...formData, pricePaid: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => updateFormData({ ...formData, pricePaid: parseFloat(e.target.value) || 0 })}
               />
               <p className="text-xs text-muted-foreground">
                 Auto-filled from tier, can be adjusted if needed
@@ -288,7 +289,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value: RegistrationStatus) => setFormData({ ...formData, status: value })}
+                onValueChange={(value: RegistrationStatus) => updateFormData({ ...formData, status: value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />

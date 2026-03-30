@@ -35,6 +35,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Tables } from '@/integrations/supabase/types';
+import { useFormDraft } from '@/hooks/useFormDraft';
 
 type TicketTier = Tables<'ticket_tiers'>;
 
@@ -83,6 +84,9 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
       sales_end: null,
     },
   });
+
+  const draftKey = tier ? `edit_ticket_tier_${tier.id}` : `add_ticket_tier_${eventId}`;
+  const { clearDraft } = useFormDraft(form, draftKey, { enabled: open });
 
   useEffect(() => {
     if (tier) {
@@ -163,6 +167,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket-tiers', eventId] });
+      clearDraft();
       toast.success(isEditing ? 'Ticket tier updated successfully' : 'Ticket tier created successfully');
       onOpenChange(false);
       form.reset();

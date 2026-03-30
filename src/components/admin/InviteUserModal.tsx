@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useFormDraft } from '@/hooks/useFormDraft';
 
 const inviteFormSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -62,6 +63,8 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
       institution_id: '',
     },
   });
+
+  const { clearDraft } = useFormDraft(form, 'invite_user', { enabled: open });
 
   // Fetch institutions for the dropdown
   const { data: institutions } = useQuery({
@@ -103,6 +106,7 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
         return;
       }
 
+      clearDraft();
       toast.success('Invitation sent! The user will receive an email to set their password.');
 
       form.reset();
