@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { getRoleDisplayName } from '@/lib/roles';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,25 @@ interface UserDetailsModalProps {
 }
 
 export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalProps) {
+  const navigate = useNavigate();
+
+  // Fetch linked institution name
+  const { data: institutionData } = useQuery({
+    queryKey: ['user-institution', user?.institution_uuid],
+    queryFn: async () => {
+      if (!user?.institution_uuid) return null;
+      const { data, error } = await supabase
+        .from('institutions')
+        .select('id, name')
+        .eq('id', user.institution_uuid)
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!user?.institution_uuid && open,
+  });
+
+  const resolvedCompany = institutionData?.name || user?.company_name || user?.institution || null;
   // Fetch events this user has attended (via attendees table)
   const { data: attendeeRecords, isLoading: attendeesLoading } = useQuery({
     queryKey: ['user-attendances', user?.id],
@@ -137,7 +157,20 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
               
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Building2 className="h-4 w-4" />
-                <span>{user.institution || 'No institution'}</span>
+                {institutionData ? (
+                  <button
+                    type="button"
+                    className="text-primary underline hover:text-primary/80 cursor-pointer text-left"
+                    onClick={() => {
+                      onOpenChange(false);
+                      navigate(`/admin/institutions/${institutionData.id}`);
+                    }}
+                  >
+                    {institutionData.name}
+                  </button>
+                ) : (
+                  <span>{resolvedCompany || '—'}</span>
+                )}
               </div>
               
               <div className="flex items-center gap-2 text-muted-foreground">

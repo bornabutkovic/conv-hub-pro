@@ -61,12 +61,12 @@ export function AdminUsersTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, institutions:institution_uuid(id, name)')
         .in('role', ['super_admin', 'admin', 'event_organizer', 'organizer_admin'])
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Profile[];
+      return data as (Profile & { institutions: { id: string; name: string } | null })[];
     },
   });
 
@@ -123,7 +123,14 @@ export function AdminUsersTab() {
     });
   };
 
-  const renderUserRow = (user: Profile) => {
+  const getCompanyName = (user: Profile & { institutions?: { id: string; name: string } | null }) => {
+    if (user.institutions?.name) return user.institutions.name;
+    if (user.company_name) return user.company_name;
+    if (user.institution) return user.institution;
+    return '—';
+  };
+
+  const renderUserRow = (user: Profile & { institutions?: { id: string; name: string } | null }) => {
     const isCurrentUser = user.id === currentUserProfile?.id;
     return (
       <TableRow key={user.id}>
@@ -132,6 +139,7 @@ export function AdminUsersTab() {
             ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
             : '—'}
         </TableCell>
+        <TableCell className="text-muted-foreground">{getCompanyName(user)}</TableCell>
         <TableCell className="text-muted-foreground">{user.email || '—'}</TableCell>
         <TableCell>
           <Badge
@@ -263,7 +271,8 @@ export function AdminUsersTab() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
+                     <TableHead>Name</TableHead>
+                      <TableHead>Company</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -299,7 +308,8 @@ export function AdminUsersTab() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
+                     <TableHead>Name</TableHead>
+                      <TableHead>Company</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
