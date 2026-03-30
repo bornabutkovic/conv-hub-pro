@@ -141,8 +141,18 @@ Deno.serve(async (req) => {
         role,
         institution_id,
       }));
+      
+      // Handle duplicate email error specifically
+      const isDuplicate = error.message?.includes("duplicate") || 
+                          error.message?.includes("already") ||
+                          error.message?.includes("Database error saving new user");
+      
+      const userMessage = isDuplicate 
+        ? `Korisnik s emailom ${email} već postoji u sustavu.`
+        : error.message;
+      
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: userMessage }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
