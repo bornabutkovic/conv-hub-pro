@@ -123,7 +123,14 @@ export function AdminUsersTab() {
     });
   };
 
-  const renderUserRow = (user: Profile) => {
+  const getCompanyName = (user: Profile & { institutions?: { id: string; name: string } | null }) => {
+    if (user.institutions?.name) return user.institutions.name;
+    if (user.company_name) return user.company_name;
+    if (user.institution) return user.institution;
+    return '—';
+  };
+
+  const renderUserRow = (user: Profile & { institutions?: { id: string; name: string } | null }) => {
     const isCurrentUser = user.id === currentUserProfile?.id;
     return (
       <TableRow key={user.id}>
@@ -132,6 +139,7 @@ export function AdminUsersTab() {
             ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
             : '—'}
         </TableCell>
+        <TableCell className="text-muted-foreground">{getCompanyName(user)}</TableCell>
         <TableCell className="text-muted-foreground">{user.email || '—'}</TableCell>
         <TableCell>
           <Badge
