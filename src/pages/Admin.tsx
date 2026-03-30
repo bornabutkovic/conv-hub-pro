@@ -1,13 +1,19 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InstitutionsTable } from '@/components/admin/InstitutionsTable';
-import { UsersManager } from '@/components/admin/UsersManager';
+import { AdminUsersTab } from '@/components/admin/AdminUsersTab';
 import { PendingApprovalsSection } from '@/components/admin/PendingApprovalsSection';
 import { Button } from '@/components/ui/button';
 import { Plus, Building2, Users } from 'lucide-react';
 
 export default function Admin() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'institutions';
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value }, { replace: true });
+  };
 
   return (
     <div className="space-y-6">
@@ -20,7 +26,7 @@ export default function Admin() {
 
       <PendingApprovalsSection />
 
-      <Tabs defaultValue="institutions" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList>
           <TabsTrigger value="institutions" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
@@ -43,7 +49,7 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="users">
-          <UsersManager />
+          <AdminUsersTab />
         </TabsContent>
       </Tabs>
     </div>

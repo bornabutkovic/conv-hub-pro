@@ -18,7 +18,6 @@ import Admin from "./pages/Admin";
 import CreateInstitution from "./pages/CreateInstitution";
 import EditInstitution from "./pages/EditInstitution";
 import AdminChats from "./pages/AdminChats";
-import AdminUsers from "./pages/AdminUsers";
 import UpdatePassword from "./pages/UpdatePassword";
 import PendingApproval from "./pages/PendingApproval";
 import NotFound from "./pages/NotFound";
@@ -132,16 +131,6 @@ const App = () => (
                 <AdminRoute>
                   <AppLayout>
                     <AdminChats />
-                  </AppLayout>
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/users"
-              element={
-                <AdminRoute>
-                  <AppLayout>
-                    <AdminUsers />
                   </AppLayout>
                 </AdminRoute>
               }
