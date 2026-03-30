@@ -61,12 +61,12 @@ export function AdminUsersTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, institutions:institution_uuid(id, name)')
         .in('role', ['super_admin', 'admin', 'event_organizer', 'organizer_admin'])
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Profile[];
+      return data as (Profile & { institutions: { id: string; name: string } | null })[];
     },
   });
 
