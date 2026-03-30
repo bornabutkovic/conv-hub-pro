@@ -133,6 +133,21 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
+      const isDuplicate = error.message?.includes("duplicate") ||
+        error.message?.includes("already") ||
+        error.message?.includes("Database error saving new user");
+
+      if (isDuplicate) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            code: "already_exists",
+            error: `Korisnik s emailom ${email} već postoji u sustavu.`,
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       console.error("Error inviting user:", JSON.stringify({
         message: error.message,
         status: error.status,
@@ -141,27 +156,16 @@ Deno.serve(async (req) => {
         role,
         institution_id,
       }));
-      
-      // Handle duplicate email error specifically
-      const isDuplicate = error.message?.includes("duplicate") || 
-                          error.message?.includes("already") ||
-                          error.message?.includes("Database error saving new user");
-      
-      const userMessage = isDuplicate 
-        ? `Korisnik s emailom ${email} već postoji u sustavu.`
-        : error.message;
-      
+
       return new Response(
-        JSON.stringify({ error: userMessage }),
+        JSON.stringify({ error: error.message }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("User invited successfully:", data.user?.email);
-
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: `Invitation sent to ${email}`,
         user: { id: data.user?.id, email: data.user?.email }
       }),
