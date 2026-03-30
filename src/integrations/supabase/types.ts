@@ -802,6 +802,13 @@ export type Database = {
             foreignKeyName: "leads_attendee_id_fkey"
             columns: ["attendee_id"]
             isOneToOne: false
+            referencedRelation: "attendee_invoice_summary"
+            referencedColumns: ["attendee_id"]
+          },
+          {
+            foreignKeyName: "leads_attendee_id_fkey"
+            columns: ["attendee_id"]
+            isOneToOne: false
             referencedRelation: "attendees"
             referencedColumns: ["id"]
           },
@@ -872,8 +879,22 @@ export type Database = {
             foreignKeyName: "order_items_attendee_id_fkey"
             columns: ["attendee_id"]
             isOneToOne: false
+            referencedRelation: "attendee_invoice_summary"
+            referencedColumns: ["attendee_id"]
+          },
+          {
+            foreignKeyName: "order_items_attendee_id_fkey"
+            columns: ["attendee_id"]
+            isOneToOne: false
             referencedRelation: "attendees"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "attendee_invoice_summary"
+            referencedColumns: ["order_id"]
           },
           {
             foreignKeyName: "order_items_order_id_fkey"
@@ -995,6 +1016,13 @@ export type Database = {
           vat_bus_posting_group?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_attendee_id_fkey"
+            columns: ["attendee_id"]
+            isOneToOne: false
+            referencedRelation: "attendee_invoice_summary"
+            referencedColumns: ["attendee_id"]
+          },
           {
             foreignKeyName: "orders_attendee_id_fkey"
             columns: ["attendee_id"]
@@ -1544,6 +1572,56 @@ export type Database = {
         }
         Relationships: []
       }
+      attendee_invoice_summary: {
+        Row: {
+          attendee_id: string | null
+          bc_customer_no: string | null
+          bc_invoice_id: string | null
+          bc_invoice_number: string | null
+          checked_in: boolean | null
+          email: string | null
+          event_id: string | null
+          first_name: string | null
+          is_group_order: boolean | null
+          last_name: string | null
+          order_id: string | null
+          order_number: number | null
+          order_status: Database["public"]["Enums"]["payment_status"] | null
+          payer_name: string | null
+          payer_type: Database["public"]["Enums"]["payer_type"] | null
+          payment_method: string | null
+          payment_status: string | null
+          registered_at: string | null
+          registration_status:
+            | Database["public"]["Enums"]["registration_status"]
+            | null
+          ticket_tier_id: string | null
+          total_amount: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendees_ticket_tier_id_fkey"
+            columns: ["ticket_tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       view_events_full: {
         Row: {
           additional_admins: string[] | null
@@ -1748,6 +1826,7 @@ export type Database = {
         }
         Returns: string
       }
+      cancel_expired_pending_orders: { Args: never; Returns: undefined }
       create_registration_items: {
         Args: {
           p_attendees: Json
@@ -1830,7 +1909,13 @@ export type Database = {
     }
     Enums: {
       payer_type: "individual" | "company" | "sponsor"
-      payment_status: "draft" | "issued" | "paid" | "overdue" | "refunded"
+      payment_status:
+        | "draft"
+        | "issued"
+        | "paid"
+        | "overdue"
+        | "refunded"
+        | "cancelled"
       registration_status: "pending" | "approved" | "cancelled"
     }
     CompositeTypes: {
@@ -1960,7 +2045,14 @@ export const Constants = {
   public: {
     Enums: {
       payer_type: ["individual", "company", "sponsor"],
-      payment_status: ["draft", "issued", "paid", "overdue", "refunded"],
+      payment_status: [
+        "draft",
+        "issued",
+        "paid",
+        "overdue",
+        "refunded",
+        "cancelled",
+      ],
       registration_status: ["pending", "approved", "cancelled"],
     },
   },
