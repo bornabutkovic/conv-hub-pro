@@ -138,7 +138,7 @@ export default function Dashboard() {
             )}
           </div>
           <Button asChild className="gap-2 rounded-xl bg-brand-gradient hover:opacity-90 transition-opacity text-white border-0 shadow-brand">
-            <Link to="/events">
+            <Link to="/events/new">
               <Plus className="h-4 w-4" />
               Create Event
             </Link>
