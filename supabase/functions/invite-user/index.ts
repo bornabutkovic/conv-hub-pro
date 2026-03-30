@@ -87,10 +87,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user already exists in auth
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find((u) => u.email === email);
-    if (existingUser) {
+    // Check if user already exists in profiles
+    const { data: existingProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("id, email")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (existingProfile) {
       return new Response(
         JSON.stringify({ error: `Korisnik s emailom ${email} već postoji u sustavu.` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -137,8 +141,18 @@ Deno.serve(async (req) => {
         role,
         institution_id,
       }));
+      
+      // Handle duplicate email error specifically
+      const isDuplicate = error.message?.includes("duplicate") || 
+                          error.message?.includes("already") ||
+                          error.message?.includes("Database error saving new user");
+      
+      const userMessage = isDuplicate 
+        ? `Korisnik s emailom ${email} već postoji u sustavu.`
+        : error.message;
+      
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: userMessage }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
