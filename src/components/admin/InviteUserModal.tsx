@@ -96,12 +96,12 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
 
       if (fnError) {
         console.error('Invite user error:', fnError);
-        toast.error(fnError.message || 'Failed to invite user');
+        const message = fnError.message || 'Failed to invite user';
+        toast.error(message);
         return;
       }
 
       if (fnData?.error) {
-        console.error('Invite user error:', fnData.error);
         toast.error(fnData.error);
         return;
       }
