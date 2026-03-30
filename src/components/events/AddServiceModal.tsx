@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { useStateDraft } from '@/hooks/useFormDraft';
 
 interface AddServiceModalProps {
   open: boolean;
@@ -36,12 +37,20 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
   const queryClient = useQueryClient();
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
-  const [formData, setFormData] = useState({
+  const draftKey = editService ? `edit_service_${editService.id}` : `add_service_${eventId}`;
+  const initialFormData = {
     name: editService?.name || '',
     description: editService?.description || '',
     price: editService?.price?.toString() || '',
     capacity: editService?.capacity?.toString() || '',
-  });
+  };
+  const { restoredData, saveDraft, clearDraft, wasRestored } = useStateDraft(draftKey, initialFormData, { enabled: open && !editService });
+  const [formData, setFormData] = useState(editService ? initialFormData : restoredData);
+
+  const updateFormData = (newData: typeof formData) => {
+    setFormData(newData);
+    if (!editService) saveDraft(newData);
+  };
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -91,6 +100,7 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
       }
     },
     onSuccess: () => {
+      clearDraft();
       queryClient.invalidateQueries({ queryKey: ['event-services', eventId] });
       toast.success(editService ? 'Service updated successfully' : 'Service added successfully');
       onOpenChange(false);
@@ -127,7 +137,7 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
                 id="name"
                 placeholder="e.g., Gala Dinner, Workshop Access"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => updateFormData({ ...formData, name: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -136,7 +146,7 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
                 id="description"
                 placeholder="Optional description..."
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) => updateFormData({ ...formData, description: e.target.value })}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -149,7 +159,7 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
                   min="0"
                   placeholder="0.00"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  onChange={(e) => updateFormData({ ...formData, price: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -160,7 +170,7 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
                   min="1"
                   placeholder="Unlimited"
                   value={formData.capacity}
-                  onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                  onChange={(e) => updateFormData({ ...formData, capacity: e.target.value })}
                 />
               </div>
             </div>

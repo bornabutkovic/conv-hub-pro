@@ -1221,6 +1221,7 @@ export type Database = {
           price: number
           sales_end: string | null
           sales_start: string | null
+          short_name: string | null
           status: string | null
         }
         Insert: {
@@ -1237,6 +1238,7 @@ export type Database = {
           price?: number
           sales_end?: string | null
           sales_start?: string | null
+          short_name?: string | null
           status?: string | null
         }
         Update: {
@@ -1253,6 +1255,7 @@ export type Database = {
           price?: number
           sales_end?: string | null
           sales_start?: string | null
+          short_name?: string | null
           status?: string | null
         }
         Relationships: [
@@ -1281,6 +1284,7 @@ export type Database = {
       }
       whatsapp_session: {
         Row: {
+          attendees_collected: number | null
           attendees_json: string | null
           billing_email: string | null
           cart_items: string | null
@@ -1299,6 +1303,8 @@ export type Database = {
           event_name: string | null
           event_slug: string | null
           first_name: string | null
+          last_ai_message: string | null
+          last_human_message: string | null
           last_intent: string | null
           last_message_at: string | null
           last_message_id: string | null
@@ -1318,6 +1324,7 @@ export type Database = {
           wa_id: string
         }
         Insert: {
+          attendees_collected?: number | null
           attendees_json?: string | null
           billing_email?: string | null
           cart_items?: string | null
@@ -1336,6 +1343,8 @@ export type Database = {
           event_name?: string | null
           event_slug?: string | null
           first_name?: string | null
+          last_ai_message?: string | null
+          last_human_message?: string | null
           last_intent?: string | null
           last_message_at?: string | null
           last_message_id?: string | null
@@ -1355,6 +1364,7 @@ export type Database = {
           wa_id: string
         }
         Update: {
+          attendees_collected?: number | null
           attendees_json?: string | null
           billing_email?: string | null
           cart_items?: string | null
@@ -1373,6 +1383,8 @@ export type Database = {
           event_name?: string | null
           event_slug?: string | null
           first_name?: string | null
+          last_ai_message?: string | null
+          last_human_message?: string | null
           last_intent?: string | null
           last_message_at?: string | null
           last_message_id?: string | null
@@ -1736,6 +1748,23 @@ export type Database = {
         }
         Returns: string
       }
+      create_registration_items: {
+        Args: {
+          p_attendees: Json
+          p_cart_services: Json
+          p_company_name: string
+          p_contact_phone: string
+          p_event_id: string
+          p_order_id: string
+          p_payer_type: string
+          p_requires_invoice: boolean
+          p_ticket_tier_id: string
+          p_tier_erp_code: string
+          p_tier_name: string
+          p_tier_price: number
+        }
+        Returns: Json
+      }
       create_user_wizard: {
         Args: {
           email_input: string
@@ -1750,6 +1779,7 @@ export type Database = {
         Args: { p_country_code: string; p_payer_type: string }
         Returns: Json
       }
+      get_order_full_data: { Args: { p_order_id: string }; Returns: Json }
       get_user_event_status: {
         Args: { p_event_id: string; p_phone: string }
         Returns: {
@@ -1769,6 +1799,7 @@ export type Database = {
       }
       is_admin_user: { Args: { _user_id: string }; Returns: boolean }
       normalize_phone_to_waid: { Args: { phone: string }; Returns: string }
+      unaccent: { Args: { "": string }; Returns: string }
       update_completed_events: { Args: never; Returns: undefined }
       upsert_wa_session: {
         Args: { p_new_slug?: string; p_wa_id: string }
@@ -1782,6 +1813,15 @@ export type Database = {
         | {
             Args: {
               p_event_slug?: string
+              p_last_message?: string
+              p_wa_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_event_slug?: string
+              p_force_reset?: boolean
               p_last_message?: string
               p_wa_id: string
             }

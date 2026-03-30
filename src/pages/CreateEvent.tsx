@@ -42,6 +42,7 @@ import { useQuery } from '@tanstack/react-query';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { useFormDraft } from '@/hooks/useFormDraft';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -152,6 +153,8 @@ export default function CreateEvent() {
     },
   });
 
+  const { clearDraft } = useFormDraft(form, 'create_event');
+
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
@@ -240,6 +243,7 @@ export default function CreateEvent() {
         console.warn('Membership assignment skipped:', membershipError);
       }
 
+      clearDraft();
       toast.success('Event created successfully!');
 
       navigate(`/events/${newEvent.id}`);

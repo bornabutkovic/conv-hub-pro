@@ -18,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useFormDraft } from '@/hooks/useFormDraft';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -49,6 +50,8 @@ export default function CreateInstitution() {
     },
   });
 
+  const { clearDraft } = useFormDraft(form, 'create_institution');
+
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
@@ -64,6 +67,7 @@ export default function CreateInstitution() {
 
       if (error) throw error;
 
+      clearDraft();
       toast.success('Institution created successfully!');
       queryClient.invalidateQueries({ queryKey: ['admin-institutions'] });
       navigate('/admin');
