@@ -87,6 +87,33 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Check if user already exists in auth
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find((u) => u.email === email);
+    if (existingUser) {
+      return new Response(
+        JSON.stringify({ error: `Korisnik s emailom ${email} već postoji u sustavu.` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate institution exists if provided
+    if (institution_id) {
+      const { data: inst, error: instErr } = await supabaseAdmin
+        .from("institutions")
+        .select("id")
+        .eq("id", institution_id)
+        .single();
+      
+      if (instErr || !inst) {
+        console.error("Institution not found:", institution_id);
+        return new Response(
+          JSON.stringify({ error: "Odabrana institucija ne postoji." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Get the site URL for redirect
     const siteUrl = req.headers.get("origin") || "https://id-preview--908ddbac-4687-4971-b60a-0b5b5e488a13.lovable.app";
 
@@ -98,11 +125,18 @@ Deno.serve(async (req) => {
         role,
         institution_uuid: institution_id || null,
       },
-      redirectTo: `${siteUrl}/auth/update-password`,
+      redirectTo: `${siteUrl}/update-password`,
     });
 
     if (error) {
-      console.error("Error inviting user:", error);
+      console.error("Error inviting user:", JSON.stringify({
+        message: error.message,
+        status: error.status,
+        name: error.name,
+        email,
+        role,
+        institution_id,
+      }));
       return new Response(
         JSON.stringify({ error: error.message }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
