@@ -271,7 +271,8 @@ export function AdminUsersTab() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
+                     <TableHead>Name</TableHead>
+                      <TableHead>Company</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
