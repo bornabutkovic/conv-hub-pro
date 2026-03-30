@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Users, Phone, Mail, Calendar, UserPlus, CheckCircle2, Circle } from 'lucide-react';
+import { Users, Phone, Mail, Calendar, UserPlus, CheckCircle2, Circle, Copy, Search, FileText, Hash, UsersRound } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -12,41 +12,49 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { AddAttendeeModal } from './AddAttendeeModal';
+import { AttendeeDetailModal } from './AttendeeDetailModal';
+import { toast } from 'sonner';
 
-interface Profile {
+export interface InvoiceAttendee {
+  attendee_id: string | null;
   first_name: string | null;
   last_name: string | null;
   email: string | null;
-  phone: string | null;
-}
-
-interface Attendee {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string | null;
-  phone: string | null;
-  status: string | null;
+  event_id: string | null;
   payment_status: string | null;
+  registration_status: string | null;
   checked_in: boolean | null;
-  scanned_at: string | null;
-  created_at: string | null;
-  profile_id: string | null;
-  profiles: Profile | null;
+  ticket_tier_id: string | null;
+  registered_at: string | null;
+  order_id: string | null;
+  order_number: number | null;
+  bc_invoice_number: string | null;
+  bc_invoice_id: string | null;
+  bc_customer_no: string | null;
+  order_status: string | null;
+  payment_method: string | null;
+  payer_type: string | null;
+  payer_name: string | null;
+  total_amount: number | null;
+  is_group_order: boolean | null;
 }
 
 interface EventAttendeesTableProps {
-  attendees: Attendee[];
+  attendees: InvoiceAttendee[];
   isLoading: boolean;
   eventId: string;
+  currency?: string;
 }
 
 type PaymentFilter = 'all' | 'paid' | 'pending' | 'overdue';
 
-export function EventAttendeesTable({ attendees, isLoading, eventId }: EventAttendeesTableProps) {
+export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 'EUR' }: EventAttendeesTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>('all');
+  const [invoiceSearch, setInvoiceSearch] = useState('');
+  const [selectedAttendee, setSelectedAttendee] = useState<InvoiceAttendee | null>(null);
 
   const getStatusVariant = (status: string | null) => {
     switch (status) {
@@ -79,18 +87,25 @@ export function EventAttendeesTable({ attendees, isLoading, eventId }: EventAtte
     }
   };
 
-  const getPhone = (attendee: Attendee) => attendee.profiles?.phone || attendee.phone || null;
-  const getEmail = (attendee: Attendee) => attendee.profiles?.email || attendee.email || null;
-  const getFullName = (attendee: Attendee) => {
-    if (attendee.profiles?.first_name || attendee.profiles?.last_name) {
-      return `${attendee.profiles.first_name || ''} ${attendee.profiles.last_name || ''}`.trim();
-    }
-    return `${attendee.first_name} ${attendee.last_name}`.trim();
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Kopirano u međuspremnik');
   };
 
-  const filteredAttendees = paymentFilter === 'all'
+  const getFullName = (attendee: InvoiceAttendee) =>
+    `${attendee.first_name || ''} ${attendee.last_name || ''}`.trim() || '—';
+
+  // Apply filters
+  let filteredAttendees = paymentFilter === 'all'
     ? attendees
     : attendees.filter(a => a.payment_status === paymentFilter);
+
+  if (invoiceSearch.trim()) {
+    const q = invoiceSearch.trim().toLowerCase();
+    filteredAttendees = filteredAttendees.filter(a =>
+      a.bc_invoice_number?.toLowerCase().includes(q)
+    );
+  }
 
   const filterCounts = {
     all: attendees.length,
@@ -161,18 +176,29 @@ export function EventAttendeesTable({ attendees, isLoading, eventId }: EventAtte
         </CardHeader>
         <CardContent>
           {/* Filter Bar */}
-          <div className="flex items-center gap-2 mb-4">
-            {(['all', 'paid', 'pending', 'overdue'] as PaymentFilter[]).map((filter) => (
-              <Button
-                key={filter}
-                variant={paymentFilter === filter ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPaymentFilter(filter)}
-              >
-                {filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
-                <span className="ml-1.5 text-xs opacity-70">({filterCounts[filter]})</span>
-              </Button>
-            ))}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+            <div className="flex items-center gap-2">
+              {(['all', 'paid', 'pending', 'overdue'] as PaymentFilter[]).map((filter) => (
+                <Button
+                  key={filter}
+                  variant={paymentFilter === filter ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPaymentFilter(filter)}
+                >
+                  {filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                  <span className="ml-1.5 text-xs opacity-70">({filterCounts[filter]})</span>
+                </Button>
+              ))}
+            </div>
+            <div className="relative w-full sm:w-52">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Pretraži br. ponude..."
+                value={invoiceSearch}
+                onChange={(e) => setInvoiceSearch(e.target.value)}
+                className="pl-8 h-8 text-sm"
+              />
+            </div>
           </div>
 
           <Table>
@@ -181,17 +207,23 @@ export function EventAttendeesTable({ attendees, isLoading, eventId }: EventAtte
                 <TableHead>Full Name</TableHead>
                 <TableHead>
                   <div className="flex items-center gap-1.5">
-                    <Phone className="h-4 w-4" />
-                    Phone
-                  </div>
-                </TableHead>
-                <TableHead>
-                  <div className="flex items-center gap-1.5">
                     <Mail className="h-4 w-4" />
                     Email
                   </div>
                 </TableHead>
                 <TableHead>Payment</TableHead>
+                <TableHead>
+                  <div className="flex items-center gap-1.5">
+                    <FileText className="h-4 w-4" />
+                    Br. ponude
+                  </div>
+                </TableHead>
+                <TableHead>
+                  <div className="flex items-center gap-1.5">
+                    <Hash className="h-4 w-4" />
+                    Narudžba #
+                  </div>
+                </TableHead>
                 <TableHead>Check-in</TableHead>
                 <TableHead>
                   <div className="flex items-center gap-1.5">
@@ -203,63 +235,86 @@ export function EventAttendeesTable({ attendees, isLoading, eventId }: EventAtte
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAttendees.map((attendee) => {
-                const phone = getPhone(attendee);
-                const email = getEmail(attendee);
-                
-                return (
-                  <TableRow key={attendee.id}>
-                    <TableCell className="font-medium">{getFullName(attendee)}</TableCell>
-                    <TableCell>
-                      {phone ? (
-                        <span className="font-mono text-sm">{phone}</span>
-                      ) : (
-                        <span className="text-muted-foreground italic">No phone</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {email || <span className="text-muted-foreground italic">No email</span>}
-                    </TableCell>
-                    <TableCell>{getPaymentBadge(attendee.payment_status)}</TableCell>
-                    <TableCell>
-                      {attendee.checked_in ? (
-                        <div className="flex items-center gap-1.5 text-emerald-600">
-                          <CheckCircle2 className="h-4 w-4" />
-                          <div className="text-sm">
-                            <span>Checked In</span>
-                            {attendee.scanned_at && (
-                              <p className="text-xs text-muted-foreground">
-                                {format(new Date(attendee.scanned_at), 'MMM d, HH:mm')}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Circle className="h-4 w-4" />
-                          <span className="text-sm">Not checked in</span>
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {attendee.created_at
-                        ? format(new Date(attendee.created_at), 'MMM d, yyyy')
-                        : '-'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(attendee.status)}>
-                        {getStatusLabel(attendee.status)}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {filteredAttendees.map((attendee) => (
+                <TableRow
+                  key={attendee.attendee_id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => setSelectedAttendee(attendee)}
+                >
+                  <TableCell className="font-medium">{getFullName(attendee)}</TableCell>
+                  <TableCell>
+                    {attendee.email || <span className="text-muted-foreground italic">No email</span>}
+                  </TableCell>
+                  <TableCell>{getPaymentBadge(attendee.payment_status)}</TableCell>
+                  <TableCell>
+                    {attendee.bc_invoice_number ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copyToClipboard(attendee.bc_invoice_number!);
+                        }}
+                        className="inline-flex items-center gap-1 font-mono text-sm hover:text-primary transition-colors"
+                        title="Klikni za kopiranje"
+                      >
+                        {attendee.bc_invoice_number}
+                        <Copy className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {attendee.order_number != null ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-sm">#{attendee.order_number}</span>
+                        {attendee.is_group_order && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 leading-4 border-blue-500/30 text-blue-600">
+                            <UsersRound className="h-3 w-3 mr-0.5" />
+                            Grupna
+                          </Badge>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {attendee.checked_in ? (
+                      <div className="flex items-center gap-1.5 text-emerald-600">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span className="text-sm">Checked In</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Circle className="h-4 w-4" />
+                        <span className="text-sm">Not checked in</span>
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {attendee.registered_at
+                      ? format(new Date(attendee.registered_at), 'MMM d, yyyy')
+                      : '—'}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(attendee.registration_status)}>
+                      {getStatusLabel(attendee.registration_status)}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
 
       <AddAttendeeModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} eventId={eventId} />
+      <AttendeeDetailModal
+        open={!!selectedAttendee}
+        onOpenChange={(open) => !open && setSelectedAttendee(null)}
+        attendee={selectedAttendee}
+        currency={currency}
+      />
     </>
   );
 }
