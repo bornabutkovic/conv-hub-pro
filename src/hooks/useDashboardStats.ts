@@ -45,7 +45,7 @@ export function useDashboardStats(selectedEventId?: string | null) {
   const isElevated = isElevatedRole(profile?.role);
 
   return useQuery({
-    queryKey: ['dashboard-stats-full', institutionUuid, isElevated, selectedEventId],
+    queryKey: ['dashboard-stats-full', institutionUuid, isElevated, profile?.role, selectedEventId],
     queryFn: async (): Promise<DashboardStats> => {
       let eventIds: string[] = [];
 
