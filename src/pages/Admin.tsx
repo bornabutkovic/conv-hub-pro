@@ -1,5 +1,7 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import { InstitutionsTable } from '@/components/admin/InstitutionsTable';
 import { AdminUsersTab } from '@/components/admin/AdminUsersTab';
 import { PendingApprovalsSection } from '@/components/admin/PendingApprovalsSection';
