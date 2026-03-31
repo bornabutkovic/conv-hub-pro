@@ -50,10 +50,10 @@ type AdminUser = {
   email: string;
   full_name: string | null;
   institution_id: string | null;
+  institution_name: string | null;
   role: string;
   invited_by: string | null;
   created_at: string | null;
-  institutions: { id: string; name: string } | null;
 };
 
 export function AdminUsersTab() {
