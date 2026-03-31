@@ -1,5 +1,7 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/AuthContext';
+import { isAdmin } from '@/lib/roles';
 import { InstitutionsTable } from '@/components/admin/InstitutionsTable';
 import { AdminUsersTab } from '@/components/admin/AdminUsersTab';
 import { PendingApprovalsSection } from '@/components/admin/PendingApprovalsSection';
@@ -7,8 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Plus, Building2, Users } from 'lucide-react';
 
 export default function Admin() {
+  const { profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  if (!isAdmin(profile?.role)) {
+    return <Navigate to="/" replace />;
+  }
   const activeTab = searchParams.get('tab') || 'institutions';
 
   const handleTabChange = (value: string) => {

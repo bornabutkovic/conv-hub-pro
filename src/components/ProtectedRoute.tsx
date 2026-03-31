@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin } from '@/lib/roles';
+import { isAdmin, isPortalUser } from '@/lib/roles';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -23,8 +23,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/auth" replace />;
   }
 
-  // 3. Super Admin / Admin → always allowed, never check institution
-  if (isAdmin(profile?.role)) {
+  // 3. Portal users (admin, super_admin, event_organizer) → always allowed
+  if (isPortalUser(profile?.role)) {
     return <>{children}</>;
   }
 
