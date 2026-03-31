@@ -23,8 +23,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/auth" replace />;
   }
 
-  // 3. Super Admin / Admin → always allowed, never check institution
-  if (isAdmin(profile?.role)) {
+  // 3. Portal users (admin, super_admin, event_organizer) → always allowed
+  if (isPortalUser(profile?.role)) {
     return <>{children}</>;
   }
 

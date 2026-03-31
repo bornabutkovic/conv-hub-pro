@@ -22,7 +22,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
   }
 
   // Only admin (or legacy super_admin) can access admin routes
-  if (!isAdmin(profile?.role)) {
+  if (!isPortalUser(profile?.role)) {
     return <Navigate to="/" replace />;
   }
 

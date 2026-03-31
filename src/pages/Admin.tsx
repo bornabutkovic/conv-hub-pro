@@ -9,8 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Plus, Building2, Users } from 'lucide-react';
 
 export default function Admin() {
+  const { profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  if (!isAdmin(profile?.role)) {
+    return <Navigate to="/" replace />;
+  }
   const activeTab = searchParams.get('tab') || 'institutions';
 
   const handleTabChange = (value: string) => {
