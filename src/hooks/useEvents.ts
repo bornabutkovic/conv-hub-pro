@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { isSuperAdmin, isAdmin } from '@/lib/roles';
+import { isSuperAdmin, isAdmin, isPortalUser } from '@/lib/roles';
 
 export type EventStatus = 'all' | 'draft' | 'pending_approval' | 'active' | 'completed';
 
@@ -99,27 +99,14 @@ export function useEvents(statusFilter: EventStatus = 'all') {
         })) as Event[];
       }
 
-      // event_organizer: only show events they have membership for
-      const { data: memberships, error: memErr } = await supabase
-        .from('event_memberships')
-        .select('event_id')
-        .eq('user_id', user!.id);
-
-      if (memErr) {
-        console.error('[useEvents] Membership fetch error:', memErr);
-        throw memErr;
-      }
-
-      const eventIds = (memberships || [])
-        .map((m) => m.event_id)
-        .filter(Boolean) as string[];
-
-      if (eventIds.length === 0) return [];
+      // event_organizer: see only their institution's events (no pending_approval from others)
+      const institutionUuid = profile?.institution_uuid;
+      if (!institutionUuid) return [];
 
       let query = supabase
         .from('events')
         .select(`*, institutions:institution_uuid (name)`)
-        .in('id', eventIds)
+        .eq('institution_uuid', institutionUuid)
         .order('start_date', { ascending: false });
 
       if (statusFilter !== 'all') {
