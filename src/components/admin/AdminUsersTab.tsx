@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getRoleDisplayName, isAdmin } from '@/lib/roles';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
 import {
   Search,
@@ -45,9 +44,17 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { InviteUserModal } from '@/components/admin/InviteUserModal';
-import type { Tables } from '@/integrations/supabase/types';
 
-type Profile = Tables<'profiles'>;
+type AdminUser = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  institution_id: string | null;
+  role: string;
+  invited_by: string | null;
+  created_at: string | null;
+  institutions: { id: string; name: string } | null;
+};
 
 export function AdminUsersTab() {
   const { profile: currentUserProfile } = useAuth();
@@ -57,30 +64,29 @@ export function AdminUsersTab() {
   const isSuperAdmin = isAdmin(currentUserProfile?.role);
 
   const { data: users, isLoading } = useQuery({
-    queryKey: ['admin-panel-users'],
+    queryKey: ['admin-users'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*, institutions:institution_uuid(id, name)')
-        .in('role', ['super_admin', 'admin', 'event_organizer', 'organizer_admin'])
+        .from('admin_users')
+        .select('*, institutions:institution_id(id, name)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as (Profile & { institutions: { id: string; name: string } | null })[];
+      return data as AdminUser[];
     },
   });
 
   const updateRole = useMutation({
     mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
       const { error } = await supabase
-        .from('profiles')
+        .from('admin_users')
         .update({ role: newRole })
         .eq('id', userId);
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success('Role updated');
-      queryClient.invalidateQueries({ queryKey: ['admin-panel-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
     onError: (err: any) => toast.error(err.message || 'Failed to update role'),
   });
@@ -88,14 +94,14 @@ export function AdminUsersTab() {
   const removeUser = useMutation({
     mutationFn: async (userId: string) => {
       const { error } = await supabase
-        .from('profiles')
-        .update({ role: 'user' })
+        .from('admin_users')
+        .delete()
         .eq('id', userId);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success('User removed from admin roles');
-      queryClient.invalidateQueries({ queryKey: ['admin-panel-users'] });
+      toast.success('User removed from admin portal');
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
     onError: (err: any) => toast.error(err.message || 'Failed to remove user'),
   });
@@ -113,31 +119,27 @@ export function AdminUsersTab() {
     [users]
   );
 
-  const filterUsers = (list: Profile[]) => {
+  const filterUsers = (list: AdminUser[]) => {
     if (!searchQuery.trim()) return list;
     const q = searchQuery.toLowerCase();
     return list.filter((u) => {
-      const name = `${u.first_name || ''} ${u.last_name || ''}`.toLowerCase();
+      const name = (u.full_name || '').toLowerCase();
       const email = u.email?.toLowerCase() || '';
       return name.includes(q) || email.includes(q);
     });
   };
 
-  const getCompanyName = (user: Profile & { institutions?: { id: string; name: string } | null }) => {
+  const getCompanyName = (user: AdminUser) => {
     if (user.institutions?.name) return user.institutions.name;
-    if (user.company_name) return user.company_name;
-    if (user.institution) return user.institution;
     return '—';
   };
 
-  const renderUserRow = (user: Profile & { institutions?: { id: string; name: string } | null }) => {
+  const renderUserRow = (user: AdminUser) => {
     const isCurrentUser = user.id === currentUserProfile?.id;
     return (
       <TableRow key={user.id}>
         <TableCell className="font-medium">
-          {user.first_name || user.last_name
-            ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
-            : '—'}
+          {user.full_name || user.email || '—'}
         </TableCell>
         <TableCell className="text-muted-foreground">{getCompanyName(user)}</TableCell>
         <TableCell className="text-muted-foreground">{user.email || '—'}</TableCell>
@@ -180,7 +182,7 @@ export function AdminUsersTab() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Remove admin access?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will set {user.first_name || user.email}'s role to "User", removing all admin privileges.
+                        This will remove {user.full_name || user.email} from the admin portal entirely.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
