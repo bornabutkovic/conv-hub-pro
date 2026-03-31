@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { isSuperAdmin, isAdmin } from '@/lib/roles';
+import { isSuperAdmin, isAdmin, isPortalUser } from '@/lib/roles';
 
 export type EventStatus = 'all' | 'draft' | 'pending_approval' | 'active' | 'completed';
 
