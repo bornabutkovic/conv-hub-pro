@@ -50,10 +50,10 @@ type AdminUser = {
   email: string;
   full_name: string | null;
   institution_id: string | null;
+  institution_name: string | null;
   role: string;
   invited_by: string | null;
   created_at: string | null;
-  institutions: { id: string; name: string } | null;
 };
 
 export function AdminUsersTab() {
@@ -66,11 +66,7 @@ export function AdminUsersTab() {
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('*, institutions:institution_id(id, name)')
-        .order('created_at', { ascending: false });
-
+      const { data, error } = await supabase.rpc('get_admin_users');
       if (error) throw error;
       return data as AdminUser[];
     },
@@ -130,8 +126,7 @@ export function AdminUsersTab() {
   };
 
   const getCompanyName = (user: AdminUser) => {
-    if (user.institutions?.name) return user.institutions.name;
-    return '—';
+    return user.institution_name ?? '—';
   };
 
   const renderUserRow = (user: AdminUser) => {
