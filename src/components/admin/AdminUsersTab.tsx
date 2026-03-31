@@ -66,11 +66,7 @@ export function AdminUsersTab() {
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('*, institutions:institution_id(id, name)')
-        .order('created_at', { ascending: false });
-
+      const { data, error } = await supabase.rpc('get_admin_users');
       if (error) throw error;
       return data as AdminUser[];
     },
