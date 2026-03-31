@@ -82,23 +82,20 @@ export default function Dashboard() {
           .map((event: any) => ({ ...event, institution_name: event.institutions?.name || null }));
       }
 
-      const { data: memberships, error: memErr } = await supabase
-        .from('event_memberships')
-        .select('event_id')
-        .eq('user_id', profile!.id);
-      if (memErr) throw memErr;
-      const eventIds = (memberships || []).map(m => m.event_id).filter(Boolean) as string[];
-      if (eventIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from('events')
-        .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
-        .in('id', eventIds)
-        .order('start_date', { ascending: false });
-      if (error) throw error;
-      return (data || []).map((event: any) => ({
-        ...event,
-        institution_name: event.institutions?.name || null,
-      }));
+      // event_organizer: filter by institution_uuid
+      if (institutionUuid) {
+        const { data, error } = await supabase
+          .from('events')
+          .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+          .eq('institution_uuid', institutionUuid)
+          .order('start_date', { ascending: false });
+        if (error) throw error;
+        return (data || []).map((event: any) => ({
+          ...event,
+          institution_name: event.institutions?.name || null,
+        }));
+      }
+      return [];
     },
     enabled: !!profile,
   });
