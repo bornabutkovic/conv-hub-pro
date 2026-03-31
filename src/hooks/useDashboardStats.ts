@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { isElevatedRole } from '@/lib/roles';
+import { isElevatedRole, isSuperAdmin, isAdmin } from '@/lib/roles';
 import { subDays, format, startOfDay } from 'date-fns';
 
 export interface RevenueBreakdown {
