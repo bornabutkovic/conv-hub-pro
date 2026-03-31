@@ -126,8 +126,7 @@ export function AdminUsersTab() {
   };
 
   const getCompanyName = (user: AdminUser) => {
-    if (user.institutions?.name) return user.institutions.name;
-    return '—';
+    return user.institution_name ?? '—';
   };
 
   const renderUserRow = (user: AdminUser) => {
