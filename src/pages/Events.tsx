@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Plus, ClipboardList } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,13 +6,34 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EventCard } from '@/components/events/EventCard';
-import { useEvents, EventStatus } from '@/hooks/useEvents';
+import { useEvents, EventStatus, Event } from '@/hooks/useEvents';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
 
+type SortOption = 'date-desc' | 'date-asc' | 'name-asc' | 'name-desc';
+
+function sortEvents(events: Event[], sort: SortOption): Event[] {
+  return [...events].sort((a, b) => {
+    switch (sort) {
+      case 'date-desc':
+        return (b.start_date ?? '').localeCompare(a.start_date ?? '');
+      case 'date-asc':
+        return (a.start_date ?? '').localeCompare(b.start_date ?? '');
+      case 'name-asc':
+        return (a.name ?? '').localeCompare(b.name ?? '');
+      case 'name-desc':
+        return (b.name ?? '').localeCompare(a.name ?? '');
+      default:
+        return 0;
+    }
+  });
+}
+
 export default function Events() {
   const [statusFilter, setStatusFilter] = useState<EventStatus>('all');
+  const [sortOption, setSortOption] = useState<SortOption>('date-desc');
   const navigate = useNavigate();
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
@@ -24,6 +45,11 @@ export default function Events() {
   const pendingEvents = userIsAdmin
     ? (allEvents || []).filter(e => e.status === 'pending_approval')
     : [];
+
+  const sortedEvents = useMemo(
+    () => (events ? sortEvents(events, sortOption) : []),
+    [events, sortOption]
+  );
 
   return (
     <div className="space-y-6">
@@ -62,25 +88,39 @@ export default function Events() {
         </Button>
       </div>
 
-      <Tabs
-        value={statusFilter}
-        onValueChange={(value) => setStatusFilter(value as EventStatus)}
-      >
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="draft">Draft</TabsTrigger>
-          <TabsTrigger value="pending_approval">
-            Pending Approval
-            {userIsAdmin && pendingEvents.length > 0 && (
-              <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
-                {pendingEvents.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex items-center justify-between gap-4">
+        <Tabs
+          value={statusFilter}
+          onValueChange={(value) => setStatusFilter(value as EventStatus)}
+        >
+          <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="draft">Draft</TabsTrigger>
+            <TabsTrigger value="pending_approval">
+              Pending Approval
+              {userIsAdmin && pendingEvents.length > 0 && (
+                <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
+                  {pendingEvents.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="completed">Completed</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <Select value={sortOption} onValueChange={(v) => setSortOption(v as SortOption)}>
+          <SelectTrigger className="w-[180px] h-9 text-sm">
+            <SelectValue placeholder="Sort by..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date-desc">Date (newest)</SelectItem>
+            <SelectItem value="date-asc">Date (oldest)</SelectItem>
+            <SelectItem value="name-asc">Name (A→Z)</SelectItem>
+            <SelectItem value="name-desc">Name (Z→A)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -95,9 +135,9 @@ export default function Events() {
             </Card>
           ))}
         </div>
-      ) : events && events.length > 0 ? (
+      ) : sortedEvents.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => (
+          {sortedEvents.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
         </div>
