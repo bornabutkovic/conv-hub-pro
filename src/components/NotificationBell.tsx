@@ -1,6 +1,6 @@
 import { Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAdminNotifications } from '@/hooks/useAdminNotifications';
+import { useAdminNotifications, useUnreadNotificationCount, useMarkNotificationRead } from '@/hooks/useAdminNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
 import { Button } from '@/components/ui/button';
@@ -11,16 +11,22 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 export function NotificationBell() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const navigate = useNavigate();
   const userIsAdmin = isAdmin(profile?.role);
-  const { data: notifications } = useAdminNotifications();
+  const { data: notifications } = useAdminNotifications(5);
+  const { data: unreadCount } = useUnreadNotificationCount();
+  const markRead = useMarkNotificationRead();
 
   if (!userIsAdmin) return null;
 
-  const count = notifications?.length || 0;
+  const count = unreadCount || 0;
+
+  const isUnread = (n: { read_by: string[] | null }) =>
+    user?.id ? !(n.read_by || []).includes(user.id) : false;
 
   return (
     <Popover>
@@ -38,31 +44,54 @@ export function NotificationBell() {
         <div className="border-b px-4 py-3">
           <h4 className="font-semibold text-sm">Notifications</h4>
         </div>
-        {count === 0 ? (
+        {!notifications?.length ? (
           <div className="p-4 text-center text-sm text-muted-foreground">
             No pending notifications
           </div>
         ) : (
-          <ScrollArea className="max-h-80">
-            <div className="divide-y">
-              {notifications?.map((n) => (
-                <button
-                  key={n.id}
-                  className="w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors"
-                  onClick={() => {
-                    if (n.event_id) {
-                      navigate(`/events/${n.event_id}?tab=approvals`);
-                    }
-                  }}
-                >
-                  <p className="text-sm leading-snug">{n.message}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {n.created_at && formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                  </p>
-                </button>
-              ))}
+          <>
+            <ScrollArea className="max-h-80">
+              <div className="divide-y">
+                {notifications.map((n) => (
+                  <button
+                    key={n.id}
+                    className={cn(
+                      'w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors',
+                      isUnread(n) && 'bg-primary/5'
+                    )}
+                    onClick={() => {
+                      markRead.mutate(n.id);
+                      if (n.event_id) {
+                        navigate(`/events/${n.event_id}?tab=approvals`);
+                      }
+                    }}
+                  >
+                    <div className="flex items-start gap-2">
+                      {isUnread(n) && (
+                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm leading-snug">{n.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {n.created_at && formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
+            <div className="border-t px-4 py-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-primary hover:text-primary"
+                onClick={() => navigate('/notifications')}
+              >
+                View all notifications
+              </Button>
             </div>
-          </ScrollArea>
+          </>
         )}
       </PopoverContent>
     </Popover>
