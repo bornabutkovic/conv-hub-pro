@@ -1931,6 +1931,14 @@ export type Database = {
         Returns: Json
       }
       get_order_full_data: { Args: { p_order_id: string }; Returns: Json }
+      get_session_missing_fields: {
+        Args: { p_wa_id: string }
+        Returns: {
+          missing_fields: string[]
+          missing_summary: string
+          ready_for_submit: boolean
+        }[]
+      }
       get_user_event_status: {
         Args: { p_event_id: string; p_phone: string }
         Returns: {
