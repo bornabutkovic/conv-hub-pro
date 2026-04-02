@@ -534,6 +534,19 @@ export default function CreateEvent() {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="end_time"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>End Time *</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
                   <FormField
