@@ -20,6 +20,7 @@ import EditInstitution from "./pages/EditInstitution";
 import AdminChats from "./pages/AdminChats";
 import UpdatePassword from "./pages/UpdatePassword";
 import PendingApproval from "./pages/PendingApproval";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -131,6 +132,16 @@ const App = () => (
                 <AdminRoute>
                   <AppLayout>
                     <AdminChats />
+                  </AppLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <AdminRoute>
+                  <AppLayout>
+                    <Notifications />
                   </AppLayout>
                 </AdminRoute>
               }
