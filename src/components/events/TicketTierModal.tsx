@@ -32,6 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { DateRangePickers } from '@/components/ui/date-range-pickers';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Tables } from '@/integrations/supabase/types';
