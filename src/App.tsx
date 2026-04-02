@@ -136,6 +136,16 @@ const App = () => (
                 </AdminRoute>
               }
             />
+            <Route
+              path="/notifications"
+              element={
+                <AdminRoute>
+                  <AppLayout>
+                    <Notifications />
+                  </AppLayout>
+                </AdminRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
