@@ -281,10 +281,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="sales_start"
+            <DateRangePickers form={form} startName="sales_start" endName="sales_end" startLabel="Sales Start" endLabel="Sales End" />
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Sales Start</FormLabel>
