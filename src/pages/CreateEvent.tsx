@@ -516,10 +516,22 @@ export default function CreateEvent() {
                   </div>
                   <Separator />
 
+                  <DateRangePickers form={form} startName="start_date" endName="end_date" startLabel="Start Date *" endLabel="End Date *" disablePast />
+
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="start_date"
+                      name="start_time"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Start Time *</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Start Date *</FormLabel>

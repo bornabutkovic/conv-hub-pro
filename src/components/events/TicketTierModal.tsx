@@ -281,8 +281,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
               )}
             />
 
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Sales Start</FormLabel>
+            <DateRangePickers form={form} startName="sales_start" endName="sales_end" startLabel="Sales Start" endLabel="Sales End" />
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
