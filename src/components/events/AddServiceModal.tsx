@@ -29,6 +29,7 @@ interface AddServiceModalProps {
     description: string | null;
     price: number;
     capacity: number | null;
+    status?: string | null;
   } | null;
   eventStatus?: string | null;
 }
