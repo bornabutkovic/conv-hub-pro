@@ -170,11 +170,19 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
                 {services.map((service) => {
                   const locked = isServiceLocked(service.id);
                   return (
-                    <TableRow key={service.id}>
+                    <TableRow key={service.id} className={service.status === 'rejected' ? 'bg-destructive/5' : ''}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
-                          {service.name}
+                          <div>
+                            {service.name}
+                            {service.status === 'rejected' && (service as any).rejection_reason && (
+                              <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                                <AlertTriangle className="h-3 w-3" />
+                                {(service as any).rejection_reason}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">

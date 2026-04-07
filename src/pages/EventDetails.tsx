@@ -146,6 +146,19 @@ export default function EventDetails() {
         Back to Events
       </Button>
 
+      {/* Rejection Alert */}
+      {event.status === 'rejected' && (event as any).rejection_reason && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+          <div className="flex items-start gap-3">
+            <Calendar className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold text-destructive">Action required – reason from admin:</p>
+              <p className="text-sm text-destructive/90 mt-1">{(event as any).rejection_reason}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div className="space-y-2">
