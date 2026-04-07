@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ArrowLeft, Calendar, Tag, Users, DollarSign, Edit, Send, CheckCircle, ShieldCheck } from 'lucide-react';
+import { isSuperAdmin } from '@/lib/roles';
+import { ArchiveEventDialog } from '@/components/events/ArchiveEventDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
