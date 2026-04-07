@@ -64,9 +64,14 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
       };
 
       if (editService) {
+        // If rejected, resubmit for approval
+        const updateData = editService.status === 'rejected'
+          ? { ...serviceData, status: 'pending_approval', rejection_reason: null }
+          : serviceData;
+
         const { error } = await supabase
           .from('event_services')
-          .update(serviceData)
+          .update(updateData)
           .eq('id', editService.id);
         if (error) throw error;
       } else {
