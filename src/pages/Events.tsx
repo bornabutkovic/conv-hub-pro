@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { EventCard } from '@/components/events/EventCard';
 import { useEvents, EventStatus, Event } from '@/hooks/useEvents';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin } from '@/lib/roles';
+import { isAdmin, isSuperAdmin } from '@/lib/roles';
 
 type SortOption = 'date-desc' | 'date-asc' | 'name-asc' | 'name-desc';
 
@@ -37,6 +37,7 @@ export default function Events() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
+  const userIsSuperAdmin = isSuperAdmin(profile?.role);
 
   const { data: events, isLoading } = useEvents(statusFilter);
 
@@ -106,6 +107,9 @@ export default function Events() {
             </TabsTrigger>
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
+            {userIsSuperAdmin && (
+              <TabsTrigger value="archived">Archived</TabsTrigger>
+            )}
           </TabsList>
         </Tabs>
 

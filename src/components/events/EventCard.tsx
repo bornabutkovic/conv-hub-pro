@@ -40,6 +40,8 @@ export function EventCard({ event }: EventCardProps) {
         );
       case 'completed':
         return <Badge variant="outline">{getStatusLabel(status)}</Badge>;
+      case 'archived':
+        return <Badge variant="destructive">{getStatusLabel(status)}</Badge>;
       case 'draft':
         return <Badge variant="secondary">{getStatusLabel(status)}</Badge>;
       default:
@@ -57,6 +59,8 @@ export function EventCard({ event }: EventCardProps) {
         return 'Completed';
       case 'draft':
         return 'Draft';
+      case 'archived':
+        return 'Archived';
       default:
         return 'Draft';
     }
