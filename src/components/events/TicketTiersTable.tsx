@@ -242,7 +242,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                 {tiers.map((tier) => {
                   const locked = isTierLocked(tier.id);
                   return (
-                    <TableRow key={tier.id}>
+                    <TableRow key={tier.id} className={tier.status === 'rejected' ? 'bg-destructive/5' : ''}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
@@ -251,6 +251,12 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                             {tier.description && (
                               <p className="text-sm text-muted-foreground truncate max-w-[200px]">
                                 {tier.description}
+                              </p>
+                            )}
+                            {tier.status === 'rejected' && (tier as any).rejection_reason && (
+                              <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                                <AlertTriangle className="h-3 w-3" />
+                                {(tier as any).rejection_reason}
                               </p>
                             )}
                           </div>

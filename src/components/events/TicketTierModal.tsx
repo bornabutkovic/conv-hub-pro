@@ -127,9 +127,14 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
       };
 
       if (isEditing && tier) {
+        // If rejected, resubmit for approval
+        const updatePayload = tier.status === 'rejected'
+          ? { ...payload, status: 'pending_approval', rejection_reason: null }
+          : payload;
+
         const { error } = await supabase
           .from('ticket_tiers')
-          .update(payload)
+          .update(updatePayload)
           .eq('id', tier.id);
 
         if (error) throw error;

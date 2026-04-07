@@ -469,6 +469,7 @@ export type Database = {
           id: string
           name: string
           price: number
+          rejection_reason: string | null
           status: string | null
         }
         Insert: {
@@ -485,6 +486,7 @@ export type Database = {
           id?: string
           name: string
           price?: number
+          rejection_reason?: string | null
           status?: string | null
         }
         Update: {
@@ -501,6 +503,7 @@ export type Database = {
           id?: string
           name?: string
           price?: number
+          rejection_reason?: string | null
           status?: string | null
         }
         Relationships: [
@@ -562,6 +565,7 @@ export type Database = {
           notification_sender_name: string | null
           payment_due_days: number | null
           price: number | null
+          rejection_reason: string | null
           short_name: string | null
           slug: string
           start_date: string | null
@@ -609,6 +613,7 @@ export type Database = {
           notification_sender_name?: string | null
           payment_due_days?: number | null
           price?: number | null
+          rejection_reason?: string | null
           short_name?: string | null
           slug: string
           start_date?: string | null
@@ -656,6 +661,7 @@ export type Database = {
           notification_sender_name?: string | null
           payment_due_days?: number | null
           price?: number | null
+          rejection_reason?: string | null
           short_name?: string | null
           slug?: string
           start_date?: string | null
@@ -1288,6 +1294,7 @@ export type Database = {
           id: string
           name: string
           price: number
+          rejection_reason: string | null
           sales_end: string | null
           sales_start: string | null
           short_name: string | null
@@ -1305,6 +1312,7 @@ export type Database = {
           id?: string
           name: string
           price?: number
+          rejection_reason?: string | null
           sales_end?: string | null
           sales_start?: string | null
           short_name?: string | null
@@ -1322,6 +1330,7 @@ export type Database = {
           id?: string
           name?: string
           price?: number
+          rejection_reason?: string | null
           sales_end?: string | null
           sales_start?: string | null
           short_name?: string | null
