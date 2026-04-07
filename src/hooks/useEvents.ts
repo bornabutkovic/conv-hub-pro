@@ -38,6 +38,9 @@ export function useEvents(statusFilter: EventStatus = 'all') {
 
         if (statusFilter !== 'all') {
           query = query.eq('status', statusFilter);
+        } else {
+          // By default hide archived events; they're only visible via the 'archived' filter
+          query = query.neq('status', 'archived');
         }
 
         const { data, error } = await query;
@@ -60,6 +63,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
             .from('events')
             .select(`*, institutions:institution_uuid (name)`)
             .eq('institution_uuid', institutionUuid)
+            .neq('status', 'archived')
             .order('start_date', { ascending: false });
 
           if (statusFilter !== 'all') {
@@ -107,6 +111,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
         .from('events')
         .select(`*, institutions:institution_uuid (name)`)
         .eq('institution_uuid', institutionUuid)
+        .neq('status', 'archived')
         .order('start_date', { ascending: false });
 
       if (statusFilter !== 'all') {
