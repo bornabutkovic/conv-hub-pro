@@ -27,6 +27,7 @@ export default function EventDetails() {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
+  const userIsSuperAdmin = isSuperAdmin(profile?.role);
 
   const { data: event, isLoading: eventLoading, refetch: refetchEvent } = useQuery({
     queryKey: ['event', id],
@@ -307,6 +308,23 @@ export default function EventDetails() {
           </TabsContent>
         )}
       </Tabs>
+
+      {/* Archive button – super_admin only */}
+      {userIsSuperAdmin && event.status !== 'archived' && (
+        <div className="border-t pt-6 mt-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Danger Zone</p>
+              <p className="text-xs text-muted-foreground">Archive this event to hide it from organizers and attendees.</p>
+            </div>
+            <ArchiveEventDialog
+              eventId={event.id}
+              eventName={event.name}
+              paidAttendeesCount={paidAttendees.length}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
