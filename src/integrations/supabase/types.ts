@@ -379,18 +379,21 @@ export type Database = {
           created_at: string | null
           id: string
           message: Json
+          Sender: Json | null
           session_id: string
         }
         Insert: {
           created_at?: string | null
           id?: string
           message: Json
+          Sender?: Json | null
           session_id: string
         }
         Update: {
           created_at?: string | null
           id?: string
           message?: Json
+          Sender?: Json | null
           session_id?: string
         }
         Relationships: []
@@ -1355,6 +1358,7 @@ export type Database = {
           billing_email: string | null
           cart_items: string | null
           cart_services: string | null
+          cart_services_confirmed: boolean | null
           company_address: string | null
           company_name: string | null
           company_oib: string | null
@@ -1376,6 +1380,7 @@ export type Database = {
           last_message_id: string | null
           last_name: string | null
           last_user_message: string | null
+          next_action: string | null
           participants_count: number | null
           payer_city: string | null
           payer_country_code: string | null
@@ -1395,6 +1400,7 @@ export type Database = {
           billing_email?: string | null
           cart_items?: string | null
           cart_services?: string | null
+          cart_services_confirmed?: boolean | null
           company_address?: string | null
           company_name?: string | null
           company_oib?: string | null
@@ -1416,6 +1422,7 @@ export type Database = {
           last_message_id?: string | null
           last_name?: string | null
           last_user_message?: string | null
+          next_action?: string | null
           participants_count?: number | null
           payer_city?: string | null
           payer_country_code?: string | null
@@ -1435,6 +1442,7 @@ export type Database = {
           billing_email?: string | null
           cart_items?: string | null
           cart_services?: string | null
+          cart_services_confirmed?: boolean | null
           company_address?: string | null
           company_name?: string | null
           company_oib?: string | null
@@ -1456,6 +1464,7 @@ export type Database = {
           last_message_id?: string | null
           last_name?: string | null
           last_user_message?: string | null
+          next_action?: string | null
           participants_count?: number | null
           payer_city?: string | null
           payer_country_code?: string | null
