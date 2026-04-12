@@ -122,6 +122,7 @@ export function EditEventModal({
   onEventUpdated,
 }: EditEventModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [enTranslations, setEnTranslations] = useState({ name: '', description: '', auto_translated: false });
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
 
