@@ -237,6 +237,18 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
               )}
             />
 
+            <TranslatableFields
+              fields="name"
+              hrName={form.watch('name')}
+              enName={enName}
+              autoTranslated={enAutoTranslated}
+              onEnNameChange={(v) => { setEnName(v); setEnAutoTranslated(false); }}
+              translateType="ticket_tier"
+              translateId={tier?.id}
+              canAutoTranslate={isEditing}
+              onTranslated={() => queryClient.invalidateQueries({ queryKey: ['ticket-tiers', eventId] })}
+            />
+
             <FormField
               control={form.control}
               name="price"
