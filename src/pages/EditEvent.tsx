@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,6 +44,7 @@ import { toast } from 'sonner';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { TranslatableFields } from '@/components/events/TranslatableFields';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -95,6 +97,7 @@ export default function EditEvent() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
 
@@ -105,6 +108,8 @@ export default function EditEvent() {
     branding_logo_url: null as string | null,
     branding_banner_url: null as string | null,
   });
+
+  const [enTranslations, setEnTranslations] = useState({ name: '', description: '', auto_translated: false });
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -195,6 +200,13 @@ export default function EditEvent() {
         branding_text_color: event.branding_text_color || '#1f2937',
         branding_logo_url: event.branding_logo_url || null,
         branding_banner_url: event.branding_banner_url || null,
+      });
+
+      const trans = (event.translations as any)?.en || {};
+      setEnTranslations({
+        name: trans.name || '',
+        description: trans.description || '',
+        auto_translated: !!trans.auto_translated,
       });
     }
   }, [event, form]);
@@ -341,6 +353,14 @@ export default function EditEvent() {
           additional_admins: additionalAdminsArray,
           supported_languages: data.supported_languages,
           status: data.status,
+          translations: {
+            ...((event.translations as any) || {}),
+            en: {
+              name: enTranslations.name || undefined,
+              description: enTranslations.description || undefined,
+              auto_translated: enTranslations.auto_translated,
+            },
+          },
           branding_primary_color: branding.branding_primary_color,
           branding_secondary_color: branding.branding_secondary_color,
           branding_text_color: branding.branding_text_color,
@@ -517,6 +537,29 @@ export default function EditEvent() {
                   />
                 </div>
 
+                {/* Translations */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">Translations</h3>
+                    <p className="text-sm text-muted-foreground">Provide English translations for event content</p>
+                  </div>
+                  <Separator />
+                  <TranslatableFields
+                    fields="name+description"
+                    hrName={form.watch('name')}
+                    hrDescription={form.watch('description')}
+                    enName={enTranslations.name}
+                    enDescription={enTranslations.description}
+                    autoTranslated={enTranslations.auto_translated}
+                    onEnNameChange={(v) => setEnTranslations(prev => ({ ...prev, name: v, auto_translated: false }))}
+                    onEnDescriptionChange={(v) => setEnTranslations(prev => ({ ...prev, description: v, auto_translated: false }))}
+                    translateType="event"
+                    translateId={event.id}
+                    onTranslated={() => {
+                      queryClient.invalidateQueries({ queryKey: ['event', id] });
+                    }}
+                  />
+                </div>
                 {/* Section 2: Location */}
                 <div className="space-y-4">
                   <div>

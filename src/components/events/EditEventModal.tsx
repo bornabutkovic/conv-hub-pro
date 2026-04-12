@@ -47,6 +47,7 @@ import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tables } from '@/integrations/supabase/types';
 import { BrandingSection } from './BrandingSection';
+import { TranslatableFields } from './TranslatableFields';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -121,6 +122,7 @@ export function EditEventModal({
   onEventUpdated,
 }: EditEventModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [enTranslations, setEnTranslations] = useState({ name: '', description: '', auto_translated: false });
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
 
@@ -208,6 +210,13 @@ export function EditEventModal({
         branding_logo_url: event.branding_logo_url || null,
         branding_banner_url: event.branding_banner_url || null,
       });
+
+      const trans = (event.translations as any)?.en || {};
+      setEnTranslations({
+        name: trans.name || '',
+        description: trans.description || '',
+        auto_translated: !!trans.auto_translated,
+      });
     }
   }, [event, open, form]);
 
@@ -253,6 +262,14 @@ export function EditEventModal({
           additional_admins: additionalAdminsArray,
           supported_languages: data.supported_languages,
           status: data.status,
+          translations: {
+            ...((event.translations as any) || {}),
+            en: {
+              name: enTranslations.name || undefined,
+              description: enTranslations.description || undefined,
+              auto_translated: enTranslations.auto_translated,
+            },
+          },
           branding_primary_color: branding.branding_primary_color,
           branding_secondary_color: branding.branding_secondary_color,
           branding_text_color: branding.branding_text_color,
@@ -456,8 +473,29 @@ export function EditEventModal({
                       </FormItem>
                     )}
                   />
-                </div>
+              </div>
 
+              {/* Translations */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Translations</h3>
+                  <p className="text-sm text-muted-foreground">Provide English translations for event content</p>
+                </div>
+                <Separator />
+                <TranslatableFields
+                  fields="name+description"
+                  hrName={form.watch('name')}
+                  hrDescription=""
+                  enName={enTranslations.name}
+                  enDescription={enTranslations.description}
+                  autoTranslated={enTranslations.auto_translated}
+                  onEnNameChange={(v) => setEnTranslations(prev => ({ ...prev, name: v, auto_translated: false }))}
+                  onEnDescriptionChange={(v) => setEnTranslations(prev => ({ ...prev, description: v, auto_translated: false }))}
+                  translateType="event"
+                  translateId={event.id}
+                  onTranslated={onEventUpdated}
+                />
+              </div>
 
                 <FormField
                   control={form.control}

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -37,6 +37,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Tables } from '@/integrations/supabase/types';
 import { useFormDraft } from '@/hooks/useFormDraft';
+import { TranslatableFields } from './TranslatableFields';
 
 type TicketTier = Tables<'ticket_tiers'>;
 
@@ -73,6 +74,8 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
   const isEditing = !!tier;
+  const [enName, setEnName] = useState('');
+  const [enAutoTranslated, setEnAutoTranslated] = useState(false);
 
   const form = useForm<TicketTierFormData>({
     resolver: zodResolver(ticketTierSchema),
@@ -99,6 +102,9 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         sales_start: tier.sales_start ? new Date(tier.sales_start) : null,
         sales_end: tier.sales_end ? new Date(tier.sales_end) : null,
       });
+      const trans = (tier.translations as any)?.en || {};
+      setEnName(trans.name || '');
+      setEnAutoTranslated(!!trans.auto_translated);
     } else {
       form.reset({
         name: '',
@@ -108,6 +114,8 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         sales_start: null,
         sales_end: null,
       });
+      setEnName('');
+      setEnAutoTranslated(false);
     }
   }, [tier, form]);
 
@@ -115,6 +123,14 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
     mutationFn: async (data: TicketTierFormData) => {
       // Determine status based on role
       const tierStatus = userIsAdmin ? 'active' : 'pending_approval';
+
+      const translationsData = {
+        ...((tier?.translations as any) || {}),
+        en: {
+          name: enName || undefined,
+          auto_translated: enAutoTranslated,
+        },
+      };
 
       const payload = {
         name: data.name,
@@ -124,6 +140,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         sales_start: data.sales_start?.toISOString() || null,
         sales_end: data.sales_end?.toISOString() || null,
         event_id: eventId,
+        translations: translationsData,
       };
 
       if (isEditing && tier) {
@@ -218,6 +235,18 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            <TranslatableFields
+              fields="name"
+              hrName={form.watch('name')}
+              enName={enName}
+              autoTranslated={enAutoTranslated}
+              onEnNameChange={(v) => { setEnName(v); setEnAutoTranslated(false); }}
+              translateType="ticket_tier"
+              translateId={tier?.id}
+              canAutoTranslate={isEditing}
+              onTranslated={() => queryClient.invalidateQueries({ queryKey: ['ticket-tiers', eventId] })}
             />
 
             <FormField
