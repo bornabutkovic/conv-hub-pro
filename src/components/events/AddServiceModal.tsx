@@ -31,6 +31,7 @@ interface AddServiceModalProps {
     price: number;
     capacity: number | null;
     status?: string | null;
+    translations?: any;
   } | null;
   eventStatus?: string | null;
 }
@@ -48,6 +49,11 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
   };
   const { restoredData, saveDraft, clearDraft, wasRestored } = useStateDraft(draftKey, initialFormData, { enabled: open && !editService });
   const [formData, setFormData] = useState(editService ? initialFormData : restoredData);
+  const [enTranslations, setEnTranslations] = useState({
+    name: (editService?.translations?.en?.name as string) || '',
+    description: (editService?.translations?.en?.description as string) || '',
+    auto_translated: !!(editService?.translations?.en?.auto_translated),
+  });
 
   const updateFormData = (newData: typeof formData) => {
     setFormData(newData);
@@ -56,6 +62,15 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
 
   const mutation = useMutation({
     mutationFn: async () => {
+      const translationsData = {
+        ...((editService?.translations as any) || {}),
+        en: {
+          name: enTranslations.name || undefined,
+          description: enTranslations.description || undefined,
+          auto_translated: enTranslations.auto_translated,
+        },
+      };
+
       const serviceData = {
         event_id: eventId,
         name: formData.name,
@@ -63,6 +78,7 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
         price: parseFloat(formData.price) || 0,
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
         currency: currency,
+        translations: translationsData,
       };
 
       if (editService) {
@@ -156,6 +172,20 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
                 onChange={(e) => updateFormData({ ...formData, description: e.target.value })}
               />
             </div>
+            <TranslatableFields
+              fields="name+description"
+              hrName={formData.name}
+              hrDescription={formData.description}
+              enName={enTranslations.name}
+              enDescription={enTranslations.description}
+              autoTranslated={enTranslations.auto_translated}
+              onEnNameChange={(v) => setEnTranslations(prev => ({ ...prev, name: v, auto_translated: false }))}
+              onEnDescriptionChange={(v) => setEnTranslations(prev => ({ ...prev, description: v, auto_translated: false }))}
+              translateType="event_service"
+              translateId={editService?.id}
+              canAutoTranslate={!!editService}
+              onTranslated={() => queryClient.invalidateQueries({ queryKey: ['event-services', eventId] })}
+            />
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="price">Price ({currency})</Label>
