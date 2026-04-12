@@ -474,7 +474,7 @@ export function EditEventModal({
                   />
                 </div>
 
-  const [enTranslations, setEnTranslations] = useState({ name: '', description: '', auto_translated: false });
+  
                 <FormField
                   control={form.control}
                   name="payment_due_days"
