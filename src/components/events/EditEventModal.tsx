@@ -47,6 +47,7 @@ import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tables } from '@/integrations/supabase/types';
 import { BrandingSection } from './BrandingSection';
+import { TranslatableFields } from './TranslatableFields';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -208,6 +209,13 @@ export function EditEventModal({
         branding_logo_url: event.branding_logo_url || null,
         branding_banner_url: event.branding_banner_url || null,
       });
+
+      const trans = (event.translations as any)?.en || {};
+      setEnTranslations({
+        name: trans.name || '',
+        description: trans.description || '',
+        auto_translated: !!trans.auto_translated,
+      });
     }
   }, [event, open, form]);
 
@@ -253,6 +261,14 @@ export function EditEventModal({
           additional_admins: additionalAdminsArray,
           supported_languages: data.supported_languages,
           status: data.status,
+          translations: {
+            ...((event.translations as any) || {}),
+            en: {
+              name: enTranslations.name || undefined,
+              description: enTranslations.description || undefined,
+              auto_translated: enTranslations.auto_translated,
+            },
+          },
           branding_primary_color: branding.branding_primary_color,
           branding_secondary_color: branding.branding_secondary_color,
           branding_text_color: branding.branding_text_color,
@@ -458,7 +474,7 @@ export function EditEventModal({
                   />
                 </div>
 
-
+  const [enTranslations, setEnTranslations] = useState({ name: '', description: '', auto_translated: false });
                 <FormField
                   control={form.control}
                   name="payment_due_days"
