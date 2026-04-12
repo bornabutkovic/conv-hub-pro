@@ -74,6 +74,8 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
   const isEditing = !!tier;
+  const [enName, setEnName] = useState('');
+  const [enAutoTranslated, setEnAutoTranslated] = useState(false);
 
   const form = useForm<TicketTierFormData>({
     resolver: zodResolver(ticketTierSchema),
@@ -100,6 +102,9 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         sales_start: tier.sales_start ? new Date(tier.sales_start) : null,
         sales_end: tier.sales_end ? new Date(tier.sales_end) : null,
       });
+      const trans = (tier.translations as any)?.en || {};
+      setEnName(trans.name || '');
+      setEnAutoTranslated(!!trans.auto_translated);
     } else {
       form.reset({
         name: '',
@@ -109,6 +114,8 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         sales_start: null,
         sales_end: null,
       });
+      setEnName('');
+      setEnAutoTranslated(false);
     }
   }, [tier, form]);
 
