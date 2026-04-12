@@ -81,6 +81,8 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
         translations: translationsData,
       };
 
+      let savedId: string;
+
       if (editService) {
         // If rejected, resubmit for approval
         const updateData = editService.status === 'rejected'
@@ -92,16 +94,20 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
           .update(updateData)
           .eq('id', editService.id);
         if (error) throw error;
+        savedId = editService.id;
       } else {
         // Set status based on role
         const insertPayload = userIsAdmin
           ? { ...serviceData, status: 'active', approved_by: profile?.id, approved_at: new Date().toISOString() }
           : { ...serviceData, status: 'pending_approval' };
 
-        const { error } = await supabase
+        const { data: insertedData, error } = await supabase
           .from('event_services')
-          .insert(insertPayload);
+          .insert(insertPayload)
+          .select('id')
+          .single();
         if (error) throw error;
+        savedId = insertedData.id;
 
         // Non-admin: create notification, do NOT change event status
         if (!userIsAdmin) {
@@ -120,6 +126,15 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
           queryClient.invalidateQueries({ queryKey: ['events-with-pending-items'] });
           toast.info('New service submitted for review. It will appear once approved.');
         }
+      }
+
+      // Auto-translate after save
+      try {
+        await supabase.functions.invoke('translate-content', {
+          body: { type: 'event_service', id: savedId, source_lang: 'hr' },
+        });
+      } catch (e) {
+        console.warn('Auto-translate failed:', e);
       }
     },
     onSuccess: () => {

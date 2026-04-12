@@ -143,6 +143,8 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         translations: translationsData,
       };
 
+      let savedId: string;
+
       if (isEditing && tier) {
         // If rejected, resubmit for approval
         const updatePayload = tier.status === 'rejected'
@@ -155,17 +157,21 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
           .eq('id', tier.id);
 
         if (error) throw error;
+        savedId = tier.id;
       } else {
         // For new tiers: set status based on role
         const insertPayload = userIsAdmin
           ? { ...payload, status: 'active', approved_by: profile?.id, approved_at: new Date().toISOString() }
           : { ...payload, status: 'pending_approval' };
 
-        const { error } = await supabase
+        const { data: insertedData, error } = await supabase
           .from('ticket_tiers')
-          .insert(insertPayload);
+          .insert(insertPayload)
+          .select('id')
+          .single();
 
         if (error) throw error;
+        savedId = insertedData.id;
 
         // Non-admin: create notification, do NOT change event status
         if (!userIsAdmin) {
@@ -186,6 +192,15 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
           queryClient.invalidateQueries({ queryKey: ['events-with-pending-items'] });
           toast.info('New ticket type submitted for review. It will appear on sale once approved.');
         }
+      }
+
+      // Auto-translate after save
+      try {
+        await supabase.functions.invoke('translate-content', {
+          body: { type: 'ticket_tier', id: savedId, source_lang: 'hr' },
+        });
+      } catch (e) {
+        console.warn('Auto-translate failed:', e);
       }
     },
     onSuccess: () => {
