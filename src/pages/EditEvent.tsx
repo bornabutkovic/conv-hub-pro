@@ -537,6 +537,29 @@ export default function EditEvent() {
                   />
                 </div>
 
+                {/* Translations */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">Translations</h3>
+                    <p className="text-sm text-muted-foreground">Provide English translations for event content</p>
+                  </div>
+                  <Separator />
+                  <TranslatableFields
+                    fields="name+description"
+                    hrName={form.watch('name')}
+                    hrDescription={form.watch('description')}
+                    enName={enTranslations.name}
+                    enDescription={enTranslations.description}
+                    autoTranslated={enTranslations.auto_translated}
+                    onEnNameChange={(v) => setEnTranslations(prev => ({ ...prev, name: v, auto_translated: false }))}
+                    onEnDescriptionChange={(v) => setEnTranslations(prev => ({ ...prev, description: v, auto_translated: false }))}
+                    translateType="event"
+                    translateId={event.id}
+                    onTranslated={() => {
+                      queryClient.invalidateQueries({ queryKey: ['event', id] });
+                    }}
+                  />
+                </div>
                 {/* Section 2: Location */}
                 <div className="space-y-4">
                   <div>
