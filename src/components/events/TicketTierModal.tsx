@@ -124,6 +124,14 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
       // Determine status based on role
       const tierStatus = userIsAdmin ? 'active' : 'pending_approval';
 
+      const translationsData = {
+        ...((tier?.translations as any) || {}),
+        en: {
+          name: enName || undefined,
+          auto_translated: enAutoTranslated,
+        },
+      };
+
       const payload = {
         name: data.name,
         price: data.price,
@@ -132,6 +140,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         sales_start: data.sales_start?.toISOString() || null,
         sales_end: data.sales_end?.toISOString() || null,
         event_id: eventId,
+        translations: translationsData,
       };
 
       if (isEditing && tier) {
