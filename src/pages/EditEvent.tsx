@@ -201,6 +201,13 @@ export default function EditEvent() {
         branding_logo_url: event.branding_logo_url || null,
         branding_banner_url: event.branding_banner_url || null,
       });
+
+      const trans = (event.translations as any)?.en || {};
+      setEnTranslations({
+        name: trans.name || '',
+        description: trans.description || '',
+        auto_translated: !!trans.auto_translated,
+      });
     }
   }, [event, form]);
 
@@ -346,6 +353,14 @@ export default function EditEvent() {
           additional_admins: additionalAdminsArray,
           supported_languages: data.supported_languages,
           status: data.status,
+          translations: {
+            ...((event.translations as any) || {}),
+            en: {
+              name: enTranslations.name || undefined,
+              description: enTranslations.description || undefined,
+              auto_translated: enTranslations.auto_translated,
+            },
+          },
           branding_primary_color: branding.branding_primary_color,
           branding_secondary_color: branding.branding_secondary_color,
           branding_text_color: branding.branding_text_color,
