@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isAfter, isBefore, isWithinInterval } from 'date-fns';
-import { Plus, Pencil, Trash2, Ticket, Loader2, AlertTriangle, Lock } from 'lucide-react';
+import { Plus, Pencil, Trash2, Ticket, Loader2, AlertTriangle, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -295,6 +295,29 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                       )}
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={async () => {
+                                  try {
+                                    await supabase.functions.invoke('translate-content', {
+                                      body: { type: 'ticket_tier', id: tier.id, source_lang: 'hr' },
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ['ticket-tiers', eventId] });
+                                    toast.success('Translation updated');
+                                  } catch (e) {
+                                    toast.error('Translation failed');
+                                  }
+                                }}
+                              >
+                                <Globe className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Translate to English</TooltipContent>
+                          </Tooltip>
                           {locked ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
