@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,6 +44,7 @@ import { toast } from 'sonner';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { TranslatableFields } from '@/components/events/TranslatableFields';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -95,6 +97,7 @@ export default function EditEvent() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
 
@@ -105,6 +108,8 @@ export default function EditEvent() {
     branding_logo_url: null as string | null,
     branding_banner_url: null as string | null,
   });
+
+  const [enTranslations, setEnTranslations] = useState({ name: '', description: '', auto_translated: false });
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
