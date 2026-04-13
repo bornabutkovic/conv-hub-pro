@@ -96,13 +96,16 @@ export default function AdminChats() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-        (payload) => {
-          setAllMessages((prev) => [...prev, payload.new as ChatMessage]);
+        async () => {
+          // Refetch all messages on any new insert — reliable regardless of RLS
+          const { data } = await supabase
+            .from('chat_messages')
+            .select('id, created_at, session_id, sender_name, event_id, event_name, Sender, message')
+            .order('created_at', { ascending: true });
+          if (data) setAllMessages(data as ChatMessage[]);
         }
       )
-      .subscribe((status) => {
-        setIsLive(status === 'SUBSCRIBED');
-      });
+      .subscribe((status) => setIsLive(status === 'SUBSCRIBED'));
 
     return () => {
       supabase.removeChannel(channel);
