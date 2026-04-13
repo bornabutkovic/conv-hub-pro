@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface TicketDistributionChartProps {
   data: { name: string; value: number; color: string }[];
@@ -54,8 +54,12 @@ export function TicketDistributionChart({ data, loading, eventName, selectedEven
                   outerRadius={80}
                   paddingAngle={2}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  label={({ name, percent }) => {
+                    const display = name.length > 22 ? name.slice(0, 22) + '…' : name;
+                    return `${display} (${(percent * 100).toFixed(0)}%)`;
+                  }}
                   labelLine={false}
+                  fontSize={11}
                 >
                   {data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -69,13 +73,6 @@ export function TicketDistributionChart({ data, loading, eventName, selectedEven
                     boxShadow: '0 4px 24px -4px hsl(263 70% 50% / 0.12)',
                   }}
                   formatter={(value: number) => [isAllEvents ? `€${value.toLocaleString('de-DE')}` : value, isAllEvents ? 'Revenue' : 'Attendees']}
-                />
-                <Legend 
-                  verticalAlign="bottom" 
-                  height={36}
-                  formatter={(value) => (
-                    <span className="text-sm text-foreground">{value}</span>
-                  )}
                 />
               </PieChart>
             </ResponsiveContainer>
