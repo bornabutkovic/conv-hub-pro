@@ -87,30 +87,30 @@ export function useDashboardStats(selectedEventId?: string | null) {
 
       if (attendeesError) throw attendeesError;
 
-      // Fetch service order_items for these events
-      const { data: serviceItems, error: serviceItemsError } = await supabase
+      // Fetch service order_items with their order status
+      const { data: serviceItems } = await supabase
         .from('order_items')
-        .select('id, total_price, order_id, orders!inner(status, event_id)')
+        .select(`
+          id,
+          total_price,
+          order_id,
+          orders(status, event_id)
+        `)
         .eq('item_type', 'service')
-        .not('service_id', 'is', null)
-        .in('orders.event_id', eventIds);
+        .not('service_id', 'is', null);
 
-      if (serviceItemsError) {
-        console.warn('Could not fetch service items:', serviceItemsError);
-      }
+      // Filter to only items belonging to our eventIds
+      const relevantServiceItems = (serviceItems || []).filter(
+        (i: any) => eventIds.includes(i.orders?.event_id)
+      );
 
-      const paidServiceItems = (serviceItems || []).filter(
-        (i: any) => i.orders?.status === 'paid'
-      );
-      const pendingServiceItems = (serviceItems || []).filter(
-        (i: any) => i.orders?.status !== 'paid'
-      );
-      const addonRevenue = paidServiceItems.reduce(
-        (sum: number, i: any) => sum + Number(i.total_price || 0), 0
-      );
-      const addonPending = pendingServiceItems.reduce(
-        (sum: number, i: any) => sum + Number(i.total_price || 0), 0
-      );
+      const addonRevenue = relevantServiceItems
+        .filter((i: any) => i.orders?.status === 'paid')
+        .reduce((sum: number, i: any) => sum + Number(i.total_price || 0), 0);
+
+      const addonPending = relevantServiceItems
+        .filter((i: any) => ['issued', 'draft'].includes(i.orders?.status))
+        .reduce((sum: number, i: any) => sum + Number(i.total_price || 0), 0);
 
       // Get ticket tiers for distribution
       const { data: ticketTiers, error: ticketTiersError } = await supabase
@@ -180,7 +180,7 @@ export function useDashboardStats(selectedEventId?: string | null) {
       );
 
       return {
-        revenue: { ticketRevenue, ticketPending, addonRevenue: 0, addonPending: 0, totalRevenue, totalPending },
+        revenue: { ticketRevenue, ticketPending, addonRevenue, addonPending, totalRevenue, totalPending },
         totalAttendees: (attendees || []).length,
         pendingIncome: totalPending,
         ticketDistribution,
