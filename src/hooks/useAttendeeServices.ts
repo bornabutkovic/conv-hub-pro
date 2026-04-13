@@ -10,6 +10,7 @@ export interface AttendeePurchase {
   service_name: string;
   service_price: number;
   service_currency: string;
+  order_id: string | null;
 }
 
 export interface EventService {
@@ -27,14 +28,20 @@ export function useAttendeePurchases(attendeeId: string | null) {
     queryFn: async (): Promise<AttendeePurchase[]> => {
       if (!attendeeId) return [];
 
-      // Use order_items joined with event_services as the purchase record
       const { data, error } = await supabase
         .from('order_items')
         .select(`
-          id, attendee_id, service_id, created_at:order_id,
-          event_services:service_id (name, price, currency)
+          id,
+          attendee_id,
+          service_id,
+          total_price,
+          quantity,
+          created_at,
+          orders!inner(id, status, created_at),
+          event_services!service_id(name, price, currency)
         `)
         .eq('attendee_id', attendeeId)
+        .eq('item_type', 'service')
         .not('service_id', 'is', null);
 
       if (error) throw error;
@@ -43,11 +50,12 @@ export function useAttendeePurchases(attendeeId: string | null) {
         id: item.id,
         attendee_id: item.attendee_id,
         service_id: item.service_id,
-        status: 'paid',
-        created_at: new Date().toISOString(),
+        status: item.orders?.status || 'pending',
+        created_at: item.orders?.created_at || new Date().toISOString(),
         service_name: item.event_services?.name || 'Unknown Service',
         service_price: item.event_services?.price || 0,
         service_currency: item.event_services?.currency || 'EUR',
+        order_id: item.orders?.id || null,
       }));
     },
     enabled: !!attendeeId,
@@ -78,18 +86,45 @@ export function useAddPurchase() {
 
   return useMutation({
     mutationFn: async ({ attendeeId, serviceId }: { attendeeId: string; serviceId: string }) => {
-      // Get service details for price
+      // Get attendee to find event_id
+      const { data: attendee } = await supabase
+        .from('attendees')
+        .select('event_id')
+        .eq('id', attendeeId)
+        .single();
+
+      // Get service details
       const { data: service } = await supabase
         .from('event_services')
-        .select('name, price')
+        .select('name, price, event_id')
         .eq('id', serviceId)
         .single();
 
       const price = service?.price || 0;
+      const eventId = attendee?.event_id || service?.event_id;
 
+      // Create parent order
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          event_id: eventId,
+          attendee_id: attendeeId,
+          status: 'paid' as any,
+          payer_type: 'individual' as any,
+          payment_method: 'manual',
+          total_amount: price,
+          payer_name: 'Manual add',
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order_item
       const { data, error } = await supabase
         .from('order_items')
         .insert({
+          order_id: order.id,
           attendee_id: attendeeId,
           service_id: serviceId,
           description: service?.name || 'Service',
@@ -97,6 +132,7 @@ export function useAddPurchase() {
           total_price: price,
           vat_amount: 0,
           quantity: 1,
+          item_type: 'service',
         })
         .select()
         .single();
@@ -133,8 +169,20 @@ export function useUpdatePurchaseStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ purchaseId, status, attendeeId }: { purchaseId: string; status: string; attendeeId: string }) => {
-      // order_items doesn't have a status column, so this is a no-op for now
+    mutationFn: async ({ purchaseId, status, attendeeId, orderId }: { 
+      purchaseId: string; 
+      status: string; 
+      attendeeId: string;
+      orderId: string | null;
+    }) => {
+      if (!orderId) return { attendeeId };
+
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: status as any })
+        .eq('id', orderId);
+
+      if (error) throw error;
       return { attendeeId };
     },
     onSuccess: (data) => {

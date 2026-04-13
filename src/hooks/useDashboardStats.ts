@@ -87,6 +87,31 @@ export function useDashboardStats(selectedEventId?: string | null) {
 
       if (attendeesError) throw attendeesError;
 
+      // Fetch service order_items for these events
+      const { data: serviceItems, error: serviceItemsError } = await supabase
+        .from('order_items')
+        .select('id, total_price, order_id, orders!inner(status, event_id)')
+        .eq('item_type', 'service')
+        .not('service_id', 'is', null)
+        .in('orders.event_id', eventIds);
+
+      if (serviceItemsError) {
+        console.warn('Could not fetch service items:', serviceItemsError);
+      }
+
+      const paidServiceItems = (serviceItems || []).filter(
+        (i: any) => i.orders?.status === 'paid'
+      );
+      const pendingServiceItems = (serviceItems || []).filter(
+        (i: any) => i.orders?.status !== 'paid'
+      );
+      const addonRevenue = paidServiceItems.reduce(
+        (sum: number, i: any) => sum + Number(i.total_price || 0), 0
+      );
+      const addonPending = pendingServiceItems.reduce(
+        (sum: number, i: any) => sum + Number(i.total_price || 0), 0
+      );
+
       // Get ticket tiers for distribution
       const { data: ticketTiers, error: ticketTiersError } = await supabase
         .from('ticket_tiers')
@@ -102,9 +127,8 @@ export function useDashboardStats(selectedEventId?: string | null) {
       const pendingAttendees = (attendees || []).filter(a => a.payment_status === 'pending');
       const ticketPending = pendingAttendees.reduce((sum, a) => sum + Number(a.price_paid || 0), 0);
 
-      // No separate add-on tracking yet
-      const totalRevenue = ticketRevenue;
-      const totalPending = ticketPending;
+      const totalRevenue = ticketRevenue + addonRevenue;
+      const totalPending = ticketPending + addonPending;
 
       // Ticket distribution by tier
       const ticketCounts: Record<string, number> = {};
