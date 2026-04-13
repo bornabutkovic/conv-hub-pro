@@ -115,7 +115,7 @@ export default function AdminChats() {
         if (!acc[phone]) {
           acc[phone] = {
             phone_number: phone,
-            user_name: msg.user_name,
+            user_name: msg.sender_name || phone,
             institution_name: msg.institution_name,
             messages: [],
             lastMessage: msg,
@@ -123,7 +123,7 @@ export default function AdminChats() {
         }
         acc[phone].messages.push(msg);
         acc[phone].lastMessage = msg;
-        if (msg.user_name) acc[phone].user_name = msg.user_name;
+        if (msg.sender_name) acc[phone].user_name = msg.sender_name;
         if (msg.institution_name) acc[phone].institution_name = msg.institution_name;
         return acc;
       }, {})
@@ -331,7 +331,7 @@ export default function AdminChats() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <p className="font-semibold text-foreground truncate">
-                            {conv.user_name || conv.phone_number}
+                            {conv.user_name}
                           </p>
                           <span className="text-xs text-muted-foreground shrink-0">
                             {formatDate(conv.lastMessage.created_at)}
@@ -374,7 +374,7 @@ export default function AdminChats() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-foreground">
-                      {selectedConversation.user_name || 'Unknown User'}
+                      {selectedConversation.user_name}
                     </h3>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
                       {selectedConversation.institution_name && (
