@@ -24,24 +24,19 @@ import {
 import { cn } from '@/lib/utils';
 
 interface ChatMessage {
-  id: string | null;
+  id: string;
   created_at: string | null;
-  user_name: string | null;
-  institution_name: string | null;
-  phone_number: string | null;
-  email: string | null;
-  role: string | null;
-  sender_type: string | null;
+  session_id: string;
   sender_name: string | null;
-  message_content: string | null;
   event_id: string | null;
   event_name: string | null;
+  Sender: any;
+  message: any;
 }
 
 interface ConversationGroup {
   phone_number: string;
-  user_name: string | null;
-  institution_name: string | null;
+  user_name: string;
   messages: ChatMessage[];
   lastMessage: ChatMessage;
 }
@@ -60,6 +55,19 @@ interface SessionState {
   last_name: string | null;
 }
 
+const getSenderType = (msg: ChatMessage): 'human' | 'ai' => {
+  const raw = typeof msg.Sender === 'string' ? msg.Sender : (msg.Sender?.[''] ?? '');
+  return raw === 'User' ? 'human' : 'ai';
+};
+
+const getMessageContent = (msg: ChatMessage): string => {
+  const raw = msg.message;
+  if (typeof raw === 'string') {
+    try { return JSON.parse(raw); } catch { return raw; }
+  }
+  return String(raw ?? '');
+};
+
 export default function AdminChats() {
   const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -75,8 +83,8 @@ export default function AdminChats() {
     const fetchMessages = async () => {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from('admin_chat_full_view')
-        .select('*')
+        .from('chat_messages')
+        .select('id, created_at, session_id, sender_name, event_id, event_name, Sender, message')
         .order('created_at', { ascending: true });
       if (!error && data) setAllMessages(data as ChatMessage[]);
       setIsLoading(false);
@@ -88,12 +96,8 @@ export default function AdminChats() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-        async () => {
-          const { data } = await supabase
-            .from('admin_chat_full_view')
-            .select('*')
-            .order('created_at', { ascending: true });
-          if (data) setAllMessages(data as ChatMessage[]);
+        (payload) => {
+          setAllMessages((prev) => [...prev, payload.new as ChatMessage]);
         }
       )
       .subscribe((status) => {
@@ -105,32 +109,31 @@ export default function AdminChats() {
     };
   }, []);
 
-  // Group messages by phone number
+  // Group messages by session_id
   const conversations: ConversationGroup[] = useMemo(() => {
     if (!allMessages.length) return [];
-    return Object.values(
-      allMessages.reduce((acc: Record<string, ConversationGroup>, msg) => {
-        const phone = msg.phone_number || 'unknown';
-        if (!acc[phone]) {
-          acc[phone] = {
-            phone_number: phone,
-            user_name: msg.sender_name || phone,
-            institution_name: msg.institution_name,
-            messages: [],
-            lastMessage: msg,
-          };
-        }
-        acc[phone].messages.push(msg);
-        acc[phone].lastMessage = msg;
-        if (msg.sender_name) acc[phone].user_name = msg.sender_name;
-        if (msg.institution_name) acc[phone].institution_name = msg.institution_name;
-        return acc;
-      }, {})
-    ).sort((a, b) => {
-      const dateA = new Date(a.lastMessage.created_at || 0).getTime();
-      const dateB = new Date(b.lastMessage.created_at || 0).getTime();
-      return dateB - dateA;
-    });
+    const grouped = allMessages.reduce((acc: Record<string, ConversationGroup>, msg) => {
+      const phone = msg.session_id;
+      if (!acc[phone]) {
+        acc[phone] = {
+          phone_number: phone,
+          user_name: msg.sender_name || phone,
+          messages: [],
+          lastMessage: msg,
+        };
+      }
+      acc[phone].messages.push(msg);
+      acc[phone].lastMessage = msg;
+      if (msg.sender_name && msg.sender_name !== phone) {
+        acc[phone].user_name = msg.sender_name;
+      }
+      return acc;
+    }, {});
+    return Object.values(grouped).sort(
+      (a, b) =>
+        new Date(b.lastMessage.created_at ?? 0).getTime() -
+        new Date(a.lastMessage.created_at ?? 0).getTime()
+    );
   }, [allMessages]);
 
   // Distinct events from messages
@@ -344,7 +347,7 @@ export default function AdminChats() {
                           </div>
                         )}
                         <p className="text-sm text-muted-foreground truncate mt-1">
-                          {conv.lastMessage.message_content?.substring(0, 40)}...
+                          {getMessageContent(conv.lastMessage)?.substring(0, 40)}...
                         </p>
                       </div>
                     </div>
@@ -398,10 +401,8 @@ export default function AdminChats() {
                 <ScrollArea className="flex-1 p-4">
                   <div className="space-y-3 max-w-3xl mx-auto">
                     {selectedConversation.messages.map((msg, index) => {
-                      const isBot =
-                        msg.sender_type === 'ai' ||
-                        msg.sender_type === 'bot' ||
-                        msg.sender_type === 'assistant';
+                      const isBot = getSenderType(msg) === 'ai';
+                      const content = getMessageContent(msg);
                       return (
                         <div
                           key={msg.id || index}
@@ -416,7 +417,7 @@ export default function AdminChats() {
                             )}
                           >
                             <p className="text-sm whitespace-pre-wrap break-words">
-                              {msg.message_content}
+                              {content}
                             </p>
                             <p
                               className={cn(
