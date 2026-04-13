@@ -1708,15 +1708,33 @@ export type Database = {
         Row: {
           created_at: string | null
           email: string | null
+          event_id: string | null
+          event_name: string | null
           id: string | null
           institution_name: string | null
           message_content: string | null
           phone_number: string | null
           role: string | null
+          sender_name: string | null
           sender_type: string | null
           user_name: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       admin_users_with_institutions: {
         Row: {
