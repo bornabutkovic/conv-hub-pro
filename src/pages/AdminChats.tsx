@@ -15,7 +15,6 @@ import {
 import {
   MessageCircle,
   User,
-  Building2,
   Phone,
   ChevronLeft,
   ChevronRight,
