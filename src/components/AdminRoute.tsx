@@ -1,18 +1,19 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin, isPortalUser } from '@/lib/roles';
+import { isAdmin } from '@/lib/roles';
 
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 export function AdminRoute({ children }: AdminRouteProps) {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, profileLoading } = useAuth();
 
-  if (loading) {
+  // Wait for BOTH session AND profile before any redirect decision
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -21,8 +22,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Only admin (or legacy super_admin) can access admin routes
-  if (!isPortalUser(profile?.role)) {
+  if (!isAdmin(profile?.role)) {
     return <Navigate to="/" replace />;
   }
 
