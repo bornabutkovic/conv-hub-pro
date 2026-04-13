@@ -92,9 +92,9 @@ export function AttendeeServicesModal({
     }
   };
 
-  const handleStatusChange = async (purchaseId: string, newStatus: string) => {
+  const handleStatusChange = async (purchaseId: string, newStatus: string, orderId: string | null) => {
     try {
-      await updateStatus.mutateAsync({ purchaseId, status: newStatus, attendeeId });
+      await updateStatus.mutateAsync({ purchaseId, status: newStatus, attendeeId, orderId });
       toast.success('Status updated');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update status');
@@ -187,7 +187,7 @@ export function AttendeeServicesModal({
                   <div className="flex items-center gap-2">
                     <Select
                       value={purchase.status}
-                      onValueChange={(value) => handleStatusChange(purchase.id, value)}
+                      onValueChange={(value) => handleStatusChange(purchase.id, value, purchase.order_id)}
                       disabled={updateStatus.isPending}
                     >
                       <SelectTrigger className="w-28 h-8">
