@@ -37,7 +37,8 @@ export function useAttendeePurchases(attendeeId: string | null) {
           total_price,
           quantity,
           created_at,
-          orders!inner(id, status, created_at),
+          order_id,
+          orders(id, status, created_at),
           event_services!service_id(name, price, currency)
         `)
         .eq('attendee_id', attendeeId)
@@ -50,12 +51,12 @@ export function useAttendeePurchases(attendeeId: string | null) {
         id: item.id,
         attendee_id: item.attendee_id,
         service_id: item.service_id,
+        order_id: item.orders?.id || item.order_id || null,
         status: item.orders?.status || 'pending',
-        created_at: item.orders?.created_at || new Date().toISOString(),
+        created_at: item.orders?.created_at || item.created_at || new Date().toISOString(),
         service_name: item.event_services?.name || 'Unknown Service',
         service_price: item.event_services?.price || 0,
         service_currency: item.event_services?.currency || 'EUR',
-        order_id: item.orders?.id || null,
       }));
     },
     enabled: !!attendeeId,
