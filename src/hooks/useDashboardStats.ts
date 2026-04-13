@@ -130,23 +130,59 @@ export function useDashboardStats(selectedEventId?: string | null) {
       const totalRevenue = ticketRevenue + addonRevenue;
       const totalPending = ticketPending + addonPending;
 
-      // Ticket distribution by tier
-      const ticketCounts: Record<string, number> = {};
-      (ticketTiers || []).forEach(tt => { ticketCounts[tt.name] = 0; });
-      
-      const tierMap = new Map((ticketTiers || []).map(tt => [tt.id, tt.name]));
-      (attendees || []).forEach(a => {
-        const tierName = tierMap.get(a.ticket_tier_id || '') || 'No Tier';
-        ticketCounts[tierName] = (ticketCounts[tierName] || 0) + 1;
-      });
+      // Ticket distribution / Revenue by event
+      let ticketDistribution: { name: string; value: number; color: string }[] = [];
+      const isAllEvents = !selectedEventId || selectedEventId === 'all';
 
-      const ticketDistribution = Object.entries(ticketCounts)
-        .filter(([_, value]) => value > 0)
-        .map(([name, value], index) => ({
-          name,
-          value,
-          color: CHART_COLORS[index % CHART_COLORS.length],
-        }));
+      if (isAllEvents) {
+        // Revenue by Event — group attendees by event_id, sum price_paid where paid
+        const revenueByEvent: Record<string, { name: string; revenue: number }> = {};
+        const { data: allEvents } = await supabase
+          .from('events')
+          .select('id, name')
+          .in('id', eventIds);
+        const eventNameMap = new Map((allEvents || []).map(e => [e.id, e.name]));
+
+        (attendees || []).forEach(a => {
+          if (a.payment_status !== 'paid') return;
+          const eventId = a.event_id;
+          const eventName = eventNameMap.get(eventId) || 'Unknown Event';
+          if (!revenueByEvent[eventId]) {
+            revenueByEvent[eventId] = { name: eventName, revenue: 0 };
+          }
+          revenueByEvent[eventId].revenue += Number(a.price_paid || 0);
+        });
+
+        const sorted = Object.values(revenueByEvent).sort((a, b) => b.revenue - a.revenue);
+        const top = sorted.slice(0, 6);
+        const others = sorted.slice(6);
+        const othersTotal = others.reduce((sum, e) => sum + e.revenue, 0);
+        const entries = othersTotal > 0 ? [...top, { name: 'Others', revenue: othersTotal }] : top;
+
+        ticketDistribution = entries
+          .filter(e => e.revenue > 0)
+          .map((e, index) => ({
+            name: e.name,
+            value: e.revenue,
+            color: CHART_COLORS[index % CHART_COLORS.length],
+          }));
+      } else {
+        // Single event — ticket tier breakdown
+        const ticketCounts: Record<string, number> = {};
+        (ticketTiers || []).forEach(tt => { ticketCounts[tt.name] = 0; });
+        const tierMap2 = new Map((ticketTiers || []).map(tt => [tt.id, tt.name]));
+        (attendees || []).forEach(a => {
+          const tierName = tierMap2.get(a.ticket_tier_id || '') || 'No Tier';
+          ticketCounts[tierName] = (ticketCounts[tierName] || 0) + 1;
+        });
+        ticketDistribution = Object.entries(ticketCounts)
+          .filter(([_, value]) => value > 0)
+          .map(([name, value], index) => ({
+            name,
+            value,
+            color: CHART_COLORS[index % CHART_COLORS.length],
+          }));
+      }
 
       // Registration timeline (last 14 days)
       const today = startOfDay(new Date());
