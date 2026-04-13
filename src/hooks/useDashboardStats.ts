@@ -200,7 +200,8 @@ export function useDashboardStats(selectedEventId?: string | null) {
       // Recent activity
       const recentActivity: DashboardStats['recentActivity'] = [];
       (attendees || []).slice(0, 5).forEach(attendee => {
-        const tierName = tierMap.get(attendee.ticket_tier_id || '') || 'Event';
+        const activityTierMap = new Map((ticketTiers || []).map(tt => [tt.id, tt.name]));
+        const tierName = activityTierMap.get(attendee.ticket_tier_id || '') || 'Event';
         recentActivity.push({
           id: `reg-${attendee.id}`,
           userName: `${attendee.first_name} ${attendee.last_name}`,
