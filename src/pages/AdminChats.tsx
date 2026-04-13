@@ -15,7 +15,6 @@ import {
 import {
   MessageCircle,
   User,
-  Building2,
   Phone,
   ChevronLeft,
   ChevronRight,
@@ -337,12 +336,6 @@ export default function AdminChats() {
                             {formatDate(conv.lastMessage.created_at)}
                           </span>
                         </div>
-                        {conv.institution_name && (
-                          <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
-                            <Building2 className="h-3 w-3" />
-                            {conv.institution_name}
-                          </p>
-                        )}
                         {!selectedEventId && conv.lastMessage.event_name && (
                           <div className="mt-0.5">
                             <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal">
@@ -377,12 +370,6 @@ export default function AdminChats() {
                       {selectedConversation.user_name}
                     </h3>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-                      {selectedConversation.institution_name && (
-                        <span className="flex items-center gap-1">
-                          <Building2 className="h-3 w-3" />
-                          {selectedConversation.institution_name}
-                        </span>
-                      )}
                       <span className="flex items-center gap-1">
                         <Phone className="h-3 w-3" />
                         {selectedConversation.phone_number}
