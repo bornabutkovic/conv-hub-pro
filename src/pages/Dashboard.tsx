@@ -236,6 +236,7 @@ export default function Dashboard() {
           data={stats?.ticketDistribution || []} 
           loading={loadingStats}
           eventName={selectedEventId !== 'all' ? selectedEvent?.name : undefined}
+          selectedEventId={selectedEventId}
         />
       </div>
 

@@ -6,14 +6,19 @@ interface TicketDistributionChartProps {
   data: { name: string; value: number; color: string }[];
   loading?: boolean;
   eventName?: string;
+  selectedEventId?: string | null;
 }
 
-export function TicketDistributionChart({ data, loading, eventName }: TicketDistributionChartProps) {
+export function TicketDistributionChart({ data, loading, eventName, selectedEventId }: TicketDistributionChartProps) {
+  const isAllEvents = !selectedEventId || selectedEventId === 'all';
+  const chartTitle = isAllEvents ? 'Revenue by Event' : 'Ticket Distribution';
+  const chartSubtitle = isAllEvents ? 'Paid ticket revenue per event' : (eventName ? `Breakdown for ${eventName}` : 'Breakdown by ticket type');
+
   if (loading) {
     return (
       <Card className="shadow-brand">
         <CardHeader>
-          <CardTitle className="text-lg font-heading">Ticket Distribution</CardTitle>
+          <CardTitle className="text-lg font-heading">{chartTitle}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[250px] w-full" />
@@ -27,9 +32,9 @@ export function TicketDistributionChart({ data, loading, eventName }: TicketDist
   return (
     <Card className="shadow-brand glow-hover">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-heading font-semibold">Ticket Distribution</CardTitle>
+        <CardTitle className="text-lg font-heading font-semibold">{chartTitle}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          {eventName ? `Breakdown for ${eventName}` : 'Breakdown by ticket type'}
+          {chartSubtitle}
         </p>
       </CardHeader>
       <CardContent>
@@ -63,7 +68,7 @@ export function TicketDistributionChart({ data, loading, eventName }: TicketDist
                     borderRadius: '12px',
                     boxShadow: '0 4px 24px -4px hsl(263 70% 50% / 0.12)',
                   }}
-                  formatter={(value: number) => [value, 'Attendees']}
+                  formatter={(value: number) => [isAllEvents ? `€${value.toLocaleString('de-DE')}` : value, isAllEvents ? 'Revenue' : 'Attendees']}
                 />
                 <Legend 
                   verticalAlign="bottom" 
