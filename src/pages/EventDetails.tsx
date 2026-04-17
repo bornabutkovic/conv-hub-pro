@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { EventAttendeesTable } from '@/components/events/EventAttendeesTable';
 import { EventServicesTable } from '@/components/events/EventServicesTable';
 import { TicketTiersTable } from '@/components/events/TicketTiersTable';
@@ -186,7 +188,31 @@ export default function EventDetails() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {userIsAdmin && (
+            <div className="flex items-center gap-2">
+              <Label htmlFor="event-status" className="text-sm text-muted-foreground whitespace-nowrap">
+                Status:
+              </Label>
+              <Select
+                value={event.status || 'draft'}
+                onValueChange={handleStatusChange}
+                disabled={isUpdatingStatus}
+              >
+                <SelectTrigger id="event-status" className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="pending_approval">Pending Approval</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="test">Test</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  {userIsSuperAdmin && <SelectItem value="archived">Archived</SelectItem>}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           {!userIsAdmin && event.status === 'draft' && (
             <Button 
               variant="outline" 
@@ -198,22 +224,14 @@ export default function EventDetails() {
             </Button>
           )}
           {userIsAdmin && event.status === 'pending_approval' && (
-            <>
-              <Button 
-                onClick={() => handleStatusChange('active')}
-                disabled={isUpdatingStatus}
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Approve Event
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => handleStatusChange('draft')}
-                disabled={isUpdatingStatus}
-              >
-                Return to Draft
-              </Button>
-            </>
+            <Button 
+              onClick={() => handleStatusChange('active')}
+              disabled={isUpdatingStatus}
+              size="sm"
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Approve
+            </Button>
           )}
           <Button onClick={() => navigate(`/events/${event.id}/edit`)}>
             <Edit className="h-4 w-4 mr-2" />

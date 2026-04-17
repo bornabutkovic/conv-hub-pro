@@ -106,6 +106,7 @@ export default function Events() {
               )}
             </TabsTrigger>
             <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="test">Test</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
             {userIsSuperAdmin && (
               <TabsTrigger value="archived">Archived</TabsTrigger>
