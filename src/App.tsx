@@ -19,6 +19,7 @@ import CreateInstitution from "./pages/CreateInstitution";
 import EditInstitution from "./pages/EditInstitution";
 import AdminChats from "./pages/AdminChats";
 import UpdatePassword from "./pages/UpdatePassword";
+import ResetPassword from "./pages/ResetPassword";
 import PendingApproval from "./pages/PendingApproval";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
@@ -35,6 +36,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/update-password" element={<UpdatePassword />} />
+            <Route path="/auth/reset-password" element={<ResetPassword />} />
             <Route path="/pending-approval" element={<PendingApproval />} />
             <Route
               path="/"
