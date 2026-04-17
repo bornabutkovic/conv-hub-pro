@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
 import { useEventsWithPendingItems } from '@/hooks/useAdminNotifications';
+import { useEventRevenue, formatEur } from '@/hooks/useEventRevenue';
 
 interface EventCardProps {
   event: {
