@@ -139,28 +139,23 @@ export function EventCard({ event }: EventCardProps) {
         </div>
       </CardHeader>
       <CardContent className="pt-0 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span className="text-sm">
-              {event.start_date
-                ? format(new Date(event.start_date), 'MMM d, yyyy')
-                : 'No date set'}
-            </span>
-          </div>
-          <span className="text-lg font-bold text-primary">
-            {formatPrice(event.price, event.currency)}
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Calendar className="h-4 w-4" />
+          <span className="text-sm">
+            {event.start_date
+              ? format(new Date(event.start_date), 'MMM d, yyyy')
+              : 'No date set'}
           </span>
         </div>
         <div className="grid grid-cols-2 gap-3 pt-3 border-t">
           <div className="space-y-0.5">
-            <p className="text-xs text-muted-foreground">Prihod</p>
+            <p className="text-xs text-muted-foreground">Revenue</p>
             <p className="text-sm font-semibold">
               {hasRevenue ? formatEur(revenue.paid) : '—'}
             </p>
           </div>
           <div className="space-y-0.5">
-            <p className="text-xs text-muted-foreground">Čeka plaćanje</p>
+            <p className="text-xs text-muted-foreground">Pending</p>
             <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
               {hasRevenue ? formatEur(revenue.pending) : '—'}
             </p>
