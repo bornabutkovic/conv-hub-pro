@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, KeyRound } from 'lucide-react';
 
 export function UsersManager() {
   const queryClient = useQueryClient();
@@ -68,6 +69,21 @@ export function UsersManager() {
     },
   });
 
+  const sendPasswordReset = async (email: string | null) => {
+    if (!email) {
+      toast.error('Korisnik nema email adresu');
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://conwayo.app/auth/reset-password',
+    });
+    if (error) {
+      toast.error(error.message || 'Greška pri slanju emaila');
+      return;
+    }
+    toast.success('Email za reset lozinke je poslan.');
+  };
+
   const getInstitutionName = (institutionUuid: string | null) => {
     if (!institutionUuid || !institutions) return 'Not assigned';
     const institution = institutions.find((i) => i.id === institutionUuid);
@@ -108,6 +124,7 @@ export function UsersManager() {
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Institution</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -146,6 +163,16 @@ export function UsersManager() {
                       ))}
                     </SelectContent>
                   </Select>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => sendPasswordReset(user.email)}
+                  >
+                    <KeyRound className="h-4 w-4 mr-2" />
+                    Pošalji reset lozinke
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
