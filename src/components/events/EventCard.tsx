@@ -26,8 +26,11 @@ export function EventCard({ event }: EventCardProps) {
   const { profile } = useAuth();
   const userIsAdminRole = isAdmin(profile?.role);
   const { data: eventsWithPending } = useEventsWithPendingItems();
+  const { data: revenueMap } = useEventRevenue();
 
   const hasPendingItems = userIsAdminRole && eventsWithPending?.has(event.id);
+  const revenue = revenueMap?.get(event.id) || { paid: 0, pending: 0 };
+  const hasRevenue = revenue.paid > 0 || revenue.pending > 0;
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
