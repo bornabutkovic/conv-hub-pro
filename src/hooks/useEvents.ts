@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { isSuperAdmin, isAdmin, isPortalUser } from '@/lib/roles';
 
-export type EventStatus = 'all' | 'draft' | 'pending_approval' | 'active' | 'completed' | 'archived';
+export type EventStatus = 'all' | 'draft' | 'pending_approval' | 'active' | 'test' | 'completed' | 'archived';
 
 export interface Event {
   id: string;

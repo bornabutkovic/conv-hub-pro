@@ -31,7 +31,17 @@ export function EventCard({ event }: EventCardProps) {
   const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'active':
-        return <Badge variant="default">{getStatusLabel(status)}</Badge>;
+        return (
+          <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/25">
+            {getStatusLabel(status)}
+          </Badge>
+        );
+      case 'test':
+        return (
+          <Badge className="bg-yellow-400/20 text-yellow-700 border-yellow-500/40 hover:bg-yellow-400/30 dark:text-yellow-400">
+            {getStatusLabel(status)}
+          </Badge>
+        );
       case 'pending_approval':
         return (
           <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30 hover:bg-amber-500/25">
@@ -39,9 +49,13 @@ export function EventCard({ event }: EventCardProps) {
           </Badge>
         );
       case 'completed':
-        return <Badge variant="outline">{getStatusLabel(status)}</Badge>;
+        return (
+          <Badge className="bg-blue-500/15 text-blue-600 border-blue-500/30 hover:bg-blue-500/25">
+            {getStatusLabel(status)}
+          </Badge>
+        );
       case 'archived':
-        return <Badge variant="destructive">{getStatusLabel(status)}</Badge>;
+        return <Badge variant="secondary">{getStatusLabel(status)}</Badge>;
       case 'draft':
         return <Badge variant="secondary">{getStatusLabel(status)}</Badge>;
       default:
@@ -53,6 +67,8 @@ export function EventCard({ event }: EventCardProps) {
     switch (status) {
       case 'active':
         return 'Active';
+      case 'test':
+        return 'Test';
       case 'pending_approval':
         return 'Pending Approval';
       case 'completed':
