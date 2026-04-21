@@ -14,6 +14,7 @@ interface EventCardProps {
     name: string;
     event_id: string | null;
     start_date: string | null;
+    end_date?: string | null;
     price: number | null;
     currency: string | null;
     status: string | null;
