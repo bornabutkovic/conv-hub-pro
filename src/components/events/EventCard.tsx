@@ -14,6 +14,7 @@ interface EventCardProps {
     name: string;
     event_id: string | null;
     start_date: string | null;
+    end_date?: string | null;
     price: number | null;
     currency: string | null;
     status: string | null;
@@ -142,9 +143,23 @@ export function EventCard({ event }: EventCardProps) {
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="h-4 w-4" />
           <span className="text-sm">
-            {event.start_date
-              ? format(new Date(event.start_date), 'MMM d, yyyy')
-              : 'No date set'}
+            {(() => {
+              if (!event.start_date) return 'No date set';
+              const start = new Date(event.start_date);
+              const end = event.end_date ? new Date(event.end_date) : null;
+              const sameDay =
+                end &&
+                start.getFullYear() === end.getFullYear() &&
+                start.getMonth() === end.getMonth() &&
+                start.getDate() === end.getDate();
+              if (!end || sameDay) {
+                return format(start, 'MMM d, yyyy');
+              }
+              if (start.getFullYear() === end.getFullYear()) {
+                return `${format(start, 'MMM d')} – ${format(end, 'MMM d, yyyy')}`;
+              }
+              return `${format(start, 'MMM d, yyyy')} – ${format(end, 'MMM d, yyyy')}`;
+            })()}
           </span>
         </div>
         <div className="grid grid-cols-2 gap-3 pt-3 border-t">
