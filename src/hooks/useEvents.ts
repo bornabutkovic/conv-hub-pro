@@ -103,7 +103,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
         })) as Event[];
       }
 
-      // event_organizer: see only their institution's events (no pending_approval from others)
+      // event_organizer: see their institution's events + events where their institution is a co/tech organizer
       const institutionUuid = profile?.institution_uuid;
       if (!institutionUuid) return [];
 
@@ -120,8 +120,44 @@ export function useEvents(statusFilter: EventStatus = 'all') {
 
       const { data, error } = await query;
       if (error) throw error;
+      const ownEvents = data || [];
 
-      return (data || []).map((event: any) => ({
+      // Also fetch events where this institution is listed as a co/technical organizer
+      const { data: coOrgRows } = await supabase
+        .from('event_organizers')
+        .select('event_id')
+        .eq('institution_id', institutionUuid);
+
+      const coOrgEventIds = Array.from(
+        new Set((coOrgRows || []).map((r: any) => r.event_id).filter(Boolean))
+      );
+
+      let coOrgEvents: any[] = [];
+      if (coOrgEventIds.length > 0) {
+        let q2 = supabase
+          .from('events')
+          .select(`*, institutions:institution_uuid (name)`)
+          .in('id', coOrgEventIds)
+          .neq('status', 'archived')
+          .order('start_date', { ascending: false });
+        if (statusFilter !== 'all') {
+          q2 = q2.eq('status', statusFilter);
+        }
+        const { data: coData, error: coError } = await q2;
+        if (coError) throw coError;
+        coOrgEvents = coData || [];
+      }
+
+      // Merge and dedupe
+      const merged = [...ownEvents, ...coOrgEvents];
+      const seen = new Set<string>();
+      const unique = merged.filter((e: any) => {
+        if (seen.has(e.id)) return false;
+        seen.add(e.id);
+        return true;
+      });
+
+      return unique.map((event: any) => ({
         ...event,
         institution_name: event.institutions?.name || null,
       })) as Event[];

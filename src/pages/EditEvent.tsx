@@ -47,6 +47,7 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { TranslatableFields } from '@/components/events/TranslatableFields';
 import { MultilingualContentField } from '@/components/events/MultilingualContentField';
+import { OrganizersSection } from '@/components/events/OrganizersSection';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -653,6 +654,13 @@ export default function EditEvent() {
                     />
                   </div>
                 )}
+
+                {/* Co-organizers / Technical organizer */}
+                <OrganizersSection
+                  eventId={event.id}
+                  primaryInstitutionId={event.institution_uuid}
+                />
+
                 {/* Section 2: Location */}
                 <div className="space-y-4">
                   <div>

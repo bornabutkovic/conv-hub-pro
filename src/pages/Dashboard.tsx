@@ -82,18 +82,48 @@ export default function Dashboard() {
           .map((event: any) => ({ ...event, institution_name: event.institutions?.name || null }));
       }
 
-      // event_organizer: filter by institution_uuid
+      // event_organizer: own institution events + events where institution is co/tech organizer
       if (institutionUuid) {
-        const { data, error } = await supabase
-          .from('events')
-          .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
-          .eq('institution_uuid', institutionUuid)
-          .order('start_date', { ascending: false });
-        if (error) throw error;
-        return (data || []).map((event: any) => ({
-          ...event,
-          institution_name: event.institutions?.name || null,
-        }));
+        const [ownRes, coOrgRowsRes] = await Promise.all([
+          supabase
+            .from('events')
+            .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+            .eq('institution_uuid', institutionUuid)
+            .order('start_date', { ascending: false }),
+          supabase
+            .from('event_organizers')
+            .select('event_id')
+            .eq('institution_id', institutionUuid),
+        ]);
+        if (ownRes.error) throw ownRes.error;
+
+        const coOrgEventIds = Array.from(
+          new Set(((coOrgRowsRes.data as any[]) || []).map((r) => r.event_id).filter(Boolean))
+        );
+
+        let coOrgEvents: any[] = [];
+        if (coOrgEventIds.length > 0) {
+          const { data: coData, error: coErr } = await supabase
+            .from('events')
+            .select(`id, name, slug, start_date, status, institutions:institution_uuid (name)`)
+            .in('id', coOrgEventIds)
+            .order('start_date', { ascending: false });
+          if (coErr) throw coErr;
+          coOrgEvents = coData || [];
+        }
+
+        const merged = [...(ownRes.data || []), ...coOrgEvents];
+        const seen = new Set<string>();
+        return merged
+          .filter((e: any) => {
+            if (seen.has(e.id)) return false;
+            seen.add(e.id);
+            return true;
+          })
+          .map((event: any) => ({
+            ...event,
+            institution_name: event.institutions?.name || null,
+          }));
       }
       return [];
     },
