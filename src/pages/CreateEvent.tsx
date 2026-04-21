@@ -43,6 +43,7 @@ import { useQuery } from '@tanstack/react-query';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { MultilingualContentField } from '@/components/events/MultilingualContentField';
 import { useFormDraft } from '@/hooks/useFormDraft';
 
 const LANGUAGE_OPTIONS = [
@@ -56,6 +57,7 @@ const createEventSchema = z.object({
   short_name: z.string().max(50).optional(),
   event_type: z.enum(['face2face', 'virtual', 'hybrid'], { required_error: 'Event type is required' }),
   description: z.string().optional(),
+  cancellation_policy: z.string().optional(),
   website_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   venue_name: z.string().min(1, 'Venue is required').max(200),
   location_address: z.string().max(300).optional(),
@@ -97,6 +99,10 @@ type CreateEventForm = z.infer<typeof createEventSchema>;
 export default function CreateEvent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const [enTranslations, setEnTranslations] = useState({
+    description: '',
+    cancellation_policy: '',
+  });
   const [branding, setBranding] = useState({
     branding_primary_color: '#6366f1',
     branding_secondary_color: '#ffffff',
@@ -131,6 +137,7 @@ export default function CreateEvent() {
       short_name: '',
       event_type: 'face2face',
       description: '',
+      cancellation_policy: '',
       website_url: '',
       venue_name: '',
       location_address: '',
@@ -200,6 +207,13 @@ export default function CreateEvent() {
           short_name: data.short_name || null,
           event_type: data.event_type,
           description: data.description || null,
+          cancellation_policy: (data as any).cancellation_policy || null,
+          translations: {
+            en: {
+              description: enTranslations.description || undefined,
+              cancellation_policy: enTranslations.cancellation_policy || undefined,
+            },
+          },
           website_url: data.website_url || null,
           venue_name: data.venue_name,
           location_address: (data as any).location_address || null,
@@ -392,16 +406,71 @@ export default function CreateEvent() {
                     <p className="text-sm text-muted-foreground">Describe your event for attendees</p>
                   </div>
                   <Separator />
+
                   <FormField
                     control={form.control}
                     name="description"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <RichTextEditor
-                            value={field.value || ''}
-                            onChange={field.onChange}
-                            placeholder="Tell attendees about this event..."
+                          <MultilingualContentField
+                            supportedLanguages={form.watch('supported_languages') || ['hr']}
+                            label="Description / Opis"
+                            renderEditor={(lang) =>
+                              lang === 'hr' ? (
+                                <RichTextEditor
+                                  value={field.value || ''}
+                                  onChange={field.onChange}
+                                  placeholder="Tell attendees about this event..."
+                                />
+                              ) : lang === 'en' ? (
+                                <RichTextEditor
+                                  value={enTranslations.description}
+                                  onChange={(v) =>
+                                    setEnTranslations((prev) => ({ ...prev, description: v }))
+                                  }
+                                  placeholder="Tell attendees about this event in English..."
+                                />
+                              ) : null
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="cancellation_policy"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <MultilingualContentField
+                            supportedLanguages={form.watch('supported_languages') || ['hr']}
+                            label="Cancellation Policy / Politika povrata"
+                            renderEditor={(lang) =>
+                              lang === 'hr' ? (
+                                <Textarea
+                                  value={field.value || ''}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                  placeholder="Describe your cancellation and refund policy..."
+                                  className="min-h-[120px]"
+                                />
+                              ) : lang === 'en' ? (
+                                <Textarea
+                                  value={enTranslations.cancellation_policy}
+                                  onChange={(e) =>
+                                    setEnTranslations((prev) => ({
+                                      ...prev,
+                                      cancellation_policy: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Describe your cancellation and refund policy in English..."
+                                  className="min-h-[120px]"
+                                />
+                              ) : null
+                            }
                           />
                         </FormControl>
                         <FormMessage />
