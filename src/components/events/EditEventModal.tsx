@@ -69,9 +69,9 @@ const editEventSchema = z.object({
   
   // Section 3: Dates & Billing
   start_date: z.date({ required_error: 'Start date is required' }),
-  start_time: z.string().min(1, 'Start time is required'),
+  start_time: z.string().optional(),
   end_date: z.date({ required_error: 'End date is required' }),
-  end_time: z.string().min(1, 'End time is required'),
+  end_time: z.string().optional(),
   payment_due_days: z.coerce.number().min(1, 'Must be at least 1 day').default(7),
   
   // Section 4: Financials & Business Central
@@ -93,12 +93,20 @@ const editEventSchema = z.object({
   status: z.enum(['draft', 'pending_approval', 'active', 'completed']),
 }).refine((data) => {
   const startDateTime = new Date(data.start_date);
-  const [startHours, startMinutes] = data.start_time.split(':').map(Number);
-  startDateTime.setHours(startHours, startMinutes, 0, 0);
+  if (data.start_time) {
+    const [sh, sm] = data.start_time.split(':').map(Number);
+    startDateTime.setHours(sh, sm, 0, 0);
+  } else {
+    startDateTime.setHours(0, 0, 0, 0);
+  }
   
   const endDateTime = new Date(data.end_date);
-  const [endHours, endMinutes] = data.end_time.split(':').map(Number);
-  endDateTime.setHours(endHours, endMinutes, 0, 0);
+  if (data.end_time) {
+    const [eh, em] = data.end_time.split(':').map(Number);
+    endDateTime.setHours(eh, em, 0, 0);
+  } else {
+    endDateTime.setHours(23, 59, 0, 0);
+  }
   
   return endDateTime > startDateTime;
 }, {
@@ -144,8 +152,8 @@ export function EditEventModal({
       location_city: '',
       location_postal_code: '',
       location_country: '',
-      start_time: '09:00',
-      end_time: '18:00',
+      start_time: '',
+      end_time: '',
       payment_due_days: 7,
       currency: 'EUR',
       tax_location: '',
@@ -165,13 +173,19 @@ export function EditEventModal({
     if (event && open) {
       // Parse start date and time
       const startDate = event.start_date ? new Date(event.start_date) : new Date();
-      const startHours = startDate.getHours().toString().padStart(2, '0');
-      const startMinutes = startDate.getMinutes().toString().padStart(2, '0');
+      const sH = startDate.getHours();
+      const sM = startDate.getMinutes();
+      const startTimeStr = (sH === 0 && sM === 0)
+        ? ''
+        : `${sH.toString().padStart(2, '0')}:${sM.toString().padStart(2, '0')}`;
 
       // Parse end date and time
       const endDate = event.end_date ? new Date(event.end_date) : new Date();
-      const endHours = endDate.getHours().toString().padStart(2, '0');
-      const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
+      const eH = endDate.getHours();
+      const eM = endDate.getMinutes();
+      const endTimeStr = (eH === 23 && eM === 59)
+        ? ''
+        : `${eH.toString().padStart(2, '0')}:${eM.toString().padStart(2, '0')}`;
 
       // Parse additional admins array to comma-separated string
       const additionalAdminsStr = event.additional_admins 
@@ -187,9 +201,9 @@ export function EditEventModal({
         location_postal_code: (event as any).location_postal_code || '',
         location_country: event.location_country || '',
         start_date: startDate,
-        start_time: `${startHours}:${startMinutes}`,
+        start_time: startTimeStr,
         end_date: endDate,
-        end_time: `${endHours}:${endMinutes}`,
+        end_time: endTimeStr,
         payment_due_days: event.payment_due_days || 7,
         currency: (event.currency as 'EUR' | 'USD') || 'EUR',
         tax_location: event.tax_location || '',
@@ -225,14 +239,22 @@ export function EditEventModal({
 
     try {
       // Combine start date and time
-      const [startHours, startMinutes] = data.start_time.split(':').map(Number);
       const startDateTime = new Date(data.start_date);
-      startDateTime.setHours(startHours, startMinutes, 0, 0);
+      if (data.start_time) {
+        const [sh, sm] = data.start_time.split(':').map(Number);
+        startDateTime.setHours(sh, sm, 0, 0);
+      } else {
+        startDateTime.setHours(0, 0, 0, 0);
+      }
 
       // Combine end date and time
-      const [endHours, endMinutes] = data.end_time.split(':').map(Number);
       const endDateTime = new Date(data.end_date);
-      endDateTime.setHours(endHours, endMinutes, 0, 0);
+      if (data.end_time) {
+        const [eh, em] = data.end_time.split(':').map(Number);
+        endDateTime.setHours(eh, em, 0, 0);
+      } else {
+        endDateTime.setHours(23, 59, 0, 0);
+      }
 
       // Parse additional admins (comma-separated emails to array)
       const additionalAdminsArray = data.additional_admins
@@ -452,10 +474,11 @@ export function EditEventModal({
                     name="start_time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Time *</FormLabel>
+                        <FormLabel>Start Time</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
+                        <FormDescription>Nije obavezno / Optional</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -465,10 +488,11 @@ export function EditEventModal({
                     name="end_time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>End Time *</FormLabel>
+                        <FormLabel>End Time</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
+                        <FormDescription>Nije obavezno / Optional</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

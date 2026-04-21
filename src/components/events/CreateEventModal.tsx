@@ -67,9 +67,9 @@ const createEventSchema = z.object({
   
   // Section 3: Dates & Billing
   start_date: z.date({ required_error: 'Start date is required' }),
-  start_time: z.string().min(1, 'Start time is required'),
+  start_time: z.string().optional(),
   end_date: z.date({ required_error: 'End date is required' }),
-  end_time: z.string().min(1, 'End time is required'),
+  end_time: z.string().optional(),
   payment_due_days: z.coerce.number().min(1, 'Must be at least 1 day').default(7),
   
   // Section 4: Financials & Business Central
@@ -93,12 +93,20 @@ const createEventSchema = z.object({
   status: z.enum(['draft', 'pending_approval', 'active', 'completed']).default('draft'),
 }).refine((data) => {
   const startDateTime = new Date(data.start_date);
-  const [startHours, startMinutes] = data.start_time.split(':').map(Number);
-  startDateTime.setHours(startHours, startMinutes, 0, 0);
+  if (data.start_time) {
+    const [sh, sm] = data.start_time.split(':').map(Number);
+    startDateTime.setHours(sh, sm, 0, 0);
+  } else {
+    startDateTime.setHours(0, 0, 0, 0);
+  }
   
   const endDateTime = new Date(data.end_date);
-  const [endHours, endMinutes] = data.end_time.split(':').map(Number);
-  endDateTime.setHours(endHours, endMinutes, 0, 0);
+  if (data.end_time) {
+    const [eh, em] = data.end_time.split(':').map(Number);
+    endDateTime.setHours(eh, em, 0, 0);
+  } else {
+    endDateTime.setHours(23, 59, 0, 0);
+  }
   
   return endDateTime > startDateTime;
 }, {
@@ -158,8 +166,8 @@ export function CreateEventModal({
       location_city: '',
       location_postal_code: '',
       location_country: '',
-      start_time: '09:00',
-      end_time: '18:00',
+      start_time: '',
+      end_time: '',
       payment_due_days: 7,
       currency: 'EUR',
       tax_location: '',
@@ -202,14 +210,22 @@ export function CreateEventModal({
 
     try {
       // Combine start date and time
-      const [startHours, startMinutes] = data.start_time.split(':').map(Number);
       const startDateTime = new Date(data.start_date);
-      startDateTime.setHours(startHours, startMinutes, 0, 0);
+      if (data.start_time) {
+        const [sh, sm] = data.start_time.split(':').map(Number);
+        startDateTime.setHours(sh, sm, 0, 0);
+      } else {
+        startDateTime.setHours(0, 0, 0, 0);
+      }
 
       // Combine end date and time
-      const [endHours, endMinutes] = data.end_time.split(':').map(Number);
       const endDateTime = new Date(data.end_date);
-      endDateTime.setHours(endHours, endMinutes, 0, 0);
+      if (data.end_time) {
+        const [eh, em] = data.end_time.split(':').map(Number);
+        endDateTime.setHours(eh, em, 0, 0);
+      } else {
+        endDateTime.setHours(23, 59, 0, 0);
+      }
 
       // Parse additional admins (comma-separated emails to array)
       const additionalAdminsArray = data.additional_admins
@@ -471,10 +487,11 @@ export function CreateEventModal({
                     name="start_time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Time *</FormLabel>
+                        <FormLabel>Start Time</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
+                        <FormDescription>Nije obavezno / Optional</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -484,10 +501,11 @@ export function CreateEventModal({
                     name="end_time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>End Time *</FormLabel>
+                        <FormLabel>End Time</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
+                        <FormDescription>Nije obavezno / Optional</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
