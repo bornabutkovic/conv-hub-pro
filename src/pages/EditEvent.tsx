@@ -550,111 +550,122 @@ export default function EditEvent() {
                   />
                 </div>
 
-                {/* About / Description */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">About the Event / O eventu</h3>
-                    <p className="text-sm text-muted-foreground">Describe your event for attendees</p>
-                  </div>
-                  <Separator />
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <MultilingualContentField
-                            supportedLanguages={form.watch('supported_languages') || ['hr']}
-                            label="Description / Opis"
-                            renderEditor={(lang) =>
-                              lang === 'hr' ? (
+                {/* Sadržaj / Content — unified HR/EN switcher with name, description, cancellation policy */}
+                <ContentSection
+                  supportedLanguages={form.watch('supported_languages') || ['hr']}
+                  renderForLanguage={(lang) =>
+                    lang === 'hr' ? (
+                      <>
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Naziv eventa (HR) *</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Moja konferencija 2026"
+                                  {...field}
+                                  disabled={isLockedEvent}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Opis eventa (HR)</FormLabel>
+                              <FormControl>
                                 <RichTextEditor
+                                  key="description-hr"
                                   value={field.value || ''}
                                   onChange={field.onChange}
-                                  placeholder="Tell attendees about this event..."
+                                  placeholder="Recite posjetiteljima više o eventu..."
                                 />
-                              ) : lang === 'en' ? (
-                                <RichTextEditor
-                                  value={enTranslations.description}
-                                  onChange={(v) =>
-                                    setEnTranslations((prev) => ({ ...prev, description: v, auto_translated: false }))
-                                  }
-                                  placeholder="Tell attendees about this event in English..."
-                                />
-                              ) : null
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="cancellation_policy"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <MultilingualContentField
-                            supportedLanguages={form.watch('supported_languages') || ['hr']}
-                            label="Cancellation Policy / Politika povrata"
-                            renderEditor={(lang) =>
-                              lang === 'hr' ? (
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="cancellation_policy"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Politika otkazivanja (HR)</FormLabel>
+                              <FormControl>
                                 <Textarea
                                   value={field.value || ''}
                                   onChange={(e) => field.onChange(e.target.value)}
-                                  placeholder="Describe your cancellation and refund policy..."
+                                  placeholder="Opišite politiku otkazivanja i povrata..."
                                   className="min-h-[120px]"
                                 />
-                              ) : lang === 'en' ? (
-                                <Textarea
-                                  value={enTranslations.cancellation_policy}
-                                  onChange={(e) =>
-                                    setEnTranslations((prev) => ({
-                                      ...prev,
-                                      cancellation_policy: e.target.value,
-                                      auto_translated: false,
-                                    }))
-                                  }
-                                  placeholder="Describe your cancellation and refund policy in English..."
-                                  className="min-h-[120px]"
-                                />
-                              ) : null
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Name translation (kept separate because Event Name lives in Event Details above) */}
-                {(form.watch('supported_languages') || []).includes('en') && (
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-sm font-semibold text-foreground">Name Translation</h3>
-                      <p className="text-sm text-muted-foreground">English version of the event name</p>
-                    </div>
-                    <Separator />
-                    <TranslatableFields
-                      fields="name"
-                      hrName={form.watch('name')}
-                      enName={enTranslations.name}
-                      autoTranslated={enTranslations.auto_translated}
-                      onEnNameChange={(v) =>
-                        setEnTranslations((prev) => ({ ...prev, name: v, auto_translated: false }))
-                      }
-                      translateType="event"
-                      translateId={event.id}
-                      onTranslated={() => {
-                        queryClient.invalidateQueries({ queryKey: ['event', id] });
-                      }}
-                    />
-                  </div>
-                )}
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </>
+                    ) : lang === 'en' ? (
+                      <>
+                        <FormItem>
+                          <FormLabel>Event Name (EN)</FormLabel>
+                          <FormControl>
+                            <Input
+                              value={enTranslations.name}
+                              onChange={(e) =>
+                                setEnTranslations((prev) => ({
+                                  ...prev,
+                                  name: e.target.value,
+                                  auto_translated: false,
+                                }))
+                              }
+                              placeholder="Leave empty to use Croatian name"
+                            />
+                          </FormControl>
+                        </FormItem>
+                        <FormItem>
+                          <FormLabel>Event Description (EN)</FormLabel>
+                          <FormControl>
+                            <RichTextEditor
+                              key="description-en"
+                              value={enTranslations.description}
+                              onChange={(v) =>
+                                setEnTranslations((prev) => ({
+                                  ...prev,
+                                  description: v,
+                                  auto_translated: false,
+                                }))
+                              }
+                              placeholder="Tell attendees about this event in English..."
+                            />
+                          </FormControl>
+                        </FormItem>
+                        <FormItem>
+                          <FormLabel>Cancellation Policy (EN)</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              value={enTranslations.cancellation_policy}
+                              onChange={(e) =>
+                                setEnTranslations((prev) => ({
+                                  ...prev,
+                                  cancellation_policy: e.target.value,
+                                  auto_translated: false,
+                                }))
+                              }
+                              placeholder="Leave empty to use Croatian policy"
+                              className="min-h-[120px]"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      </>
+                    ) : null
+                  }
+                />
 
                 {/* Co-organizers / Technical organizer */}
                 <OrganizersSection
