@@ -1450,6 +1450,114 @@ export type Database = {
           },
         ]
       }
+      voice_session: {
+        Row: {
+          billing_email: string | null
+          cart_services: Json | null
+          company_name: string | null
+          created_at: string | null
+          email: string | null
+          event_id: string | null
+          event_name: string | null
+          event_slug: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          oib: string | null
+          order_id: string | null
+          payer_type: string | null
+          payment_method: string | null
+          payment_url: string | null
+          retell_call_id: string | null
+          status: string | null
+          ticket_tier_id: string | null
+          ticket_tier_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          billing_email?: string | null
+          cart_services?: Json | null
+          company_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          event_slug?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          oib?: string | null
+          order_id?: string | null
+          payer_type?: string | null
+          payment_method?: string | null
+          payment_url?: string | null
+          retell_call_id?: string | null
+          status?: string | null
+          ticket_tier_id?: string | null
+          ticket_tier_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          billing_email?: string | null
+          cart_services?: Json | null
+          company_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          event_slug?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          oib?: string | null
+          order_id?: string | null
+          payer_type?: string | null
+          payment_method?: string | null
+          payment_url?: string | null
+          retell_call_id?: string | null
+          status?: string | null
+          ticket_tier_id?: string | null
+          ticket_tier_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_session_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_session_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_session_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "attendee_invoice_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "voice_session_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_session_ticket_tier_id_fkey"
+            columns: ["ticket_tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_session: {
         Row: {
           attendees_collected: number | null

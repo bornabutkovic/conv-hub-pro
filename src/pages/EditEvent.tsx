@@ -44,7 +44,9 @@ import { toast } from 'sonner';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { Textarea } from '@/components/ui/textarea';
 import { TranslatableFields } from '@/components/events/TranslatableFields';
+import { MultilingualContentField } from '@/components/events/MultilingualContentField';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -57,6 +59,7 @@ const editEventSchema = z.object({
   short_name: z.string().max(50).optional(),
   event_type: z.enum(['face2face', 'virtual', 'hybrid'], { required_error: 'Event type is required' }),
   description: z.string().optional(),
+  cancellation_policy: z.string().optional(),
   website_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   venue_name: z.string().min(1, 'Venue is required').max(200),
   location_address: z.string().max(300).optional(),
@@ -109,7 +112,12 @@ export default function EditEvent() {
     branding_banner_url: null as string | null,
   });
 
-  const [enTranslations, setEnTranslations] = useState({ name: '', description: '', auto_translated: false });
+  const [enTranslations, setEnTranslations] = useState({
+    name: '',
+    description: '',
+    cancellation_policy: '',
+    auto_translated: false,
+  });
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -132,6 +140,7 @@ export default function EditEvent() {
       short_name: '',
       event_type: 'face2face',
       description: '',
+      cancellation_policy: '',
       website_url: '',
       venue_name: '',
       location_address: '',
@@ -171,6 +180,7 @@ export default function EditEvent() {
         short_name: event.short_name || '',
         event_type: ((event as any).event_type as 'face2face' | 'virtual' | 'hybrid') || 'face2face',
         description: event.description || '',
+        cancellation_policy: event.cancellation_policy || '',
         website_url: event.website_url || '',
         venue_name: event.venue_name || '',
         location_address: (event as any).location_address || '',
@@ -206,6 +216,7 @@ export default function EditEvent() {
       setEnTranslations({
         name: trans.name || '',
         description: trans.description || '',
+        cancellation_policy: trans.cancellation_policy || '',
         auto_translated: !!trans.auto_translated,
       });
     }
@@ -334,6 +345,7 @@ export default function EditEvent() {
           short_name: data.short_name || null,
           event_type: (data as any).event_type,
           description: data.description || null,
+          cancellation_policy: (data as any).cancellation_policy || null,
           website_url: data.website_url || null,
           venue_name: data.venue_name,
           location_address: (data as any).location_address || null,
@@ -356,8 +368,10 @@ export default function EditEvent() {
           translations: {
             ...((event.translations as any) || {}),
             en: {
+              ...(((event.translations as any) || {}).en || {}),
               name: enTranslations.name || undefined,
               description: enTranslations.description || undefined,
+              cancellation_policy: enTranslations.cancellation_policy || undefined,
               auto_translated: enTranslations.auto_translated,
             },
           },
@@ -519,16 +533,72 @@ export default function EditEvent() {
                     <p className="text-sm text-muted-foreground">Describe your event for attendees</p>
                   </div>
                   <Separator />
+
                   <FormField
                     control={form.control}
                     name="description"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <RichTextEditor
-                            value={field.value || ''}
-                            onChange={field.onChange}
-                            placeholder="Tell attendees about this event..."
+                          <MultilingualContentField
+                            supportedLanguages={form.watch('supported_languages') || ['hr']}
+                            label="Description / Opis"
+                            renderEditor={(lang) =>
+                              lang === 'hr' ? (
+                                <RichTextEditor
+                                  value={field.value || ''}
+                                  onChange={field.onChange}
+                                  placeholder="Tell attendees about this event..."
+                                />
+                              ) : lang === 'en' ? (
+                                <RichTextEditor
+                                  value={enTranslations.description}
+                                  onChange={(v) =>
+                                    setEnTranslations((prev) => ({ ...prev, description: v, auto_translated: false }))
+                                  }
+                                  placeholder="Tell attendees about this event in English..."
+                                />
+                              ) : null
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="cancellation_policy"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <MultilingualContentField
+                            supportedLanguages={form.watch('supported_languages') || ['hr']}
+                            label="Cancellation Policy / Politika povrata"
+                            renderEditor={(lang) =>
+                              lang === 'hr' ? (
+                                <Textarea
+                                  value={field.value || ''}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                  placeholder="Describe your cancellation and refund policy..."
+                                  className="min-h-[120px]"
+                                />
+                              ) : lang === 'en' ? (
+                                <Textarea
+                                  value={enTranslations.cancellation_policy}
+                                  onChange={(e) =>
+                                    setEnTranslations((prev) => ({
+                                      ...prev,
+                                      cancellation_policy: e.target.value,
+                                      auto_translated: false,
+                                    }))
+                                  }
+                                  placeholder="Describe your cancellation and refund policy in English..."
+                                  className="min-h-[120px]"
+                                />
+                              ) : null
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -537,29 +607,30 @@ export default function EditEvent() {
                   />
                 </div>
 
-                {/* Translations */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">Translations</h3>
-                    <p className="text-sm text-muted-foreground">Provide English translations for event content</p>
+                {/* Name translation (kept separate because Event Name lives in Event Details above) */}
+                {(form.watch('supported_languages') || []).includes('en') && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">Name Translation</h3>
+                      <p className="text-sm text-muted-foreground">English version of the event name</p>
+                    </div>
+                    <Separator />
+                    <TranslatableFields
+                      fields="name"
+                      hrName={form.watch('name')}
+                      enName={enTranslations.name}
+                      autoTranslated={enTranslations.auto_translated}
+                      onEnNameChange={(v) =>
+                        setEnTranslations((prev) => ({ ...prev, name: v, auto_translated: false }))
+                      }
+                      translateType="event"
+                      translateId={event.id}
+                      onTranslated={() => {
+                        queryClient.invalidateQueries({ queryKey: ['event', id] });
+                      }}
+                    />
                   </div>
-                  <Separator />
-                  <TranslatableFields
-                    fields="name+description"
-                    hrName={form.watch('name')}
-                    hrDescription={form.watch('description')}
-                    enName={enTranslations.name}
-                    enDescription={enTranslations.description}
-                    autoTranslated={enTranslations.auto_translated}
-                    onEnNameChange={(v) => setEnTranslations(prev => ({ ...prev, name: v, auto_translated: false }))}
-                    onEnDescriptionChange={(v) => setEnTranslations(prev => ({ ...prev, description: v, auto_translated: false }))}
-                    translateType="event"
-                    translateId={event.id}
-                    onTranslated={() => {
-                      queryClient.invalidateQueries({ queryKey: ['event', id] });
-                    }}
-                  />
-                </div>
+                )}
                 {/* Section 2: Location */}
                 <div className="space-y-4">
                   <div>
