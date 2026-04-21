@@ -44,7 +44,9 @@ import { toast } from 'sonner';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { Textarea } from '@/components/ui/textarea';
 import { TranslatableFields } from '@/components/events/TranslatableFields';
+import { MultilingualContentField } from '@/components/events/MultilingualContentField';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -57,6 +59,7 @@ const editEventSchema = z.object({
   short_name: z.string().max(50).optional(),
   event_type: z.enum(['face2face', 'virtual', 'hybrid'], { required_error: 'Event type is required' }),
   description: z.string().optional(),
+  cancellation_policy: z.string().optional(),
   website_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   venue_name: z.string().min(1, 'Venue is required').max(200),
   location_address: z.string().max(300).optional(),
@@ -109,7 +112,12 @@ export default function EditEvent() {
     branding_banner_url: null as string | null,
   });
 
-  const [enTranslations, setEnTranslations] = useState({ name: '', description: '', auto_translated: false });
+  const [enTranslations, setEnTranslations] = useState({
+    name: '',
+    description: '',
+    cancellation_policy: '',
+    auto_translated: false,
+  });
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
