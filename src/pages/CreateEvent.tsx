@@ -65,9 +65,9 @@ const createEventSchema = z.object({
   location_postal_code: z.string().max(20).optional(),
   location_country: z.string().min(1, 'Country is required').max(100),
   start_date: z.date({ required_error: 'Start date is required' }),
-  start_time: z.string().min(1, 'Start time is required'),
+  start_time: z.string().optional(),
   end_date: z.date({ required_error: 'End date is required' }),
-  end_time: z.string().min(1, 'End time is required'),
+  end_time: z.string().optional(),
   payment_due_days: z.coerce.number().min(1, 'Must be at least 1 day').default(7),
   currency: z.enum(['EUR', 'USD']).default('EUR'),
   tax_location: z.string().max(100).optional(),
@@ -83,11 +83,19 @@ const createEventSchema = z.object({
   status: z.enum(['draft', 'pending_approval', 'active', 'completed']).default('draft'),
 }).refine((data) => {
   const startDateTime = new Date(data.start_date);
-  const [startHours, startMinutes] = data.start_time.split(':').map(Number);
-  startDateTime.setHours(startHours, startMinutes, 0, 0);
+  if (data.start_time) {
+    const [sh, sm] = data.start_time.split(':').map(Number);
+    startDateTime.setHours(sh, sm, 0, 0);
+  } else {
+    startDateTime.setHours(0, 0, 0, 0);
+  }
   const endDateTime = new Date(data.end_date);
-  const [endHours, endMinutes] = data.end_time.split(':').map(Number);
-  endDateTime.setHours(endHours, endMinutes, 0, 0);
+  if (data.end_time) {
+    const [eh, em] = data.end_time.split(':').map(Number);
+    endDateTime.setHours(eh, em, 0, 0);
+  } else {
+    endDateTime.setHours(23, 59, 0, 0);
+  }
   return endDateTime > startDateTime;
 }, {
   message: 'End date must be after start date',
@@ -144,8 +152,8 @@ export default function CreateEvent() {
       location_city: '',
       location_postal_code: '',
       location_country: '',
-      start_time: '09:00',
-      end_time: '18:00',
+      start_time: '',
+      end_time: '',
       payment_due_days: 7,
       currency: 'EUR',
       tax_location: '',
@@ -188,13 +196,21 @@ export default function CreateEvent() {
     setIsSubmitting(true);
 
     try {
-      const [startHours, startMinutes] = data.start_time.split(':').map(Number);
       const startDateTime = new Date(data.start_date);
-      startDateTime.setHours(startHours, startMinutes, 0, 0);
+      if (data.start_time) {
+        const [sh, sm] = data.start_time.split(':').map(Number);
+        startDateTime.setHours(sh, sm, 0, 0);
+      } else {
+        startDateTime.setHours(0, 0, 0, 0);
+      }
 
-      const [endHours, endMinutes] = data.end_time.split(':').map(Number);
       const endDateTime = new Date(data.end_date);
-      endDateTime.setHours(endHours, endMinutes, 0, 0);
+      if (data.end_time) {
+        const [eh, em] = data.end_time.split(':').map(Number);
+        endDateTime.setHours(eh, em, 0, 0);
+      } else {
+        endDateTime.setHours(23, 59, 0, 0);
+      }
 
       const additionalAdminsArray = data.additional_admins
         ? data.additional_admins.split(',').map(email => email.trim()).filter(Boolean)
@@ -595,10 +611,11 @@ export default function CreateEvent() {
                       name="start_time"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Start Time *</FormLabel>
+                          <FormLabel>Start Time</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
+                          <FormDescription>Nije obavezno / Optional</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -608,10 +625,11 @@ export default function CreateEvent() {
                       name="end_time"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>End Time *</FormLabel>
+                          <FormLabel>End Time</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
+                          <FormDescription>Nije obavezno / Optional</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
