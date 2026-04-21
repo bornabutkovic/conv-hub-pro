@@ -4,7 +4,6 @@ import { FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian', flag: '🇭🇷' },
   { value: 'en', label: 'EN - English', flag: '🇬🇧' },
-  { value: 'de', label: 'DE - German', flag: '🇩🇪' },
 ];
 
 interface LanguagesFieldProps {

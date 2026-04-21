@@ -51,7 +51,6 @@ import { useFormDraft } from '@/hooks/useFormDraft';
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
   { value: 'en', label: 'EN - English' },
-  { value: 'de', label: 'DE - German' },
 ];
 
 const createEventSchema = z.object({
