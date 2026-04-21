@@ -110,6 +110,7 @@ export default function CreateEvent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const [enTranslations, setEnTranslations] = useState({
+    name: '',
     description: '',
     cancellation_policy: '',
   });
@@ -230,6 +231,7 @@ export default function CreateEvent() {
           cancellation_policy: (data as any).cancellation_policy || null,
           translations: {
             en: {
+              name: enTranslations.name || undefined,
               description: enTranslations.description || undefined,
               cancellation_policy: enTranslations.cancellation_policy || undefined,
             },
