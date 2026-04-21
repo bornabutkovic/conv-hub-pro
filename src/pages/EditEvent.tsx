@@ -462,6 +462,21 @@ export default function EditEvent() {
             )}
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Languages — first field */}
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="supported_languages"
+                    render={({ field }) => (
+                      <LanguagesField
+                        value={field.value || ['hr']}
+                        onChange={field.onChange}
+                        idPrefix="edit-lang"
+                      />
+                    )}
+                  />
+                </div>
+
                 {/* Section 1: Event Details */}
                 <div className="space-y-4">
                   <div>
@@ -469,20 +484,6 @@ export default function EditEvent() {
                     <p className="text-sm text-muted-foreground">Basic information about your event</p>
                   </div>
                   <Separator />
-
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Event Name *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="My Conference 2026" {...field} disabled={isLockedEvent} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
                   <FormField
                     control={form.control}
