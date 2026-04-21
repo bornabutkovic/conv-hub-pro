@@ -45,9 +45,9 @@ import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
-import { TranslatableFields } from '@/components/events/TranslatableFields';
-import { MultilingualContentField } from '@/components/events/MultilingualContentField';
 import { OrganizersSection } from '@/components/events/OrganizersSection';
+import { ContentSection } from '@/components/events/ContentSection';
+import { LanguagesField } from '@/components/events/LanguagesField';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
