@@ -140,6 +140,7 @@ export default function EditEvent() {
       short_name: '',
       event_type: 'face2face',
       description: '',
+      cancellation_policy: '',
       website_url: '',
       venue_name: '',
       location_address: '',
@@ -179,6 +180,7 @@ export default function EditEvent() {
         short_name: event.short_name || '',
         event_type: ((event as any).event_type as 'face2face' | 'virtual' | 'hybrid') || 'face2face',
         description: event.description || '',
+        cancellation_policy: event.cancellation_policy || '',
         website_url: event.website_url || '',
         venue_name: event.venue_name || '',
         location_address: (event as any).location_address || '',
@@ -214,6 +216,7 @@ export default function EditEvent() {
       setEnTranslations({
         name: trans.name || '',
         description: trans.description || '',
+        cancellation_policy: trans.cancellation_policy || '',
         auto_translated: !!trans.auto_translated,
       });
     }
@@ -342,6 +345,7 @@ export default function EditEvent() {
           short_name: data.short_name || null,
           event_type: (data as any).event_type,
           description: data.description || null,
+          cancellation_policy: (data as any).cancellation_policy || null,
           website_url: data.website_url || null,
           venue_name: data.venue_name,
           location_address: (data as any).location_address || null,
@@ -364,8 +368,10 @@ export default function EditEvent() {
           translations: {
             ...((event.translations as any) || {}),
             en: {
+              ...(((event.translations as any) || {}).en || {}),
               name: enTranslations.name || undefined,
               description: enTranslations.description || undefined,
+              cancellation_policy: enTranslations.cancellation_policy || undefined,
               auto_translated: enTranslations.auto_translated,
             },
           },
