@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { ArrowLeft, Calendar, Tag, Users, DollarSign, Edit, Send, CheckCircle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, Users, DollarSign, Edit, Send, CheckCircle, ShieldCheck, Eye } from 'lucide-react';
 import { isSuperAdmin } from '@/lib/roles';
 import { ArchiveEventDialog } from '@/components/events/ArchiveEventDialog';
 import { Button } from '@/components/ui/button';
@@ -233,6 +233,13 @@ export default function EventDetails() {
               Approve
             </Button>
           )}
+          <Button
+            variant="outline"
+            onClick={() => window.open(`https://conwayo.io/preview/${event.id}`, '_blank', 'noopener,noreferrer')}
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Pregled / Preview
+          </Button>
           <Button onClick={() => navigate(`/events/${event.id}/edit`)}>
             <Edit className="h-4 w-4 mr-2" />
             Edit Event
