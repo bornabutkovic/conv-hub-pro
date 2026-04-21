@@ -1019,41 +1019,6 @@ export default function EditEvent() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="supported_languages"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Languages</FormLabel>
-                        <div className="flex flex-wrap gap-4 pt-2">
-                          {LANGUAGE_OPTIONS.map((lang) => (
-                            <div key={lang.value} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`edit-lang-${lang.value}`}
-                                checked={field.value?.includes(lang.value)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    field.onChange([...(field.value || []), lang.value]);
-                                  } else {
-                                    field.onChange(
-                                      field.value?.filter((v) => v !== lang.value) || []
-                                    );
-                                  }
-                                }}
-                              />
-                              <label
-                                htmlFor={`edit-lang-${lang.value}`}
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                {lang.label}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
 
                 {/* Branding Section */}
