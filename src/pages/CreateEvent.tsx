@@ -43,8 +43,9 @@ import { useQuery } from '@tanstack/react-query';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { MultilingualContentField } from '@/components/events/MultilingualContentField';
 import { OrganizersPicker } from '@/components/events/OrganizersPicker';
+import { ContentSection } from '@/components/events/ContentSection';
+import { LanguagesField } from '@/components/events/LanguagesField';
 import { useFormDraft } from '@/hooks/useFormDraft';
 
 const LANGUAGE_OPTIONS = [
