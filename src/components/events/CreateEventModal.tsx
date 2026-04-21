@@ -46,6 +46,7 @@ import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQuery } from '@tanstack/react-query';
 import { BrandingSection } from '@/components/events/BrandingSection';
+import { OrganizersPicker } from '@/components/events/OrganizersPicker';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -128,6 +129,8 @@ export function CreateEventModal({
   onEventCreated,
 }: CreateEventModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [coOrganizerIds, setCoOrganizerIds] = useState<string[]>([]);
+  const [technicalOrganizerId, setTechnicalOrganizerId] = useState<string | null>(null);
   const [branding, setBranding] = useState({
     branding_primary_color: '#6366f1',
     branding_secondary_color: '#ffffff',
@@ -286,7 +289,30 @@ export function CreateEventModal({
         toast.success('Event created successfully!');
       }
 
+      if (coOrganizerIds.length > 0 || technicalOrganizerId) {
+        const orgRows = [
+          ...coOrganizerIds.map((instId, idx) => ({
+            event_id: newEvent.id,
+            institution_id: instId,
+            role: 'co_organizer',
+            display_order: idx,
+          })),
+          ...(technicalOrganizerId
+            ? [{
+                event_id: newEvent.id,
+                institution_id: technicalOrganizerId,
+                role: 'technical_organizer',
+                display_order: 99,
+              }]
+            : []),
+        ];
+        const { error: orgError } = await supabase.from('event_organizers').insert(orgRows);
+        if (orgError) console.warn('Organizers assignment skipped:', orgError);
+      }
+
       form.reset();
+      setCoOrganizerIds([]);
+      setTechnicalOrganizerId(null);
       onOpenChange(false);
       onEventCreated();
     } catch (error: any) {
@@ -754,6 +780,18 @@ export function CreateEventModal({
               <BrandingSection
                 values={branding}
                 onChange={handleBrandingChange}
+              />
+
+              <OrganizersPicker
+                primaryInstitutionId={
+                  userIsAdmin
+                    ? form.watch('institution_uuid') || null
+                    : profile?.institution_uuid || null
+                }
+                coOrganizerIds={coOrganizerIds}
+                onCoOrganizersChange={setCoOrganizerIds}
+                technicalOrganizerId={technicalOrganizerId}
+                onTechnicalOrganizerChange={setTechnicalOrganizerId}
               />
 
               <div className="flex justify-end gap-3 pt-4 border-t">
