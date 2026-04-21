@@ -52,7 +52,6 @@ import { TranslatableFields } from './TranslatableFields';
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
   { value: 'en', label: 'EN - English' },
-  { value: 'de', label: 'DE - German' },
 ];
 
 const editEventSchema = z.object({
@@ -213,7 +212,7 @@ export function EditEventModal({
         notification_sender_email: event.notification_sender_email || '',
         support_phone: event.support_phone || '',
         additional_admins: additionalAdminsStr,
-        supported_languages: event.supported_languages || ['hr'],
+        supported_languages: (event.supported_languages || ['hr']).filter((l: string) => l === 'hr' || l === 'en'),
         status: (event.status as 'draft' | 'pending_approval' | 'active' | 'completed') || 'draft',
       });
 
