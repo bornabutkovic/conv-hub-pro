@@ -543,7 +543,7 @@ export default function AdminUsers() {
                 <div className="p-8 text-center">
                   <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {searchQuery ? 'No team members match your search.' : 'No team members found.'}
+                    {searchQuery ? t('user.noTeamMatch') : t('user.noTeam')}
                   </p>
                 </div>
               ) : (
@@ -551,11 +551,11 @@ export default function AdminUsers() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Joined</TableHead>
+                        <TableHead>{t('user.name')}</TableHead>
+                        <TableHead>{t('user.email')}</TableHead>
+                        <TableHead>{t('user.phone')}</TableHead>
+                        <TableHead>{t('user.role')}</TableHead>
+                        <TableHead>{t('user.joined')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
