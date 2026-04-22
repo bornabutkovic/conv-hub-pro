@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
 import { useEventsWithPendingItems } from '@/hooks/useAdminNotifications';
 import { useEventRevenue, formatEur } from '@/hooks/useEventRevenue';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 interface EventCardProps {
   event: {
@@ -28,6 +29,7 @@ export function EventCard({ event }: EventCardProps) {
   const userIsAdminRole = isAdmin(profile?.role);
   const { data: eventsWithPending } = useEventsWithPendingItems();
   const { data: revenueMap } = useEventRevenue();
+  const { t } = useAdminLanguage();
 
   const hasPendingItems = userIsAdminRole && eventsWithPending?.has(event.id);
   const revenue = revenueMap?.get(event.id) || { paid: 0, pending: 0 };
@@ -71,19 +73,19 @@ export function EventCard({ event }: EventCardProps) {
   const getStatusLabel = (status: string | null) => {
     switch (status) {
       case 'active':
-        return 'Active';
+        return t('status.active');
       case 'test':
-        return 'Test';
+        return t('status.test');
       case 'pending_approval':
-        return 'Pending Approval';
+        return t('status.pendingApproval');
       case 'completed':
-        return 'Completed';
+        return t('status.completed');
       case 'draft':
-        return 'Draft';
+        return t('status.draft');
       case 'archived':
-        return 'Archived';
+        return t('status.archived');
       default:
-        return 'Draft';
+        return t('status.draft');
     }
   };
 
@@ -164,13 +166,13 @@ export function EventCard({ event }: EventCardProps) {
         </div>
         <div className="grid grid-cols-2 gap-3 pt-3 border-t">
           <div className="space-y-0.5">
-            <p className="text-xs text-muted-foreground">Revenue</p>
+            <p className="text-xs text-muted-foreground">{t('eventCard.revenue')}</p>
             <p className="text-sm font-semibold">
               {hasRevenue ? formatEur(revenue.paid) : '—'}
             </p>
           </div>
           <div className="space-y-0.5">
-            <p className="text-xs text-muted-foreground">Pending</p>
+            <p className="text-xs text-muted-foreground">{t('eventCard.pending')}</p>
             <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
               {hasRevenue ? formatEur(revenue.pending) : '—'}
             </p>

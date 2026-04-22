@@ -47,9 +47,22 @@ const translations = {
 
   // Events
   'events.title': { hr: 'Događaji', en: 'Events' },
+  'events.subtitle': { hr: 'Upravljajte svim događajima na jednom mjestu', en: 'Manage all your events in one place' },
+  'events.createEvent': { hr: '+ Stvori događaj', en: '+ Create Event' },
   'events.new': { hr: 'Novi događaj', en: 'New Event' },
   'events.search': { hr: 'Pretraži događaje...', en: 'Search events...' },
+  'events.filterAll': { hr: 'Svi', en: 'All' },
+  'events.filterDraft': { hr: 'Nacrt', en: 'Draft' },
+  'events.filterPendingApproval': { hr: 'Čeka odobrenje', en: 'Pending Approval' },
+  'events.filterActive': { hr: 'Aktivni', en: 'Active' },
+  'events.filterTest': { hr: 'Test', en: 'Test' },
+  'events.filterCompleted': { hr: 'Završeni', en: 'Completed' },
+  'events.filterArchived': { hr: 'Arhivirani', en: 'Archived' },
+  'events.sortNewest': { hr: 'Datum (najnoviji)', en: 'Date (newest)' },
+  'events.sortOldest': { hr: 'Datum (najstariji)', en: 'Date (oldest)' },
+  'events.sortName': { hr: 'Naziv', en: 'Name' },
   'events.noEvents': { hr: 'Nema događaja', en: 'No events found' },
+  'events.noEventsSubtitle': { hr: 'Stvorite svoj prvi događaj', en: 'Create your first event' },
   'events.attendees': { hr: 'polaznika', en: 'attendees' },
   'events.edit': { hr: 'Uredi', en: 'Edit' },
   'events.delete': { hr: 'Obriši', en: 'Delete' },
@@ -57,6 +70,22 @@ const translations = {
   'events.draft': { hr: 'Nacrt', en: 'Draft' },
   'events.test': { hr: 'Test', en: 'Test' },
   'events.archived': { hr: 'Arhiviran', en: 'Archived' },
+
+  // EventCard
+  'eventCard.revenue': { hr: 'Prihod', en: 'Revenue' },
+  'eventCard.pending': { hr: 'Na čekanju', en: 'Pending' },
+  'eventCard.attendees': { hr: 'polaznika', en: 'attendees' },
+  'eventCard.edit': { hr: 'Uredi', en: 'Edit' },
+  'eventCard.delete': { hr: 'Obriši', en: 'Delete' },
+  'eventCard.viewDetails': { hr: 'Detalji', en: 'Details' },
+
+  // Status badges
+  'status.active': { hr: 'Aktivan', en: 'Active' },
+  'status.draft': { hr: 'Nacrt', en: 'Draft' },
+  'status.test': { hr: 'Test', en: 'Test' },
+  'status.completed': { hr: 'Završen', en: 'Completed' },
+  'status.archived': { hr: 'Arhiviran', en: 'Archived' },
+  'status.pendingApproval': { hr: 'Čeka odobrenje', en: 'Pending Approval' },
 
   // Common
   'common.save': { hr: 'Spremi', en: 'Save' },

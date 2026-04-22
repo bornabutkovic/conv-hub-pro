@@ -11,6 +11,7 @@ import { EventCard } from '@/components/events/EventCard';
 import { useEvents, EventStatus, Event } from '@/hooks/useEvents';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin, isSuperAdmin } from '@/lib/roles';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 type SortOption = 'date-desc' | 'date-asc' | 'name-asc' | 'name-desc';
 
@@ -38,6 +39,7 @@ export default function Events() {
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
   const userIsSuperAdmin = isSuperAdmin(profile?.role);
+  const { t } = useAdminLanguage();
 
   const { data: events, isLoading } = useEvents(statusFilter);
 
@@ -78,14 +80,14 @@ export default function Events() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Events</h1>
+          <h1 className="text-3xl font-bold">{t('events.title')}</h1>
           <p className="text-muted-foreground">
-            Manage all your events in one place
+            {t('events.subtitle')}
           </p>
         </div>
         <Button className="gap-2" onClick={() => navigate('/events/new')}>
           <Plus className="h-4 w-4" />
-          Create Event
+          {t('events.createEvent')}
         </Button>
       </div>
 
@@ -95,21 +97,21 @@ export default function Events() {
           onValueChange={(value) => setStatusFilter(value as EventStatus)}
         >
           <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="draft">Draft</TabsTrigger>
+            <TabsTrigger value="all">{t('events.filterAll')}</TabsTrigger>
+            <TabsTrigger value="draft">{t('events.filterDraft')}</TabsTrigger>
             <TabsTrigger value="pending_approval">
-              Pending Approval
+              {t('events.filterPendingApproval')}
               {userIsAdmin && pendingEvents.length > 0 && (
                 <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
                   {pendingEvents.length}
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="test">Test</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="active">{t('events.filterActive')}</TabsTrigger>
+            <TabsTrigger value="test">{t('events.filterTest')}</TabsTrigger>
+            <TabsTrigger value="completed">{t('events.filterCompleted')}</TabsTrigger>
             {userIsSuperAdmin && (
-              <TabsTrigger value="archived">Archived</TabsTrigger>
+              <TabsTrigger value="archived">{t('events.filterArchived')}</TabsTrigger>
             )}
           </TabsList>
         </Tabs>
@@ -119,10 +121,10 @@ export default function Events() {
             <SelectValue placeholder="Sort by..." />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="date-desc">Date (newest)</SelectItem>
-            <SelectItem value="date-asc">Date (oldest)</SelectItem>
-            <SelectItem value="name-asc">Name (A→Z)</SelectItem>
-            <SelectItem value="name-desc">Name (Z→A)</SelectItem>
+            <SelectItem value="date-desc">{t('events.sortNewest')}</SelectItem>
+            <SelectItem value="date-asc">{t('events.sortOldest')}</SelectItem>
+            <SelectItem value="name-asc">{t('events.sortName')} (A→Z)</SelectItem>
+            <SelectItem value="name-desc">{t('events.sortName')} (Z→A)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -151,21 +153,17 @@ export default function Events() {
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <Calendar className="h-16 w-16 text-muted-foreground/50 mb-4" />
             <h3 className="text-xl font-medium text-muted-foreground">
-              {statusFilter === 'all'
-                ? 'No events yet'
-                : `No ${statusFilter.replace('_', ' ')} events`}
+              {t('events.noEvents')}
             </h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-sm">
-              {statusFilter === 'all'
-                ? 'No events found. If you believe this is an error, please contact the Admin.'
-                : `You don't have any ${statusFilter.replace('_', ' ')} events at the moment.`}
+              {t('events.noEventsSubtitle')}
             </p>
             <Button
               className="gap-2"
               onClick={() => navigate('/events/new')}
             >
               <Plus className="h-4 w-4" />
-              Create Event
+              {t('events.createEvent')}
             </Button>
           </CardContent>
         </Card>
