@@ -29,7 +29,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { profile, signOut } = useAuth();
-  const { lang, setLang, t } = useAdminLanguage();
+  const { t } = useAdminLanguage();
   const location = useLocation();
   const navigate = useNavigate();
 
