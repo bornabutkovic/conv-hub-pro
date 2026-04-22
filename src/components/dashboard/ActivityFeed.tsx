@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { UserPlus, ShoppingCart, ArrowRight, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 interface ActivityItem {
   id: string;
@@ -21,11 +22,12 @@ interface ActivityFeedProps {
 }
 
 export function ActivityFeed({ activities, loading }: ActivityFeedProps) {
+  const { t } = useAdminLanguage();
   if (loading) {
     return (
       <Card className="shadow-brand">
         <CardHeader>
-          <CardTitle className="text-lg font-heading">Recent Activity</CardTitle>
+          <CardTitle className="text-lg font-heading">{t('dashboard.recentActivity')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {[1, 2, 3, 4, 5].map(i => (
@@ -46,7 +48,7 @@ export function ActivityFeed({ activities, loading }: ActivityFeedProps) {
     <Card className="shadow-brand glow-hover">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
-          <CardTitle className="text-lg font-heading font-semibold">Recent Activity</CardTitle>
+          <CardTitle className="text-lg font-heading font-semibold">{t('dashboard.recentActivity')}</CardTitle>
           <p className="text-sm text-muted-foreground">Latest registrations and purchases</p>
         </div>
         <Button variant="outline" size="sm" asChild className="rounded-xl">
@@ -59,7 +61,7 @@ export function ActivityFeed({ activities, loading }: ActivityFeedProps) {
       <CardContent>
         {activities.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground">
-            No recent activity
+            {t('dashboard.noActivity')}
           </div>
         ) : (
           <div className="space-y-4">
