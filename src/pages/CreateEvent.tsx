@@ -43,7 +43,7 @@ import { useQuery } from '@tanstack/react-query';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { OrganizersPicker } from '@/components/events/OrganizersPicker';
+import { OrganizersInlineEditor, type OrganizersInfo } from '@/components/events/OrganizersInlineEditor';
 import { ContentSection } from '@/components/events/ContentSection';
 import { LanguagesField } from '@/components/events/LanguagesField';
 import { useFormDraft } from '@/hooks/useFormDraft';
@@ -113,8 +113,10 @@ export default function CreateEvent() {
     description: '',
     cancellation_policy: '',
   });
-  const [coOrganizerIds, setCoOrganizerIds] = useState<string[]>([]);
-  const [technicalOrganizerId, setTechnicalOrganizerId] = useState<string | null>(null);
+  const [organizersInfo, setOrganizersInfo] = useState<OrganizersInfo>({
+    co_organizers: [],
+    technical_organizer: null,
+  });
   const [branding, setBranding] = useState({
     branding_primary_color: '#6366f1',
     branding_secondary_color: '#ffffff',
@@ -261,6 +263,9 @@ export default function CreateEvent() {
           branding_text_color: branding.branding_text_color,
           branding_logo_url: branding.branding_logo_url,
           branding_banner_url: branding.branding_banner_url,
+          organizers_info: (organizersInfo.co_organizers.length > 0 || organizersInfo.technical_organizer)
+            ? (organizersInfo as any)
+            : {},
         })
         .select('id')
         .single();
@@ -277,27 +282,6 @@ export default function CreateEvent() {
 
       if (membershipError) {
         console.warn('Membership assignment skipped:', membershipError);
-      }
-
-      if (coOrganizerIds.length > 0 || technicalOrganizerId) {
-        const orgRows = [
-          ...coOrganizerIds.map((instId, idx) => ({
-            event_id: newEvent.id,
-            institution_id: instId,
-            role: 'co_organizer',
-            display_order: idx,
-          })),
-          ...(technicalOrganizerId
-            ? [{
-                event_id: newEvent.id,
-                institution_id: technicalOrganizerId,
-                role: 'technical_organizer',
-                display_order: 99,
-              }]
-            : []),
-        ];
-        const { error: orgError } = await supabase.from('event_organizers').insert(orgRows);
-        if (orgError) console.warn('Organizers assignment skipped:', orgError);
       }
 
       clearDraft();
@@ -885,16 +869,9 @@ export default function CreateEvent() {
                   onChange={handleBrandingChange}
                 />
 
-                <OrganizersPicker
-                  primaryInstitutionId={
-                    userIsAdmin
-                      ? form.watch('institution_uuid') || null
-                      : profile?.institution_uuid || null
-                  }
-                  coOrganizerIds={coOrganizerIds}
-                  onCoOrganizersChange={setCoOrganizerIds}
-                  technicalOrganizerId={technicalOrganizerId}
-                  onTechnicalOrganizerChange={setTechnicalOrganizerId}
+                <OrganizersInlineEditor
+                  value={organizersInfo}
+                  onChange={setOrganizersInfo}
                 />
 
                 <div className="flex justify-end gap-3 pt-4 border-t">
