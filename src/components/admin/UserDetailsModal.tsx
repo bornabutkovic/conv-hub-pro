@@ -22,6 +22,7 @@ import {
   MessageCircle 
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 type Profile = Tables<'profiles'>;
 
@@ -33,6 +34,7 @@ interface UserDetailsModalProps {
 
 export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalProps) {
   const navigate = useNavigate();
+  const { t } = useAdminLanguage();
 
   // Fetch linked institution name
   const { data: institutionData } = useQuery({
@@ -116,7 +118,7 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
 
   if (!user) return null;
 
-  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User';
+  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || t('userDetails.unknown');
   const eventCount = attendeeRecords?.length || 0;
 
   return (
@@ -125,7 +127,7 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            User Details
+            {t('userDetails.title')}
           </DialogTitle>
         </DialogHeader>
 
@@ -137,7 +139,7 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
               {user.phone && (
                 <Badge variant="default" className="bg-green-500 hover:bg-green-600">
                   <MessageCircle className="h-3 w-3 mr-1" />
-                  WhatsApp Active
+                  {t('userDetails.whatsappActive')}
                 </Badge>
               )}
             </div>
@@ -146,13 +148,13 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Phone className="h-4 w-4" />
                 <span className="font-mono font-semibold text-foreground">
-                  {user.phone || 'No phone number'}
+                  {user.phone || t('userDetails.noPhone')}
                 </span>
               </div>
               
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>{user.email || 'No email'}</span>
+                <span>{user.email || t('userDetails.noEmail')}</span>
               </div>
               
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -176,9 +178,9 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 <span>
-                  Joined {user.created_at 
+                  {t('userDetails.joined')} {user.created_at 
                     ? format(new Date(user.created_at), 'dd MMMM yyyy')
-                    : 'Unknown'}
+                    : t('userDetails.unknownDate')}
                 </span>
               </div>
             </div>
@@ -197,9 +199,9 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
             <div className="flex items-center justify-between">
               <h4 className="font-medium flex items-center gap-2">
                 <Ticket className="h-4 w-4" />
-                Event History
+                {t('userDetails.eventHistory')}
               </h4>
-              <Badge variant="outline">{eventCount} event{eventCount !== 1 ? 's' : ''}</Badge>
+              <Badge variant="outline">{eventCount} {eventCount !== 1 ? t('userDetails.events') : t('userDetails.event')}</Badge>
             </div>
 
             {attendeesLoading ? (
@@ -208,7 +210,7 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
               </div>
             ) : eventCount === 0 ? (
               <p className="text-sm text-muted-foreground py-2">
-                This user has not attended any events yet.
+                {t('userDetails.noEvents')}
               </p>
             ) : (
               <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
@@ -218,13 +220,13 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-1">
                           <p className="font-medium text-sm">
-                            {record.events?.name || 'Unknown Event'}
+                            {record.events?.name || t('userDetails.unknownEvent')}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {record.events?.location_city && `${record.events.location_city} • `}
                             {record.events?.start_date 
                               ? format(new Date(record.events.start_date), 'dd MMM yyyy')
-                              : 'Date TBD'}
+                              : t('userDetails.dateTbd')}
                           </p>
                         </div>
                         <Badge 
@@ -248,7 +250,7 @@ export function UserDetailsModal({ user, open, onOpenChange }: UserDetailsModalP
 
             {eventCount > 0 && (
               <p className="text-xs text-muted-foreground text-center pt-1">
-                This user has attended {eventCount} event{eventCount !== 1 ? 's' : ''}.
+                {t('userDetails.attendedSummary')} {eventCount} {eventCount !== 1 ? t('userDetails.events') : t('userDetails.event')}.
               </p>
             )}
           </div>

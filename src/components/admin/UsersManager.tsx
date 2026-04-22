@@ -21,9 +21,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, KeyRound } from 'lucide-react';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 export function UsersManager() {
   const queryClient = useQueryClient();
+  const { t } = useAdminLanguage();
 
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['admin-users'],
@@ -85,9 +87,9 @@ export function UsersManager() {
   };
 
   const getInstitutionName = (institutionUuid: string | null) => {
-    if (!institutionUuid || !institutions) return 'Not assigned';
+    if (!institutionUuid || !institutions) return t('inviteUser.noInstitution');
     const institution = institutions.find((i) => i.id === institutionUuid);
-    return institution?.name || 'Unknown';
+    return institution?.name || '—';
   };
 
   if (usersLoading) {
@@ -105,7 +107,7 @@ export function UsersManager() {
       <Card>
         <CardContent className="p-8 text-center">
           <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No users found.</p>
+          <p className="text-muted-foreground">{t('admin.noUsers')}</p>
         </CardContent>
       </Card>
     );
@@ -114,17 +116,17 @@ export function UsersManager() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User Management</CardTitle>
+        <CardTitle>{t('admin.users')}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Institution</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t('user.name')}</TableHead>
+              <TableHead>{t('user.email')}</TableHead>
+              <TableHead>{t('user.role')}</TableHead>
+              <TableHead>{t('user.institution')}</TableHead>
+              <TableHead className="text-right">{t('user.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -155,7 +157,7 @@ export function UsersManager() {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Not assigned</SelectItem>
+                      <SelectItem value="none">{t('inviteUser.noInstitution')}</SelectItem>
                       {institutions?.map((institution) => (
                         <SelectItem key={institution.id} value={institution.id || ''}>
                           {institution.name}
