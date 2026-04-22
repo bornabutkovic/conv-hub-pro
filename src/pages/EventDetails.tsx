@@ -19,6 +19,7 @@ import { ApprovalsTab } from '@/components/events/ApprovalsTab';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
 import { usePendingApprovalItems } from '@/hooks/useAdminNotifications';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { toast } from 'sonner';
 
 export default function EventDetails() {
@@ -30,6 +31,7 @@ export default function EventDetails() {
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
   const userIsSuperAdmin = isSuperAdmin(profile?.role);
+  const { t } = useAdminLanguage();
 
   const { data: event, isLoading: eventLoading, refetch: refetchEvent } = useQuery({
     queryKey: ['event', id],
@@ -100,11 +102,11 @@ export default function EventDetails() {
 
   const getStatusLabel = (status: string | null) => {
     switch (status) {
-      case 'active': return 'Active';
-      case 'pending_approval': return 'Pending Approval';
-      case 'completed': return 'Completed';
-      case 'draft': return 'Draft';
-      default: return 'Draft';
+      case 'active': return t('status.active');
+      case 'pending_approval': return t('status.pendingApproval');
+      case 'completed': return t('status.completed');
+      case 'draft': return t('status.draft');
+      default: return t('status.draft');
     }
   };
 
@@ -119,9 +121,9 @@ export default function EventDetails() {
   if (!event) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Event not found.</p>
+        <p className="text-muted-foreground">{t('eventDetails.eventNotFound')}</p>
         <Button variant="link" onClick={() => navigate('/events')}>
-          Back to Events
+          {t('eventDetails.backToEvents')}
         </Button>
       </div>
     );
@@ -148,7 +150,7 @@ export default function EventDetails() {
         className="mb-2"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Events
+        {t('eventDetails.backToEvents')}
       </Button>
 
       {/* Rejection Alert */}
@@ -157,7 +159,7 @@ export default function EventDetails() {
           <div className="flex items-start gap-3">
             <Calendar className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
             <div>
-              <p className="font-semibold text-destructive">Action required – reason from admin:</p>
+              <p className="font-semibold text-destructive">{t('eventDetails.actionRequired')}</p>
               <p className="text-sm text-destructive/90 mt-1">{(event as any).rejection_reason}</p>
             </div>
           </div>
@@ -192,7 +194,7 @@ export default function EventDetails() {
           {userIsAdmin && (
             <div className="flex items-center gap-2">
               <Label htmlFor="event-status" className="text-sm text-muted-foreground whitespace-nowrap">
-                Status:
+                {t('eventDetails.status')}:
               </Label>
               <Select
                 value={event.status || 'draft'}
@@ -203,12 +205,12 @@ export default function EventDetails() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="pending_approval">Pending Approval</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="test">Test</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  {userIsSuperAdmin && <SelectItem value="archived">Archived</SelectItem>}
+                  <SelectItem value="draft">{t('status.draft')}</SelectItem>
+                  <SelectItem value="pending_approval">{t('status.pendingApproval')}</SelectItem>
+                  <SelectItem value="active">{t('status.active')}</SelectItem>
+                  <SelectItem value="test">{t('status.test')}</SelectItem>
+                  <SelectItem value="completed">{t('status.completed')}</SelectItem>
+                  {userIsSuperAdmin && <SelectItem value="archived">{t('status.archived')}</SelectItem>}
                 </SelectContent>
               </Select>
             </div>
@@ -220,7 +222,7 @@ export default function EventDetails() {
               disabled={isUpdatingStatus}
             >
               <Send className="h-4 w-4 mr-2" />
-              Submit for Review
+              {t('eventDetails.submitForReview')}
             </Button>
           )}
           {userIsAdmin && event.status === 'pending_approval' && (
@@ -230,7 +232,7 @@ export default function EventDetails() {
               size="sm"
             >
               <CheckCircle className="h-4 w-4 mr-2" />
-              Approve
+              {t('eventDetails.approve')}
             </Button>
           )}
           <Button
@@ -238,11 +240,11 @@ export default function EventDetails() {
             onClick={() => window.open(`https://conwayo.io/preview/${event.id}`, '_blank', 'noopener,noreferrer')}
           >
             <Eye className="h-4 w-4 mr-2" />
-            Pregled / Preview
+            {t('eventDetails.preview')}
           </Button>
           <Button onClick={() => navigate(`/events/${event.id}/edit`)}>
             <Edit className="h-4 w-4 mr-2" />
-            Edit Event
+            {t('eventDetails.edit')}
           </Button>
         </div>
       </div>
@@ -252,7 +254,7 @@ export default function EventDetails() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Revenue
+              {t('eventDetails.totalRevenue')}
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -262,10 +264,10 @@ export default function EventDetails() {
             </div>
             <div className="mt-2 space-y-1">
               <p className="text-sm text-emerald-600">
-                ✅ Paid: {paidAttendees.length} registrations — {formatCurrency(totalRevenue)}
+                ✅ {t('eventDetails.paid')}: {paidAttendees.length} {t('eventDetails.registrations')} — {formatCurrency(totalRevenue)}
               </p>
               <p className="text-sm text-amber-600">
-                ⏳ Pending: {pendingAttendees.length} registrations — {formatCurrency(pendingRevenue)}
+                ⏳ {t('eventDetails.pending')}: {pendingAttendees.length} {t('eventDetails.registrations')} — {formatCurrency(pendingRevenue)}
               </p>
             </div>
           </CardContent>
@@ -274,14 +276,14 @@ export default function EventDetails() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Attendees
+              {t('eventDetails.totalAttendees')}
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalAttendees}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Registered for this event
+              {t('eventDetails.registeredFor')}
             </p>
           </CardContent>
         </Card>
@@ -290,13 +292,13 @@ export default function EventDetails() {
       {/* Tabs for Attendees, Tickets, Services & Approvals */}
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList>
-          <TabsTrigger value="attendees">Attendees</TabsTrigger>
-          <TabsTrigger value="ticket-tiers">Ticket Tiers</TabsTrigger>
-          <TabsTrigger value="services">Services</TabsTrigger>
+          <TabsTrigger value="attendees">{t('eventDetails.attendees')}</TabsTrigger>
+          <TabsTrigger value="ticket-tiers">{t('eventDetails.ticketTiers')}</TabsTrigger>
+          <TabsTrigger value="services">{t('eventDetails.services')}</TabsTrigger>
           {userIsAdmin && (
             <TabsTrigger value="approvals" className="relative">
               <ShieldCheck className="h-4 w-4 mr-1" />
-              Approvals
+              {t('eventDetails.approvals')}
               {pendingCount > 0 && (
                 <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
                   {pendingCount}
@@ -339,8 +341,8 @@ export default function EventDetails() {
         <div className="border-t pt-6 mt-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Danger Zone</p>
-              <p className="text-xs text-muted-foreground">Archive this event to hide it from organizers and attendees.</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('eventDetails.dangerZone')}</p>
+              <p className="text-xs text-muted-foreground">{t('eventDetails.archiveDescription')}</p>
             </div>
             <ArchiveEventDialog
               eventId={event.id}

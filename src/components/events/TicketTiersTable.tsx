@@ -35,6 +35,7 @@ import { Tables } from '@/integrations/supabase/types';
 import { TicketTierModal } from './TicketTierModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/roles';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 type TicketTier = Tables<'ticket_tiers'>;
 
@@ -51,6 +52,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
   const [deletingTierId, setDeletingTierId] = useState<string | null>(null);
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
+  const { t } = useAdminLanguage();
 
   const { data: tiers, isLoading } = useQuery({
     queryKey: ['ticket-tiers', eventId],
@@ -96,9 +98,9 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket-tiers', eventId] });
-      toast.success('ERP code updated');
+      toast.success(t('ticketTiers.erpUpdated'));
     },
-    onError: () => toast.error('Failed to update ERP code'),
+    onError: () => toast.error(t('ticketTiers.erpUpdateFailed')),
   });
 
   const deleteMutation = useMutation({
@@ -112,11 +114,11 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket-tiers', eventId] });
-      toast.success('Ticket tier deleted successfully');
+      toast.success(t('ticketTiers.deletedSuccess'));
       setDeletingTierId(null);
     },
     onError: (error) => {
-      toast.error('Failed to delete ticket tier');
+      toast.error(t('ticketTiers.deleteFailed'));
       console.error(error);
     },
   });
@@ -128,10 +130,10 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
   const getStatusBadge = (tier: TicketTier) => {
     // Show approval status if not active
     if (tier.status === 'pending_approval') {
-      return <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30">Pending Approval</Badge>;
+      return <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30">{t('status.pendingApproval')}</Badge>;
     }
     if (tier.status === 'rejected') {
-      return <Badge variant="destructive">Rejected</Badge>;
+      return <Badge variant="destructive">{t('status.rejected')}</Badge>;
     }
 
     const now = new Date();
@@ -139,22 +141,22 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
     const salesEnd = tier.sales_end ? new Date(tier.sales_end) : null;
 
     if (salesStart && isBefore(now, salesStart)) {
-      return <Badge variant="secondary">Upcoming</Badge>;
+      return <Badge variant="secondary">{t('status.upcoming')}</Badge>;
     }
 
     if (salesEnd && isAfter(now, salesEnd)) {
-      return <Badge variant="outline">Expired</Badge>;
+      return <Badge variant="outline">{t('status.expired')}</Badge>;
     }
 
     if (salesStart && salesEnd && isWithinInterval(now, { start: salesStart, end: salesEnd })) {
-      return <Badge variant="default">Active</Badge>;
+      return <Badge variant="default">{t('status.active')}</Badge>;
     }
 
     if (salesStart && !salesEnd && isAfter(now, salesStart)) {
-      return <Badge variant="default">Active</Badge>;
+      return <Badge variant="default">{t('status.active')}</Badge>;
     }
 
-    return <Badge variant="secondary">No dates set</Badge>;
+    return <Badge variant="secondary">{t('status.noDates')}</Badge>;
   };
 
   const formatPrice = (price: number) => {
@@ -166,16 +168,16 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
 
   const formatCapacity = (capacity: number | null) => {
     if (capacity === null || capacity === undefined) {
-      return 'Unlimited';
+      return t('ticketTiers.unlimited');
     }
     return `${capacity}`;
   };
 
   const formatSalesPeriod = (start: string | null, end: string | null) => {
-    if (!start && !end) return 'Not set';
+    if (!start && !end) return t('ticketTiers.notSet');
     
-    const startStr = start ? format(new Date(start), 'MMM d, yyyy') : 'Open';
-    const endStr = end ? format(new Date(end), 'MMM d, yyyy') : 'Ongoing';
+    const startStr = start ? format(new Date(start), 'MMM d, yyyy') : t('ticketTiers.open');
+    const endStr = end ? format(new Date(end), 'MMM d, yyyy') : t('ticketTiers.ongoing');
     
     return `${startStr} - ${endStr}`;
   };
@@ -211,31 +213,31 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Ticket className="h-5 w-5" />
-            Ticket Tiers
+            {t('ticketTiers.title')}
           </CardTitle>
           <Button onClick={handleAdd}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Ticket Tier
+            {t('ticketTiers.addTicketTier')}
           </Button>
         </CardHeader>
         <CardContent>
           {!tiers || tiers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Ticket className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No ticket tiers configured yet.</p>
-              <p className="text-sm mt-1">Add your first ticket tier to start selling.</p>
+              <p>{t('ticketTiers.noTiers')}</p>
+              <p className="text-sm mt-1">{t('ticketTiers.noTiersSub')}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Capacity</TableHead>
-                  <TableHead>Sales Period</TableHead>
-                  <TableHead>Status</TableHead>
-                  {userIsAdmin && <TableHead>ERP Code</TableHead>}
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t('ticketTiers.name')}</TableHead>
+                  <TableHead>{t('ticketTiers.price')}</TableHead>
+                  <TableHead>{t('ticketTiers.capacity')}</TableHead>
+                  <TableHead>{t('ticketTiers.salesPeriod')}</TableHead>
+                  <TableHead>{t('ticketTiers.status')}</TableHead>
+                  {userIsAdmin && <TableHead>{t('ticketTiers.erpCode')}</TableHead>}
+                  <TableHead className="text-right">{t('ticketTiers.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -273,7 +275,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                           <div className="flex items-center gap-1.5">
                             <Input
                               className="h-8 w-28 text-xs font-mono"
-                              placeholder="ERP code"
+                              placeholder={t('ticketTiers.erpPlaceholder')}
                               defaultValue={tier.erp_code || ''}
                               onBlur={(e) => {
                                 const val = e.target.value.trim();
@@ -287,7 +289,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                                 <TooltipTrigger>
                                   <AlertTriangle className="h-4 w-4 text-amber-500" />
                                 </TooltipTrigger>
-                                <TooltipContent>Missing ERP Code</TooltipContent>
+                                <TooltipContent>{t('ticketTiers.missingErp')}</TooltipContent>
                               </Tooltip>
                             )}
                           </div>
@@ -372,13 +374,13 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
       <AlertDialog open={!!deletingTierId} onOpenChange={() => setDeletingTierId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Ticket Tier</AlertDialogTitle>
+            <AlertDialogTitle>{t('ticketTiers.deleteTier')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this ticket tier? This action cannot be undone.
+              {t('ticketTiers.deleteConfirm')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('ticketTiers.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deletingTierId && deleteMutation.mutate(deletingTierId)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -386,7 +388,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
               {deleteMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              Delete
+              {t('ticketTiers.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
