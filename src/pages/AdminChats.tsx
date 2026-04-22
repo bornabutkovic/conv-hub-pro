@@ -22,6 +22,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 interface ChatMessage {
   id: string;

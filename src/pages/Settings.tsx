@@ -24,6 +24,7 @@ interface Institution {
 
 export default function Settings() {
   const { profile, user } = useAuth();
+  const { t } = useAdminLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [institution, setInstitution] = useState<Institution | null>(null);
@@ -87,11 +88,11 @@ export default function Settings() {
 
       if (error) throw error;
 
-      toast.success('Profile updated successfully!');
+      toast.success(t('settings.profileUpdated'));
       setIsEditing(false);
     } catch (error: any) {
       console.error('Error updating profile:', error);
-      toast.error(error.message || 'Failed to update profile');
+      toast.error(error.message || t('settings.profileUpdateFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -116,9 +117,9 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
+        <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
         <p className="text-muted-foreground">
-          Manage your account and preferences
+          {t('settings.subtitle')}
         </p>
       </div>
 
@@ -130,15 +131,15 @@ export default function Settings() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5" />
-                  User Profile
+                  {t('settings.profile')}
                 </CardTitle>
                 <CardDescription>
-                  Your personal account details
+                  {t('settings.profileDesc')}
                 </CardDescription>
               </div>
               {!isEditing ? (
                 <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                  Edit
+                  {t('settings.edit')}
                 </Button>
               ) : (
                 <div className="flex gap-2">
@@ -154,7 +155,7 @@ export default function Settings() {
                       });
                     }}
                   >
-                    Cancel
+                    {t('settings.cancel')}
                   </Button>
                   <Button size="sm" onClick={handleSave} disabled={isSaving}>
                     {isSaving ? (
@@ -162,7 +163,7 @@ export default function Settings() {
                     ) : (
                       <Save className="h-4 w-4" />
                     )}
-                    <span className="ml-1">Save</span>
+                    <span className="ml-1">{t('settings.save')}</span>
                   </Button>
                 </div>
               )}
@@ -173,7 +174,7 @@ export default function Settings() {
               <>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="first_name">First Name</Label>
+                    <Label htmlFor="first_name">{t('settings.firstName')}</Label>
                     <Input
                       id="first_name"
                       value={formData.first_name}
@@ -181,7 +182,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="last_name">Last Name</Label>
+                    <Label htmlFor="last_name">{t('settings.lastName')}</Label>
                     <Input
                       id="last_name"
                       value={formData.last_name}
@@ -190,7 +191,7 @@ export default function Settings() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">{t('settings.phone')}</Label>
                   <Input
                     id="phone"
                     value={formData.phone}
@@ -199,11 +200,11 @@ export default function Settings() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Email</Label>
+                  <Label>{t('settings.email')}</Label>
                   <p className="text-sm text-muted-foreground">{profile?.email}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Role</Label>
+                  <Label>{t('settings.role')}</Label>
                   <div>
                     <Badge variant={getRoleBadgeVariant(profile?.role)}>
                       {formatRole(profile?.role)}
@@ -214,21 +215,21 @@ export default function Settings() {
             ) : (
               <>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Full Name</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('settings.fullName')}</label>
                   <p className="text-lg">
                     {profile?.first_name} {profile?.last_name}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Email</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('settings.email')}</label>
                   <p className="text-lg">{profile?.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                  <p className="text-lg">{profile?.phone || 'Not set'}</p>
+                  <label className="text-sm font-medium text-muted-foreground">{t('settings.phone')}</label>
+                  <p className="text-lg">{profile?.phone || t('settings.notSet')}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Role</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('settings.role')}</label>
                   <div className="mt-1">
                     <Badge variant={getRoleBadgeVariant(profile?.role)}>
                       {formatRole(profile?.role)}
@@ -245,10 +246,10 @@ export default function Settings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
-              My Institution
+              {t('settings.myInstitution')}
             </CardTitle>
             <CardDescription>
-              Your linked organization details
+              {t('settings.institutionDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -259,29 +260,29 @@ export default function Settings() {
             ) : institution ? (
               <>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Company Name</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('settings.companyName')}</label>
                   <p className="text-lg font-medium">{institution.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">VAT Number / OIB</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('settings.vatOib')}</label>
                   <p className="font-mono">{institution.oib}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Address</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('settings.address')}</label>
                   <p>{institution.address}</p>
                   <p>{institution.postal_code} {institution.city}</p>
                   <p>{institution.country}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Invoice Email</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('settings.invoiceEmail')}</label>
                   <p>{institution.invoice_email}</p>
                 </div>
               </>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No institution linked</p>
-                <p className="text-sm">Contact an admin to assign you to an organization.</p>
+                <p>{t('settings.noInstitution')}</p>
+                <p className="text-sm">{t('settings.contactAdmin')}</p>
               </div>
             )}
           </CardContent>
