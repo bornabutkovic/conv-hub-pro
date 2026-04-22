@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +21,7 @@ export default function Auth() {
   const { signIn, user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useAdminLanguage();
 
   useEffect(() => {
     if (!loading && user) {
@@ -33,14 +35,14 @@ export default function Auth() {
 
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
-      toast({ title: 'Invalid Email', description: emailResult.error.errors[0].message, variant: 'destructive' });
+      toast({ title: t('auth.invalidEmail'), description: emailResult.error.errors[0].message, variant: 'destructive' });
       setIsSubmitting(false);
       return;
     }
 
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
-      toast({ title: 'Invalid Password', description: passwordResult.error.errors[0].message, variant: 'destructive' });
+      toast({ title: t('auth.invalidPassword'), description: passwordResult.error.errors[0].message, variant: 'destructive' });
       setIsSubmitting(false);
       return;
     }
@@ -48,14 +50,14 @@ export default function Auth() {
     const { error } = await signIn(email, password);
     if (error) {
       toast({
-        title: 'Login Failed',
+        title: t('auth.loginFailed'),
         description: error.message === 'Invalid login credentials' 
-          ? 'Invalid email or password. Please try again.'
+          ? t('auth.invalidCredentials')
           : error.message,
         variant: 'destructive',
       });
     } else {
-      toast({ title: 'Welcome back!', description: 'You have successfully logged in.' });
+      toast({ title: t('auth.welcomeToast'), description: t('auth.welcomeToastDesc') });
       navigate('/', { replace: true });
     }
 
@@ -77,31 +79,31 @@ export default function Auth() {
           <div className="mb-4 flex justify-center">
             <img src={conwayoLogoDark} alt="CONWAYO" className="h-12 w-auto" />
           </div>
-          <CardTitle className="text-2xl">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl">{t('auth.welcomeBack')}</CardTitle>
           <CardDescription>
-            Enter your credentials to access your dashboard
+            {t('auth.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
             <Button type="submit" className="w-full rounded-xl" disabled={isSubmitting}>
-              {isSubmitting ? 'Please wait...' : 'Log In'}
+              {isSubmitting ? t('auth.loggingIn') : t('auth.login')}
             </Button>
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => toast({ title: 'Forgot Password', description: 'Please contact your administrator to reset your password.' })}
+                onClick={() => toast({ title: t('auth.forgotTitle'), description: t('auth.forgotDesc') })}
                 className="text-sm text-muted-foreground hover:text-primary hover:underline"
               >
-                Forgot password?
+                {t('auth.forgotPassword')}
               </button>
             </div>
           </form>

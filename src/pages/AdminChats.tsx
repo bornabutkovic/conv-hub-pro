@@ -22,6 +22,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 interface ChatMessage {
   id: string;
@@ -69,6 +70,7 @@ const getMessageContent = (msg: ChatMessage): string => {
 };
 
 export default function AdminChats() {
+  const { t } = useAdminLanguage();
   const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [allMessages, setAllMessages] = useState<ChatMessage[]>([]);
@@ -205,8 +207,8 @@ export default function AdminChats() {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    if (date.toDateString() === today.toDateString()) return 'Today';
-    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    if (date.toDateString() === today.toDateString()) return t('whatsapp.today');
+    if (date.toDateString() === yesterday.toDateString()) return t('whatsapp.yesterday');
     return date.toLocaleDateString('hr-HR', { day: 'numeric', month: 'short' });
   };
 
@@ -214,11 +216,11 @@ export default function AdminChats() {
     if (!dateStr) return 'N/A';
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return t('whatsapp.justNow');
+    if (mins < 60) return `${mins}m`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    if (hrs < 24) return `${hrs}h`;
+    return `${Math.floor(hrs / 24)}d`;
   };
 
   const parseJsonSafe = (str: string | null): string[] => {
@@ -236,8 +238,8 @@ export default function AdminChats() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">WhatsApp Inspector</h1>
-          <p className="text-muted-foreground">Monitor all WhatsApp conversations with the AI bot</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('whatsapp.title')}</h1>
+          <p className="text-muted-foreground">{t('whatsapp.subtitle')}</p>
         </div>
         <Card className="h-[calc(100vh-220px)] flex overflow-hidden">
           <div className="w-80 border-r border-border p-4 space-y-3">
@@ -266,8 +268,8 @@ export default function AdminChats() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">WhatsApp Inspector</h1>
-        <p className="text-muted-foreground">Monitor all WhatsApp conversations with the AI bot</p>
+        <h1 className="text-3xl font-bold text-foreground">{t('whatsapp.title')}</h1>
+        <p className="text-muted-foreground">{t('whatsapp.subtitle')}</p>
       </div>
 
       <Card className="h-[calc(100vh-220px)] flex overflow-hidden">
@@ -276,11 +278,11 @@ export default function AdminChats() {
           <div className="p-4 border-b border-border bg-background">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5 text-primary" />
-              <h2 className="font-semibold">Conversations</h2>
+              <h2 className="font-semibold">{t('whatsapp.conversations')}</h2>
               {isLive ? (
                 <Badge variant="outline" className="ml-auto text-xs gap-1 border-green-500 text-green-600">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Live
+                  {t('whatsapp.live')}
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="ml-auto">
@@ -298,10 +300,10 @@ export default function AdminChats() {
                 onValueChange={(val) => setSelectedEventId(val === 'all' ? null : val)}
               >
                 <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="All Events" />
+                  <SelectValue placeholder={t('whatsapp.allEvents')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Events</SelectItem>
+                  <SelectItem value="all">{t('whatsapp.allEvents')}</SelectItem>
                   {availableEvents.map((e) => (
                     <SelectItem key={e.id} value={e.id}>
                       {e.name}
@@ -316,7 +318,7 @@ export default function AdminChats() {
             {filteredConversations.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground">
                 <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>{allMessages.length === 0 ? 'No messages found. Check that RLS policies allow admin access to chat_messages.' : 'No conversations match this filter'}</p>
+                <p>{allMessages.length === 0 ? t('whatsapp.noMessagesFound') : t('whatsapp.noMatch')}</p>
               </div>
             ) : (
               <div className="divide-y divide-border">
@@ -394,7 +396,7 @@ export default function AdminChats() {
                     onClick={() => setShowSession(!showSession)}
                     className="ml-auto shrink-0"
                   >
-                    Session {showSession ? <ChevronRight className="h-4 w-4 ml-1" /> : <ChevronLeft className="h-4 w-4 ml-1" />}
+                    {t('whatsapp.session')} {showSession ? <ChevronRight className="h-4 w-4 ml-1" /> : <ChevronLeft className="h-4 w-4 ml-1" />}
                   </Button>
                 </div>
               </div>
@@ -442,48 +444,48 @@ export default function AdminChats() {
                 {showSession && (
                   <div className="w-64 border-l border-border overflow-y-auto bg-muted/20 p-4 space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-sm">Session State</h4>
+                      <h4 className="font-semibold text-sm">{t('whatsapp.sessionState')}</h4>
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={fetchSession}>
                         <RefreshCw className="h-3 w-3" />
                       </Button>
                     </div>
                     {sessionState ? (
                       <div className="space-y-3 text-xs">
-                        <SessionRow label="Step">
+                        <SessionRow label={t('whatsapp.step')}>
                           {sessionState.step ? <Badge variant="secondary" className="text-[10px]">{sessionState.step}</Badge> : <span className="text-muted-foreground">—</span>}
                         </SessionRow>
-                        <SessionRow label="Event">{sessionState.event_name || '—'}</SessionRow>
-                        <SessionRow label="Name">
+                        <SessionRow label={t('whatsapp.event')}>{sessionState.event_name || '—'}</SessionRow>
+                        <SessionRow label={t('whatsapp.name')}>
                           {[sessionState.first_name, sessionState.last_name].filter(Boolean).join(' ') || '—'}
                         </SessionRow>
-                        <SessionRow label="Payer Type">{sessionState.payer_type || '—'}</SessionRow>
-                        <SessionRow label="Payment">{sessionState.payment_method || '—'}</SessionRow>
-                        <SessionRow label="Reg. Type">{sessionState.registration_type || '—'}</SessionRow>
-                        <SessionRow label="Cart Items">
+                        <SessionRow label={t('whatsapp.payerType')}>{sessionState.payer_type || '—'}</SessionRow>
+                        <SessionRow label={t('whatsapp.payment')}>{sessionState.payment_method || '—'}</SessionRow>
+                        <SessionRow label={t('whatsapp.regType')}>{sessionState.registration_type || '—'}</SessionRow>
+                        <SessionRow label={t('whatsapp.cartItems')}>
                           {parseJsonSafe(sessionState.cart_items).length > 0
                             ? parseJsonSafe(sessionState.cart_items).map((item, i) => (
                                 <span key={i} className="block text-muted-foreground">{item}</span>
                               ))
                             : '—'}
                         </SessionRow>
-                        <SessionRow label="Services">
+                        <SessionRow label={t('whatsapp.services')}>
                           {parseJsonSafe(sessionState.cart_services).length > 0
                             ? parseJsonSafe(sessionState.cart_services).map((item, i) => (
                                 <span key={i} className="block text-muted-foreground">{item}</span>
                               ))
                             : '—'}
                         </SessionRow>
-                        <SessionRow label="Next Action">
+                        <SessionRow label={t('whatsapp.nextAction')}>
                           {sessionState.next_action ? (
                             <Badge className="text-[10px] bg-orange-100 text-orange-700 border-orange-300" variant="outline">
                               {sessionState.next_action}
                             </Badge>
                           ) : '—'}
                         </SessionRow>
-                        <SessionRow label="Updated">{formatRelativeTime(sessionState.updated_at)}</SessionRow>
+                        <SessionRow label={t('whatsapp.updated')}>{formatRelativeTime(sessionState.updated_at)}</SessionRow>
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground">No active session</p>
+                      <p className="text-xs text-muted-foreground">{t('whatsapp.noActiveSession')}</p>
                     )}
                   </div>
                 )}
@@ -493,7 +495,7 @@ export default function AdminChats() {
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
                 <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <p className="text-lg">Select a conversation to view messages</p>
+                <p className="text-lg">{t('whatsapp.selectSession')}</p>
               </div>
             </div>
           )}
