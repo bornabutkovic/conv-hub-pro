@@ -351,6 +351,17 @@ const translations = {
   'removeAccess.desc': { hr: 'Ovo će u potpunosti ukloniti korisnika iz admin portala.', en: 'This will remove the user from the admin portal entirely.' },
   'removeAccess.confirm': { hr: 'Ukloni', en: 'Remove' },
   'removeAccess.cancel': { hr: 'Odustani', en: 'Cancel' },
+  'user.superAdminDesc': { hr: 'Globalni administratori platforme s punim pristupom.', en: 'Global platform administrators with full access.' },
+  'user.adminsOrganizersTitle': { hr: 'Administratori i organizatori događaja', en: 'Admins & Event Organizers' },
+  'user.adminsOrganizersDesc': { hr: 'Administratori platforme i organizatori događaja klijenata.', en: 'Platform admins and client event organizers.' },
+  'user.noSuperAdminsMatch': { hr: 'Nijedan super admin ne odgovara pretrazi.', en: 'No super admins match your search.' },
+  'user.noSuperAdmins': { hr: 'Nema super administratora.', en: 'No super admins found.' },
+  'user.noUsersMatch': { hr: 'Nijedan korisnik ne odgovara pretrazi.', en: 'No users match your search.' },
+  'user.noAdminsOrganizers': { hr: 'Nema administratora ili organizatora.', en: 'No admins or organizers found.' },
+  'user.conveyoTeamFull': { hr: 'Conwayo tim', en: 'Conveyo Team' },
+  // user.conveyoTeamDesc already defined above
+  'user.removeUserPortal': { hr: 'Korisnik uklonjen iz admin portala', en: 'User removed from admin portal' },
+  'user.roleUpdated': { hr: 'Uloga ažurirana', en: 'Role updated' },
 
   // WhatsApp Inspector
   'whatsapp.title': { hr: 'WhatsApp Inspector', en: 'WhatsApp Inspector' },

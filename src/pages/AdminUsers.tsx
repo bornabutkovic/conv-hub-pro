@@ -535,7 +535,7 @@ export default function AdminUsers() {
                 Conveyo Team
               </CardTitle>
               <CardDescription>
-                Internal team members with super admin privileges.
+                {t('user.conveyoTeamDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">

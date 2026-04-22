@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getRoleDisplayName, isAdmin } from '@/lib/roles';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { toast } from 'sonner';
 import {
   Search,
@@ -58,6 +59,7 @@ type AdminUser = {
 
 export function AdminUsersTab() {
   const { profile: currentUserProfile } = useAuth();
+  const { t } = useAdminLanguage();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -81,7 +83,7 @@ export function AdminUsersTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success('Role updated');
+      toast.success(t('user.roleUpdated'));
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
     onError: (err: any) => toast.error(err.message || 'Failed to update role'),
@@ -96,7 +98,7 @@ export function AdminUsersTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success('User removed from admin portal');
+      toast.success(t('user.removeUserPortal'));
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
     onError: (err: any) => toast.error(err.message || 'Failed to remove user'),
@@ -175,18 +177,18 @@ export function AdminUsersTab() {
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Remove admin access?</AlertDialogTitle>
+                      <AlertDialogTitle>{t('removeAccess.title')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will remove {user.full_name || user.email} from the admin portal entirely.
+                        {t('removeAccess.desc')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>{t('removeAccess.cancel')}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => removeUser.mutate(user.id)}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
-                        Remove
+                        {t('removeAccess.confirm')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -216,7 +218,7 @@ export function AdminUsersTab() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name or email..."
+            placeholder={t('admin.searchUsers')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -225,7 +227,7 @@ export function AdminUsersTab() {
         {isSuperAdmin && (
           <Button onClick={() => setInviteModalOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" />
-            Invite User
+            {t('admin.inviteUser')}
           </Button>
         )}
       </div>
@@ -253,7 +255,7 @@ export function AdminUsersTab() {
                 Super Admins
               </CardTitle>
               <CardDescription>
-                Global platform administrators with full access.
+                {t('user.superAdminDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -261,18 +263,18 @@ export function AdminUsersTab() {
                 <div className="p-8 text-center">
                   <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {searchQuery ? 'No super admins match your search.' : 'No super admins found.'}
+                    {searchQuery ? t('user.noSuperAdminsMatch') : t('user.noSuperAdmins')}
                   </p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                     <TableHead>Name</TableHead>
-                      <TableHead>Company</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                     <TableHead>{t('user.name')}</TableHead>
+                      <TableHead>{t('institution.name')}</TableHead>
+                      <TableHead>{t('user.email')}</TableHead>
+                      <TableHead>{t('user.role')}</TableHead>
+                      <TableHead className="text-right">{t('user.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>{filterUsers(superAdmins).map(renderUserRow)}</TableBody>
@@ -287,10 +289,10 @@ export function AdminUsersTab() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-primary" />
-                Admins & Event Organizers
+                {t('user.adminsOrganizersTitle')}
               </CardTitle>
               <CardDescription>
-                Platform admins and client event organizers.
+                {t('user.adminsOrganizersDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -298,18 +300,18 @@ export function AdminUsersTab() {
                 <div className="p-8 text-center">
                   <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {searchQuery ? 'No users match your search.' : 'No admins or organizers found.'}
+                    {searchQuery ? t('user.noUsersMatch') : t('user.noAdminsOrganizers')}
                   </p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                     <TableHead>Name</TableHead>
-                      <TableHead>Company</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                     <TableHead>{t('user.name')}</TableHead>
+                      <TableHead>{t('institution.name')}</TableHead>
+                      <TableHead>{t('user.email')}</TableHead>
+                      <TableHead>{t('user.role')}</TableHead>
+                      <TableHead className="text-right">{t('user.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>{filterUsers(adminsOrganizers).map(renderUserRow)}</TableBody>
