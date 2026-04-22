@@ -370,7 +370,7 @@ const translations = {
   'whatsapp.live': { hr: 'Uživo', en: 'Live' },
   'whatsapp.searchSessions': { hr: 'Pretraži sesije...', en: 'Search sessions...' },
   'whatsapp.noSessions': { hr: 'Nema aktivnih sesija', en: 'No active sessions' },
-  'whatsapp.noMessagesFound': { hr: 'Nema poruka. Provjerite RLS pravila za chat_messages.', en: 'No messages found. Check that RLS policies allow admin access to chat_messages.' },
+  'whatsapp.noMessagesFound': { hr: 'Nema poruka', en: 'No messages' },
   'whatsapp.noMatch': { hr: 'Nema razgovora koji odgovaraju filteru', en: 'No conversations match this filter' },
   'whatsapp.selectSession': { hr: 'Odaberi razgovor za pregled poruka', en: 'Select a conversation to view messages' },
   'whatsapp.event': { hr: 'Događaj', en: 'Event' },

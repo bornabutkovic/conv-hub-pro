@@ -2216,6 +2216,7 @@ export type Database = {
         Args: { p_country_code: string; p_payer_type: string }
         Returns: Json
       }
+      get_event_organizers_info: { Args: { p_event_id: string }; Returns: Json }
       get_event_translations: { Args: { p_event_id: string }; Returns: Json }
       get_order_full_data: { Args: { p_order_id: string }; Returns: Json }
       get_session_missing_fields: {
