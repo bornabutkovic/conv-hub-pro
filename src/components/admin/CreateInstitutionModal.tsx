@@ -22,6 +22,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useFormDraft } from '@/hooks/useFormDraft';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -43,6 +44,7 @@ interface CreateInstitutionModalProps {
 export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitutionModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
+  const { t } = useAdminLanguage();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -75,7 +77,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
       if (error) throw error;
 
       clearDraft();
-      toast.success('Institution created successfully!');
+      toast.success(t('institutionModal.successCreated'));
       queryClient.invalidateQueries({ queryKey: ['admin-institutions'] });
       form.reset();
       onOpenChange(false);
@@ -90,7 +92,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Institution</DialogTitle>
+          <DialogTitle>{t('institutionModal.createTitle')}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -100,7 +102,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Company Name</FormLabel>
+                  <FormLabel>{t('institutionModal.companyName')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Acme Corp d.o.o." {...field} />
                   </FormControl>
@@ -114,7 +116,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
               name="oib"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>OIB (Tax ID)</FormLabel>
+                  <FormLabel>{t('institutionModal.oib')}</FormLabel>
                   <FormControl>
                     <Input placeholder="12345678901" maxLength={11} {...field} />
                   </FormControl>
@@ -128,7 +130,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address</FormLabel>
+                  <FormLabel>{t('institutionModal.address')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Ilica 123, 10000 Zagreb" {...field} />
                   </FormControl>
@@ -143,7 +145,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
                 name="postal_code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Postal Code</FormLabel>
+                    <FormLabel>{t('institutionModal.postalCode')}</FormLabel>
                     <FormControl>
                       <Input placeholder="10000" {...field} />
                     </FormControl>
@@ -157,7 +159,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>City</FormLabel>
+                    <FormLabel>{t('institutionModal.city')}</FormLabel>
                     <FormControl>
                       <Input placeholder="Zagreb" {...field} />
                     </FormControl>
@@ -172,7 +174,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
               name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Country</FormLabel>
+                  <FormLabel>{t('institutionModal.country')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Croatia" {...field} />
                   </FormControl>
@@ -186,7 +188,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
               name="invoice_email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Invoice Email</FormLabel>
+                  <FormLabel>{t('institutionModal.invoiceEmail')}</FormLabel>
                   <FormControl>
                     <Input type="email" placeholder="invoices@company.com" {...field} />
                   </FormControl>
@@ -197,10 +199,10 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
 
             <div className="flex justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
+                {t('institutionModal.cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Institution'}
+                {isSubmitting ? t('institutionModal.creating') : t('institutionModal.create')}
               </Button>
             </div>
           </form>

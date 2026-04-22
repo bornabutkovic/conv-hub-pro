@@ -20,6 +20,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 type Profile = Tables<'profiles'>;
 
@@ -34,6 +35,7 @@ export function ApproveUserModal({ open, onOpenChange, user, onApproved }: Appro
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
+  const { t } = useAdminLanguage();
 
   const { data: institutions } = useQuery({
     queryKey: ['institutions-list-approve'],
@@ -50,7 +52,7 @@ export function ApproveUserModal({ open, onOpenChange, user, onApproved }: Appro
 
   const handleApprove = async () => {
     if (!selectedInstitution) {
-      toast.error('Please select an institution');
+      toast.error(t('approveUser.selectFirst'));
       return;
     }
 
@@ -66,7 +68,7 @@ export function ApproveUserModal({ open, onOpenChange, user, onApproved }: Appro
 
       if (error) throw error;
 
-      toast.success(`${user.first_name || user.email} approved as Event Organizer`);
+      toast.success(`${user.first_name || user.email} ${t('approveUser.successSuffix')}`);
       setSelectedInstitution('');
       onOpenChange(false);
       queryClient.invalidateQueries({ queryKey: ['admin-all-users-with-institutions'] });
@@ -85,19 +87,19 @@ export function ApproveUserModal({ open, onOpenChange, user, onApproved }: Appro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>Approve User</DialogTitle>
+          <DialogTitle>{t('approveUser.title')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">User</p>
+            <p className="text-sm text-muted-foreground">{t('approveUser.user')}</p>
             <p className="font-medium">{displayName}</p>
             {user.email && <p className="text-sm text-muted-foreground">{user.email}</p>}
           </div>
           <div className="space-y-2">
-            <Label>Assign to Institution *</Label>
+            <Label>{t('approveUser.assignInstitution')}</Label>
             <Select value={selectedInstitution} onValueChange={setSelectedInstitution}>
               <SelectTrigger>
-                <SelectValue placeholder="Select an institution" />
+                <SelectValue placeholder={t('approveUser.selectInstitution')} />
               </SelectTrigger>
               <SelectContent>
                 {institutions?.map((inst) => (
@@ -109,16 +111,16 @@ export function ApproveUserModal({ open, onOpenChange, user, onApproved }: Appro
             </Select>
           </div>
           <p className="text-xs text-muted-foreground">
-            The user will be assigned the <strong>Event Organizer</strong> role and linked to the selected institution.
+            {t('approveUser.note')} <strong>{t('approveUser.noteRole')}</strong> {t('approveUser.noteSuffix')}
           </p>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-            Cancel
+            {t('approveUser.cancel')}
           </Button>
           <Button onClick={handleApprove} disabled={isSubmitting || !selectedInstitution}>
             {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Approve & Assign
+            {t('approveUser.approve')}
           </Button>
         </DialogFooter>
       </DialogContent>
