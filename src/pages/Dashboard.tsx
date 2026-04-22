@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { isSuperAdmin, isAdmin } from '@/lib/roles';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -27,6 +28,7 @@ import { useDashboardStats } from '@/hooks/useDashboardStats';
 
 export default function Dashboard() {
   const { profile } = useAuth();
+  const { t } = useAdminLanguage();
   const institutionUuid = profile?.institution_uuid;
   const userIsSuperAdmin = isSuperAdmin(profile?.role);
   const userIsAdmin = isAdmin(profile?.role);
@@ -149,25 +151,25 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-heading font-bold tracking-tight">
-              Welcome back
+              {t('dashboard.welcome')}
               {profile?.first_name ? (
                 <>, <span className="text-brand-gradient">{profile.first_name}</span>!</>
               ) : '!'}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Here's what's happening with your events today.
+              {t('dashboard.subtitle')}
             </p>
             {!userIsSuperAdmin && institutionName && (
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
                 <Building2 className="h-4 w-4" />
-                <span>Managing: <strong className="text-foreground">{institutionName}</strong></span>
+                <span>{t('dashboard.managing')}: <strong className="text-foreground">{institutionName}</strong></span>
               </div>
             )}
           </div>
           <Button asChild className="gap-2 rounded-xl bg-brand-gradient hover:opacity-90 transition-opacity text-white border-0 shadow-brand">
             <Link to="/events/new">
               <Plus className="h-4 w-4" />
-              Create Event
+              {t('dashboard.createEvent')}
             </Link>
           </Button>
         </div>
@@ -175,25 +177,25 @@ export default function Dashboard() {
         {/* Event Selector - Glassmorphism */}
         <div className="flex items-center gap-3 p-4 rounded-xl glass shadow-brand">
           <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-            Viewing Event:
+            {t('dashboard.viewingEvent')}:
           </span>
           {loadingEvents ? (
             <Skeleton className="h-10 w-64" />
           ) : (
             <Select value={selectedEventId} onValueChange={setSelectedEventId}>
               <SelectTrigger className="w-full max-w-md bg-background/50 backdrop-blur-sm border-border/50">
-                <SelectValue placeholder="Select an event" />
+                <SelectValue placeholder={t('dashboard.selectEvent')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">
-                  <span className="font-medium">All Events</span>
+                  <span className="font-medium">{t('dashboard.allEvents')}</span>
                 </SelectItem>
                 {allEvents?.map((event) => (
                   <SelectItem key={event.id} value={event.id}>
                     <div className="flex items-center gap-2">
                       <span>{event.name}</span>
                       {event.status === 'active' && (
-                        <Badge variant="default" className="text-xs">Active</Badge>
+                        <Badge variant="default" className="text-xs">{t('events.active')}</Badge>
                       )}
                       {event.start_date && (
                         <span className="text-xs text-muted-foreground">
@@ -211,7 +213,7 @@ export default function Dashboard() {
               to={`/events/${selectedEvent.id}`}
               className="text-sm text-primary hover:underline whitespace-nowrap font-medium"
             >
-              View Details →
+              {t('dashboard.viewDetails')}
             </Link>
           )}
         </div>
@@ -235,21 +237,21 @@ export default function Dashboard() {
       {/* KPI Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         <KPICard
-          title="Total Attendees"
+          title={t('dashboard.totalAttendees')}
           value={String(stats?.totalAttendees || 0)}
           icon={<Users className="h-5 w-5" />}
           description={selectedEventId === 'all' 
-            ? (userIsSuperAdmin ? "Across all events" : "Registered users") 
-            : `For ${selectedEvent?.name || 'this event'}`
+            ? (userIsSuperAdmin ? t('dashboard.acrossAllEvents') : t('dashboard.registeredUsers')) 
+            : `${selectedEvent?.name || ''}`
           }
           loading={loadingStats}
           href={selectedEventId !== 'all' ? `/events/${selectedEventId}` : undefined}
         />
         <KPICard
-          title="Pending Income"
+          title={t('dashboard.pendingIncome')}
           value={formatCurrency(stats?.pendingIncome || 0)}
           icon={<Clock className="h-5 w-5" />}
-          description="Awaiting payment"
+          description={t('dashboard.awaitingPayment')}
           loading={loadingStats}
           variant={(stats?.pendingIncome || 0) > 0 ? 'warning' : 'default'}
           href={selectedEventId !== 'all' ? `/events/${selectedEventId}` : undefined}
@@ -279,8 +281,8 @@ export default function Dashboard() {
 
         <Card className="shadow-brand glow-hover">
           <div className="p-6 pb-2">
-            <h3 className="text-lg font-heading font-semibold">Recent Events</h3>
-            <p className="text-sm text-muted-foreground">Your latest created events</p>
+            <h3 className="text-lg font-heading font-semibold">{t('dashboard.recentEvents')}</h3>
+            <p className="text-sm text-muted-foreground">{t('dashboard.recentEventsSub')}</p>
           </div>
           <CardContent>
             {loadingEvents ? (
@@ -321,11 +323,11 @@ export default function Dashboard() {
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <Calendar className="h-10 w-10 text-muted-foreground/50 mb-3" />
-                <p className="text-sm text-muted-foreground mb-3">No events yet</p>
+                <p className="text-sm text-muted-foreground mb-3">{t('dashboard.noEvents')}</p>
                 <Button asChild size="sm" className="bg-brand-gradient text-white border-0">
                   <Link to="/events">
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Event
+                    {t('dashboard.createEvent')}
                   </Link>
                 </Button>
               </div>

@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { RevenueBreakdown } from '@/hooks/useDashboardStats';
 import { cn } from '@/lib/utils';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 interface FinancialOverviewProps {
   revenue: RevenueBreakdown;
@@ -24,6 +25,7 @@ const COLORS = {
 
 export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEventId }: FinancialOverviewProps) {
   const navigate = useNavigate();
+  const { t } = useAdminLanguage();
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('total');
   const filterParam = selectedEventId && selectedEventId !== 'all' ? `&event=${selectedEventId}` : '';
 
@@ -44,18 +46,18 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
       case 'tickets':
         paid = revenue.ticketRevenue;
         pending = revenue.ticketPending;
-        label = 'Tickets';
+        label = t('dashboard.tickets');
         break;
       case 'addons':
         paid = revenue.addonRevenue;
         pending = revenue.addonPending;
-        label = 'Add-ons';
+        label = t('dashboard.addons');
         break;
       case 'total':
       default:
         paid = revenue.totalRevenue;
         pending = revenue.totalPending;
-        label = 'Total';
+        label = t('dashboard.total');
         break;
     }
 
@@ -93,13 +95,13 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
       <div className="flex items-center gap-2">
         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.paid }} />
         <span className="text-sm text-muted-foreground">
-          Paid: <span className="font-medium text-foreground">{formatCurrency(chartInfo.paid)}</span>
+          {t('dashboard.paid')}: <span className="font-medium text-foreground">{formatCurrency(chartInfo.paid)}</span>
         </span>
       </div>
       <div className="flex items-center gap-2">
         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.pending }} />
         <span className="text-sm text-muted-foreground">
-          Pending: <span className="font-medium text-foreground">{formatCurrency(chartInfo.pending)}</span>
+          {t('dashboard.pending')}: <span className="font-medium text-foreground">{formatCurrency(chartInfo.pending)}</span>
         </span>
       </div>
     </div>
@@ -137,7 +139,7 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
           <div className="p-1.5 rounded-lg bg-brand-gradient text-white">
             <TrendingUp className="h-4 w-4" />
           </div>
-          {isSuperAdmin ? 'Platform Financial Overview' : 'Financial Overview'}
+          {isSuperAdmin ? t('dashboard.financialOverview') : t('dashboard.financialOverviewOrg')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -154,11 +156,11 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
                   <Ticket className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Ticket Revenue</p>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.ticketRevenue')}</p>
                   <p className="text-2xl font-heading font-bold">{formatCurrency(revenue.ticketRevenue)}</p>
                   {revenue.ticketPending > 0 && (
                     <p className="text-sm text-amber-600">
-                      Pending: {formatCurrency(revenue.ticketPending)}
+                      {t('dashboard.pending')}: {formatCurrency(revenue.ticketPending)}
                     </p>
                   )}
                 </div>
@@ -175,11 +177,11 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
                   <Gift className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Add-on Revenue</p>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.addonRevenue')}</p>
                   <p className="text-2xl font-heading font-bold">{formatCurrency(revenue.addonRevenue)}</p>
                   {revenue.addonPending > 0 && (
                     <p className="text-sm text-amber-600">
-                      Pending: {formatCurrency(revenue.addonPending)}
+                      {t('dashboard.pending')}: {formatCurrency(revenue.addonPending)}
                     </p>
                   )}
                 </div>
@@ -193,15 +195,15 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
                   <TrendingUp className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Total Paid Revenue</p>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.totalPaidRevenue')}</p>
                   <p className="text-3xl font-heading font-bold text-brand-gradient">{formatCurrency(revenue.totalRevenue)}</p>
                   <div className="mt-2 space-y-0.5">
                     <p className="text-sm text-emerald-600">
-                      ✅ Confirmed: {formatCurrency(revenue.totalRevenue)}
+                      ✅ {t('dashboard.confirmed')}: {formatCurrency(revenue.totalRevenue)}
                     </p>
                     {revenue.totalPending > 0 && (
                       <p className="text-sm text-amber-600">
-                        ⏳ Pending: {formatCurrency(revenue.totalPending)}
+                        ⏳ {t('dashboard.pending')}: {formatCurrency(revenue.totalPending)}
                       </p>
                     )}
                   </div>
@@ -214,7 +216,7 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
           <div className="flex flex-col">
             <div className="flex flex-col items-center mb-4">
               <h4 className="text-sm font-medium text-muted-foreground mb-3">
-                Revenue Breakdown
+                {t('dashboard.revenueBreakdown')}
               </h4>
               <Tabs 
                 value={selectedMetric} 
@@ -222,9 +224,9 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
                 className="w-full max-w-xs"
               >
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="total">Total</TabsTrigger>
-                  <TabsTrigger value="tickets">Tickets</TabsTrigger>
-                  <TabsTrigger value="addons">Add-ons</TabsTrigger>
+                  <TabsTrigger value="total">{t('dashboard.total')}</TabsTrigger>
+                  <TabsTrigger value="tickets">{t('dashboard.tickets')}</TabsTrigger>
+                  <TabsTrigger value="addons">{t('dashboard.addons')}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -263,9 +265,9 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
               ) : (
                 <div className="flex flex-col items-center justify-center h-48 text-center">
                   <TrendingUp className="h-12 w-12 text-muted-foreground/30 mb-3" />
-                  <p className="text-muted-foreground">No revenue data yet</p>
+                  <p className="text-muted-foreground">{t('dashboard.noRevenue')}</p>
                   <p className="text-sm text-muted-foreground/70">
-                    Revenue will appear here once payments are received
+                    {t('dashboard.noRevenueSub')}
                   </p>
                 </div>
               )}

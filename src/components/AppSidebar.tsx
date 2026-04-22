@@ -1,7 +1,8 @@
-import { LayoutDashboard, Calendar, Settings, LogOut, Shield, MessageCircle, ChevronUp } from 'lucide-react';
+import { LayoutDashboard, Calendar, Settings, LogOut, Shield, MessageCircle, ChevronUp, Globe } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { isAdmin } from '@/lib/roles';
 import conwayoLogoDark from '@/assets/conwayo-logo-dark.png';
 import {
@@ -15,7 +16,6 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,23 +23,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-const navItems = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-  { title: 'Events', url: '/events', icon: Calendar },
-];
-
-const adminItems = [
-  { title: 'Admin Panel', url: '/admin', icon: Shield },
-  { title: 'WhatsApp Inspector', url: '/admin/chats', icon: MessageCircle },
-];
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { profile, signOut } = useAuth();
+  const { lang, setLang, t } = useAdminLanguage();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const navItems = [
+    { title: t('nav.dashboard'), url: '/', icon: LayoutDashboard },
+    { title: t('nav.events'), url: '/events', icon: Calendar },
+  ];
+
+  const adminItems = [
+    { title: t('nav.adminPanel'), url: '/admin', icon: Shield },
+    { title: t('nav.whatsappInspector'), url: '/admin/chats', icon: MessageCircle },
+  ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -77,7 +79,7 @@ export function AppSidebar() {
               {allItems.map((item) => {
                 const active = isActive(item.url);
                 return (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild tooltip={item.title}>
                       <NavLink
                         to={item.url}
@@ -105,7 +107,50 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
+      <SidebarFooter className="border-t border-sidebar-border p-4 space-y-3">
+        {/* Language switcher */}
+        <div className="border-b border-sidebar-border pb-3">
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setLang(lang === 'hr' ? 'en' : 'hr')}
+                  className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/70 hover:text-white hover:bg-sidebar-accent/50 transition-colors"
+                  aria-label="Toggle language"
+                >
+                  <Globe className="h-5 w-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {lang === 'hr' ? '🇭🇷 HR' : '🇬🇧 EN'}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-sidebar-accent/30">
+              <button
+                onClick={() => setLang('hr')}
+                className={`flex-1 px-2 py-1 text-xs font-medium rounded-sm transition-colors flex items-center justify-center gap-1 ${
+                  lang === 'hr'
+                    ? 'bg-sidebar-accent text-white shadow-sm'
+                    : 'text-sidebar-foreground/60 hover:text-white'
+                }`}
+              >
+                🇭🇷 HR
+              </button>
+              <button
+                onClick={() => setLang('en')}
+                className={`flex-1 px-2 py-1 text-xs font-medium rounded-sm transition-colors flex items-center justify-center gap-1 ${
+                  lang === 'en'
+                    ? 'bg-sidebar-accent text-white shadow-sm'
+                    : 'text-sidebar-foreground/60 hover:text-white'
+                }`}
+              >
+                🇬🇧 EN
+              </button>
+            </div>
+          )}
+        </div>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="w-full flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-sidebar-accent/50 transition-colors text-left">
@@ -130,12 +175,12 @@ export function AppSidebar() {
           <DropdownMenuContent side="top" align="start" className="w-56">
             <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
               <Settings className="h-4 w-4 mr-2" />
-              Profile & Settings
+              {t('nav.settings')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
               <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+              {t('nav.signOut')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
