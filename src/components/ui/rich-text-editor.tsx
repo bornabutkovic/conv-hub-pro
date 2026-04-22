@@ -21,6 +21,9 @@ export function RichTextEditor({ value = '', onChange, placeholder, className, d
         heading: { levels: [2, 3] },
       }),
       Underline,
+      Placeholder.configure({
+        placeholder: placeholder || '',
+      }),
     ],
     content: value,
     editable: !disabled,
