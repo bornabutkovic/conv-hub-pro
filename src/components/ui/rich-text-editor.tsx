@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -31,6 +32,17 @@ export function RichTextEditor({ value = '', onChange, placeholder, className, d
       onChange?.(editor.getHTML());
     },
   });
+
+  useEffect(() => {
+    if (!editor) return;
+    // Only sync if editor is empty but value has content
+    // This handles async data loading (e.g. edit forms)
+    const currentHTML = editor.getHTML();
+    const isEmpty = currentHTML === '<p></p>' || currentHTML === '';
+    if (isEmpty && value && value !== '<p></p>' && value !== '') {
+      editor.commands.setContent(value, { emitUpdate: false });
+    }
+  }, [editor, value]);
 
   if (!editor) return null;
 
