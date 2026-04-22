@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AddAttendeeModal } from './AddAttendeeModal';
 import { AttendeeDetailModal } from './AttendeeDetailModal';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { toast } from 'sonner';
 
 export interface InvoiceAttendee {
@@ -55,6 +56,7 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
   const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>('all');
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [selectedAttendee, setSelectedAttendee] = useState<InvoiceAttendee | null>(null);
+  const { t } = useAdminLanguage();
 
   const getStatusVariant = (status: string | null) => {
     switch (status) {
@@ -67,21 +69,21 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
 
   const getStatusLabel = (status: string | null) => {
     switch (status) {
-      case 'approved': return 'Registered';
-      case 'pending': return 'Pending';
-      case 'cancelled': return 'Cancelled';
-      default: return 'Pending';
+      case 'approved': return t('attendeeTable.registered');
+      case 'pending': return t('attendeeTable.pending');
+      case 'cancelled': return t('attendeeTable.cancelled');
+      default: return t('attendeeTable.pending');
     }
   };
 
   const getPaymentBadge = (paymentStatus: string | null) => {
     switch (paymentStatus) {
       case 'paid':
-        return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15">Paid</Badge>;
+        return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15">{t('attendeeTable.paid')}</Badge>;
       case 'pending':
-        return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15">Pending</Badge>;
+        return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15">{t('attendeeTable.pending')}</Badge>;
       case 'overdue':
-        return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15">Overdue</Badge>;
+        return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15">{t('attendeeTable.overdue')}</Badge>;
       default:
         return <Badge variant="secondary">{paymentStatus || 'N/A'}</Badge>;
     }
@@ -89,7 +91,7 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success('Kopirano u međuspremnik');
+    toast.success(t('attendeeTable.copied'));
   };
 
   const getFullName = (attendee: InvoiceAttendee) =>
@@ -132,24 +134,24 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Attendees
+                {t('attendeeTable.title')}
               </CardTitle>
-              <CardDescription>Manage event registrations</CardDescription>
+              <CardDescription>{t('attendeeTable.subtitle')}</CardDescription>
             </div>
             <Button onClick={() => setIsAddModalOpen(true)}>
               <UserPlus className="h-4 w-4 mr-2" />
-              Add Attendee Manually
+              {t('attendeeTable.addAttendee')}
             </Button>
           </CardHeader>
           <CardContent className="text-center py-12">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">No registrations yet</h3>
+            <h3 className="text-lg font-medium text-foreground mb-2">{t('attendeeTable.noRegistrations')}</h3>
             <p className="text-muted-foreground mb-4">
-              Add attendees manually or wait for WhatsApp registrations.
+              {t('attendeeTable.noRegistrationsDesc')}
             </p>
             <Button variant="outline" onClick={() => setIsAddModalOpen(true)}>
               <UserPlus className="h-4 w-4 mr-2" />
-              Add First Attendee
+              {t('attendeeTable.addFirst')}
             </Button>
           </CardContent>
         </Card>
@@ -165,13 +167,13 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
           <div>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Attendees ({attendees.length})
+              {t('attendeeTable.title')} ({attendees.length})
             </CardTitle>
-            <CardDescription>Manage event registrations</CardDescription>
+            <CardDescription>{t('attendeeTable.subtitle')}</CardDescription>
           </div>
           <Button onClick={() => setIsAddModalOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" />
-            Add Attendee Manually
+            {t('attendeeTable.addAttendee')}
           </Button>
         </CardHeader>
         <CardContent>
@@ -185,7 +187,7 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
                   size="sm"
                   onClick={() => setPaymentFilter(filter)}
                 >
-                  {filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                  {filter === 'all' ? t('attendeeTable.all') : t(`attendeeTable.${filter}` as any)}
                   <span className="ml-1.5 text-xs opacity-70">({filterCounts[filter]})</span>
                 </Button>
               ))}
@@ -193,7 +195,7 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
             <div className="relative w-full sm:w-52">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                placeholder="Pretraži br. ponude..."
+                placeholder={t('attendeeTable.searchInvoice')}
                 value={invoiceSearch}
                 onChange={(e) => setInvoiceSearch(e.target.value)}
                 className="pl-8 h-8 text-sm"
@@ -204,34 +206,34 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Full Name</TableHead>
+                <TableHead>{t('attendeeTable.fullName')}</TableHead>
                 <TableHead>
                   <div className="flex items-center gap-1.5">
                     <Mail className="h-4 w-4" />
-                    Email
+                    {t('attendeeTable.email')}
                   </div>
                 </TableHead>
-                <TableHead>Payment</TableHead>
+                <TableHead>{t('attendeeTable.payment')}</TableHead>
                 <TableHead>
                   <div className="flex items-center gap-1.5">
                     <FileText className="h-4 w-4" />
-                    Br. ponude
+                    {t('attendeeTable.invoiceNumber')}
                   </div>
                 </TableHead>
                 <TableHead>
                   <div className="flex items-center gap-1.5">
                     <Hash className="h-4 w-4" />
-                    Narudžba #
+                    {t('attendeeTable.orderNumber')}
                   </div>
                 </TableHead>
-                <TableHead>Check-in</TableHead>
+                <TableHead>{t('attendeeTable.checkin')}</TableHead>
                 <TableHead>
                   <div className="flex items-center gap-1.5">
                     <Calendar className="h-4 w-4" />
-                    Registration Date
+                    {t('attendeeTable.registrationDate')}
                   </div>
                 </TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t('attendeeTable.status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -243,7 +245,7 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
                 >
                   <TableCell className="font-medium">{getFullName(attendee)}</TableCell>
                   <TableCell>
-                    {attendee.email || <span className="text-muted-foreground italic">No email</span>}
+                    {attendee.email || <span className="text-muted-foreground italic">{t('attendeeTable.noEmail')}</span>}
                   </TableCell>
                   <TableCell>{getPaymentBadge(attendee.payment_status)}</TableCell>
                   <TableCell>
@@ -254,7 +256,7 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
                           copyToClipboard(attendee.bc_invoice_number!);
                         }}
                         className="inline-flex items-center gap-1 font-mono text-sm hover:text-primary transition-colors"
-                        title="Klikni za kopiranje"
+                        title={t('attendeeTable.clickToCopy')}
                       >
                         {attendee.bc_invoice_number}
                         <Copy className="h-3 w-3 text-muted-foreground" />
@@ -270,7 +272,7 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
                         {attendee.is_group_order && (
                           <Badge variant="outline" className="text-[10px] px-1.5 py-0 leading-4 border-blue-500/30 text-blue-600">
                             <UsersRound className="h-3 w-3 mr-0.5" />
-                            Grupna
+                            {t('attendeeTable.group')}
                           </Badge>
                         )}
                       </div>
@@ -282,12 +284,12 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
                     {attendee.checked_in ? (
                       <div className="flex items-center gap-1.5 text-emerald-600">
                         <CheckCircle2 className="h-4 w-4" />
-                        <span className="text-sm">Checked In</span>
+                        <span className="text-sm">{t('attendeeTable.checkedIn')}</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         <Circle className="h-4 w-4" />
-                        <span className="text-sm">Not checked in</span>
+                        <span className="text-sm">{t('attendeeTable.notCheckedIn')}</span>
                       </div>
                     )}
                   </TableCell>
