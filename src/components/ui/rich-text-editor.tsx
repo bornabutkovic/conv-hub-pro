@@ -103,11 +103,19 @@ export function RichTextEditor({ value = '', onChange, placeholder, className, d
         className={cn(
           'prose prose-sm dark:prose-invert max-w-none p-3 min-h-[120px] focus-within:outline-none',
           '[&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[100px]',
-          '[&_.ProseMirror_p.is-editor-empty:first-child::before]:text-muted-foreground',
-          '[&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]',
-          '[&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left',
-          '[&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none',
-          '[&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0',
+          '[&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-5 [&_.ProseMirror_ul]:my-2',
+          '[&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-5 [&_.ProseMirror_ol]:my-2',
+          '[&_.ProseMirror_li]:my-0.5',
+          '[&_.ProseMirror_h2]:text-xl [&_.ProseMirror_h2]:font-bold [&_.ProseMirror_h2]:my-2',
+          '[&_.ProseMirror_h3]:text-lg [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_h3]:my-1.5',
+          '[&_.ProseMirror_strong]:font-bold',
+          '[&_.ProseMirror_em]:italic',
+          '[&_.ProseMirror_u]:underline',
+          '[&_.ProseMirror_.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]',
+          '[&_.ProseMirror_.is-editor-empty:first-child::before]:text-muted-foreground',
+          '[&_.ProseMirror_.is-editor-empty:first-child::before]:float-left',
+          '[&_.ProseMirror_.is-editor-empty:first-child::before]:pointer-events-none',
+          '[&_.ProseMirror_.is-editor-empty:first-child::before]:h-0',
         )}
       />
     </div>
