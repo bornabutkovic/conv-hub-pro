@@ -40,7 +40,7 @@ export function RichTextEditor({ value = '', onChange, placeholder, className, d
     const currentHTML = editor.getHTML();
     const isEmpty = currentHTML === '<p></p>' || currentHTML === '';
     if (isEmpty && value && value !== '<p></p>' && value !== '') {
-      editor.commands.setContent(value, false);
+      editor.commands.setContent(value, { emitUpdate: false });
     }
   }, [editor, value]);
 
