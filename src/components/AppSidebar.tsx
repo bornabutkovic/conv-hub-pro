@@ -47,6 +47,7 @@ export function AppSidebar() {
     await signOut();
   };
 
+
   const isActive = (url: string) => {
     if (url === '/') return location.pathname === '/';
     return location.pathname.startsWith(url);
