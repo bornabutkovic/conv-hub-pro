@@ -23,7 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useSidebar as _useSidebar } from '@/components/ui/sidebar';
 
 export function AppSidebar() {
   const { state } = useSidebar();
