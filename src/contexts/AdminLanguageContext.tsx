@@ -44,6 +44,16 @@ const translations = {
   'dashboard.noEvents': { hr: 'Još nema događaja', en: 'No events yet' },
   'dashboard.noRevenue': { hr: 'Još nema podataka o prihodima', en: 'No revenue data yet' },
   'dashboard.noRevenueSub': { hr: 'Prihodi će se prikazati nakon uplata', en: 'Revenue will appear here once payments are received' },
+  'dashboard.registrations': { hr: 'Registracije', en: 'Registrations' },
+  'dashboard.checkedIn': { hr: 'Prijavljeni', en: 'Checked In' },
+  'dashboard.conversionRate': { hr: 'Stopa konverzije', en: 'Conversion Rate' },
+  'dashboard.recentActivity': { hr: 'Nedavna aktivnost', en: 'Recent Activity' },
+  'dashboard.noActivity': { hr: 'Nema nedavne aktivnosti', en: 'No recent activity' },
+  'dashboard.paymentMethods': { hr: 'Načini plaćanja', en: 'Payment Methods' },
+  'dashboard.stripe': { hr: 'Kartica', en: 'Card' },
+  'dashboard.invoice': { hr: 'Faktura', en: 'Invoice' },
+  'dashboard.topEvents': { hr: 'Najpopularniji događaji', en: 'Top Events' },
+  'dashboard.noData': { hr: 'Nema podataka', en: 'No data' },
 
   // Events
   'events.title': { hr: 'Događaji', en: 'Events' },
