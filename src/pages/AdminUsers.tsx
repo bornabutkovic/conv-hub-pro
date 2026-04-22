@@ -36,6 +36,7 @@ import { ApproveUserModal } from '@/components/admin/ApproveUserModal';
 import type { Tables } from '@/integrations/supabase/types';
 import { isAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 type Profile = Tables<'profiles'>;
 type Institution = Tables<'institutions'>;
@@ -53,6 +54,7 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [approveUser, setApproveUser] = useState<Profile | null>(null);
+  const { t } = useAdminLanguage();
   
   const isSuperAdmin = isAdmin(currentUserProfile?.role);
 
@@ -172,8 +174,8 @@ export default function AdminUsers() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">System Users</h1>
-          <p className="text-muted-foreground mt-1">Manage platform users across all tiers</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('admin.systemUsers')}</h1>
+          <p className="text-muted-foreground mt-1">{t('admin.systemUsersSub')}</p>
         </div>
         <Card>
           <CardContent className="p-8 text-center">
@@ -189,13 +191,13 @@ export default function AdminUsers() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">System Users</h1>
-          <p className="text-muted-foreground mt-1">Manage platform users across all tiers</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('admin.systemUsers')}</h1>
+          <p className="text-muted-foreground mt-1">{t('admin.systemUsersSub')}</p>
         </div>
         {isSuperAdmin && (
           <Button onClick={() => setInviteModalOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" />
-            Invite User
+            {t('admin.inviteUser')}
           </Button>
         )}
       </div>
@@ -209,7 +211,7 @@ export default function AdminUsers() {
             </div>
             <div>
               <p className="text-2xl font-bold">{pendingUsers.length}</p>
-              <p className="text-sm text-muted-foreground">Pending Approval</p>
+              <p className="text-sm text-muted-foreground">{t('user.pendingApproval')}</p>
             </div>
           </CardContent>
         </Card>
@@ -220,7 +222,7 @@ export default function AdminUsers() {
             </div>
             <div>
               <p className="text-2xl font-bold">{organizers.length}</p>
-              <p className="text-sm text-muted-foreground">Platform Clients</p>
+              <p className="text-sm text-muted-foreground">{t('user.platformClients')}</p>
             </div>
           </CardContent>
         </Card>
@@ -231,7 +233,7 @@ export default function AdminUsers() {
             </div>
             <div>
               <p className="text-2xl font-bold">{attendees.length}</p>
-              <p className="text-sm text-muted-foreground">WhatsApp Attendees</p>
+              <p className="text-sm text-muted-foreground">{t('user.whatsappAttendees')}</p>
             </div>
           </CardContent>
         </Card>
@@ -242,7 +244,7 @@ export default function AdminUsers() {
             </div>
             <div>
               <p className="text-2xl font-bold">{superAdmins.length}</p>
-              <p className="text-sm text-muted-foreground">Conveyo Team</p>
+              <p className="text-sm text-muted-foreground">{t('user.conveyoTeam')}</p>
             </div>
           </CardContent>
         </Card>
@@ -254,7 +256,7 @@ export default function AdminUsers() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by phone, name, email, or institution... (auto-switches to matching tab)"
+              placeholder={t('admin.searchUsers')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 text-base"
@@ -268,22 +270,22 @@ export default function AdminUsers() {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="pending" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
-            <span className="hidden sm:inline">Pending</span>
+            <span className="hidden sm:inline">{t('user.tabPending')}</span>
             <Badge variant={pendingUsers.length > 0 ? "destructive" : "secondary"} className="ml-1">{filteredPending.length}</Badge>
           </TabsTrigger>
           <TabsTrigger value="organizers" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Clients</span>
+            <span className="hidden sm:inline">{t('user.tabClients')}</span>
             <Badge variant="secondary" className="ml-1">{filteredOrganizers.length}</Badge>
           </TabsTrigger>
           <TabsTrigger value="attendees" className="flex items-center gap-2">
             <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">Attendees</span>
+            <span className="hidden sm:inline">{t('user.tabAttendees')}</span>
             <Badge variant="secondary" className="ml-1">{filteredAttendees.length}</Badge>
           </TabsTrigger>
           <TabsTrigger value="team" className="flex items-center gap-2">
             <Crown className="h-4 w-4" />
-            <span className="hidden sm:inline">Team</span>
+            <span className="hidden sm:inline">{t('user.tabTeam')}</span>
             <Badge variant="secondary" className="ml-1">{filteredSuperAdmins.length}</Badge>
           </TabsTrigger>
         </TabsList>
@@ -294,10 +296,10 @@ export default function AdminUsers() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Clock className="h-5 w-5 text-amber-500" />
-                Pending Approvals
+                {t('user.pendingApprovals')}
               </CardTitle>
               <CardDescription>
-                New registrations awaiting institution assignment and approval.
+                {t('user.pendingApprovalsDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -305,7 +307,7 @@ export default function AdminUsers() {
                 <div className="p-8 text-center">
                   <UserCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {searchQuery ? 'No pending users match your search.' : 'No pending approvals. All clear!'}
+                    {searchQuery ? t('user.noPendingMatch') : t('user.noPendingClear')}
                   </p>
                 </div>
               ) : (
@@ -313,10 +315,10 @@ export default function AdminUsers() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Registered</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead>{t('user.name')}</TableHead>
+                        <TableHead>{t('user.email')}</TableHead>
+                        <TableHead>{t('user.registered')}</TableHead>
+                        <TableHead className="text-right">{t('user.actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -341,7 +343,7 @@ export default function AdminUsers() {
                               onClick={() => setApproveUser(user)}
                             >
                               <UserCheck className="h-4 w-4 mr-1" />
-                              Approve
+                              {t('user.approve')}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -360,10 +362,10 @@ export default function AdminUsers() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-blue-500" />
-                Platform Clients (Organizers)
+                {t('user.platformClientsFull')}
               </CardTitle>
               <CardDescription>
-                Companies and institutions paying for the software. They have full dashboard access.
+                {t('user.platformClientsDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -371,7 +373,7 @@ export default function AdminUsers() {
                 <div className="p-8 text-center">
                   <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {searchQuery ? 'No organizers match your search.' : 'No organizers found.'}
+                    {searchQuery ? t('user.noOrganizersMatch') : t('user.noOrganizers')}
                   </p>
                 </div>
               ) : (
@@ -379,11 +381,11 @@ export default function AdminUsers() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Organization</TableHead>
-                        <TableHead>Contact Person</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead>{t('user.organization')}</TableHead>
+                        <TableHead>{t('user.contactPerson')}</TableHead>
+                        <TableHead>{t('user.email')}</TableHead>
+                        <TableHead>{t('user.status')}</TableHead>
+                        <TableHead className="text-right">{t('user.actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -406,7 +408,7 @@ export default function AdminUsers() {
                           <TableCell>
                             <Badge variant="default" className="bg-blue-500 hover:bg-blue-600">
                               <UserCheck className="h-3 w-3 mr-1" />
-                              Active
+                              {t('user.active')}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
@@ -420,7 +422,7 @@ export default function AdminUsers() {
                                 }}
                               >
                                 <LogIn className="h-4 w-4 mr-1" />
-                                Login as
+                                {t('user.impersonate')}
                               </Button>
                               <Button
                                 variant="ghost"
@@ -450,10 +452,10 @@ export default function AdminUsers() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-green-500" />
-                WhatsApp Attendees
+                {t('user.whatsappAttendees')}
               </CardTitle>
               <CardDescription>
-                End users who interact only via WhatsApp. They do NOT have dashboard access.
+                {t('user.whatsappAttendeesDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -461,7 +463,7 @@ export default function AdminUsers() {
                 <div className="p-8 text-center">
                   <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {searchQuery ? 'No attendees match your search.' : 'No attendees found.'}
+                    {searchQuery ? t('user.noAttendeesMatch') : t('user.noAttendees')}
                   </p>
                 </div>
               ) : (
@@ -472,13 +474,13 @@ export default function AdminUsers() {
                         <TableHead className="w-[180px]">
                           <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4" />
-                            Phone Number
+                            {t('user.phoneNumber')}
                           </div>
                         </TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Institution</TableHead>
-                        <TableHead>Last Active</TableHead>
-                        <TableHead className="text-center">WhatsApp</TableHead>
+                        <TableHead>{t('user.name')}</TableHead>
+                        <TableHead>{t('user.institution')}</TableHead>
+                        <TableHead>{t('user.lastActive')}</TableHead>
+                        <TableHead className="text-center">{t('user.whatsapp')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -508,10 +510,10 @@ export default function AdminUsers() {
                             {user.phone ? (
                               <Badge variant="default" className="bg-green-500 hover:bg-green-600">
                                 <MessageCircle className="h-3 w-3 mr-1" />
-                                Active
+                                {t('user.active')}
                               </Badge>
                             ) : (
-                              <Badge variant="secondary">None</Badge>
+                              <Badge variant="secondary">{t('user.none')}</Badge>
                             )}
                           </TableCell>
                         </TableRow>
@@ -541,7 +543,7 @@ export default function AdminUsers() {
                 <div className="p-8 text-center">
                   <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {searchQuery ? 'No team members match your search.' : 'No team members found.'}
+                    {searchQuery ? t('user.noTeamMatch') : t('user.noTeam')}
                   </p>
                 </div>
               ) : (
@@ -549,11 +551,11 @@ export default function AdminUsers() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Joined</TableHead>
+                        <TableHead>{t('user.name')}</TableHead>
+                        <TableHead>{t('user.email')}</TableHead>
+                        <TableHead>{t('user.phone')}</TableHead>
+                        <TableHead>{t('user.role')}</TableHead>
+                        <TableHead>{t('user.joined')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -582,7 +584,7 @@ export default function AdminUsers() {
                           <TableCell>
                             <Badge className="bg-purple-500 hover:bg-purple-600 text-white">
                               <Shield className="h-3 w-3 mr-1" />
-                              SUPER ADMIN
+                              {t('user.superAdmin')}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground">

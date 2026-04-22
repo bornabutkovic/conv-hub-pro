@@ -7,11 +7,13 @@ import { AdminUsersTab } from '@/components/admin/AdminUsersTab';
 import { PendingApprovalsSection } from '@/components/admin/PendingApprovalsSection';
 import { Button } from '@/components/ui/button';
 import { Plus, Building2, Users } from 'lucide-react';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 export default function Admin() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useAdminLanguage();
 
   if (!isAdmin(profile?.role)) {
     return <Navigate to="/" replace />;
@@ -26,8 +28,8 @@ export default function Admin() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Admin Panel</h1>
-          <p className="text-muted-foreground mt-1">Manage institutions and users</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('admin.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('admin.subtitle')}</p>
         </div>
       </div>
 
@@ -37,11 +39,11 @@ export default function Admin() {
         <TabsList>
           <TabsTrigger value="institutions" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
-            Institutions
+            {t('admin.institutions')}
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Users
+            {t('admin.users')}
           </TabsTrigger>
         </TabsList>
 
@@ -49,7 +51,7 @@ export default function Admin() {
           <div className="flex justify-end">
             <Button onClick={() => navigate('/admin/institutions/new')} className="bg-primary hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
-              Create Institution
+              {t('admin.createInstitution')}
             </Button>
           </div>
           <InstitutionsTable />

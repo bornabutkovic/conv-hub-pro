@@ -12,9 +12,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, Edit } from 'lucide-react';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 export function InstitutionsTable() {
   const navigate = useNavigate();
+  const { t } = useAdminLanguage();
 
   const { data: institutions, isLoading } = useQuery({
     queryKey: ['admin-institutions'],
@@ -44,7 +46,7 @@ export function InstitutionsTable() {
       <Card>
         <CardContent className="p-8 text-center">
           <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No institutions registered yet.</p>
+          <p className="text-muted-foreground">{t('admin.noInstitutions')}</p>
         </CardContent>
       </Card>
     );
@@ -53,18 +55,18 @@ export function InstitutionsTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Registered Institutions</CardTitle>
+        <CardTitle>{t('admin.registeredInstitutions')}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>OIB</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>City</TableHead>
-              <TableHead>Country</TableHead>
-              <TableHead>Invoice Email</TableHead>
+              <TableHead>{t('institution.name')}</TableHead>
+              <TableHead>{t('institution.oib')}</TableHead>
+              <TableHead>{t('institution.address')}</TableHead>
+              <TableHead>{t('institution.city')}</TableHead>
+              <TableHead>{t('institution.country')}</TableHead>
+              <TableHead>{t('institution.invoiceEmail')}</TableHead>
               <TableHead className="w-[80px]"></TableHead>
             </TableRow>
           </TableHeader>

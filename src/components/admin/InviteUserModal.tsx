@@ -31,6 +31,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useFormDraft } from '@/hooks/useFormDraft';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 const inviteFormSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -52,6 +53,7 @@ interface InviteUserModalProps {
 export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
+  const { t } = useAdminLanguage();
 
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteFormSchema),
@@ -107,7 +109,7 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
       }
 
       clearDraft();
-      toast.success('Invitation sent! The user will receive an email to set their password.');
+      toast.success(t('inviteUser.success'));
 
       form.reset();
       onOpenChange(false);
@@ -135,9 +137,9 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Invite New User</DialogTitle>
+          <DialogTitle>{t('inviteUser.title')}</DialogTitle>
           <DialogDescription>
-            Send an invitation email to add a new user to the platform.
+            {t('inviteUser.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -149,7 +151,7 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
                 name="first_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First Name</FormLabel>
+                    <FormLabel>{t('inviteUser.firstName')}</FormLabel>
                     <FormControl>
                       <Input placeholder="John" {...field} />
                     </FormControl>
@@ -162,7 +164,7 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
                 name="last_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last Name</FormLabel>
+                    <FormLabel>{t('inviteUser.lastName')}</FormLabel>
                     <FormControl>
                       <Input placeholder="Doe" {...field} />
                     </FormControl>
@@ -177,7 +179,7 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>{t('inviteUser.email')}</FormLabel>
                   <FormControl>
                     <Input type="email" placeholder="john@company.com" {...field} />
                   </FormControl>
@@ -191,17 +193,17 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel>{t('inviteUser.role')}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
+                        <SelectValue placeholder={t('inviteUser.selectRole')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="super_admin">Super Admin</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="event_organizer">Event Organizer</SelectItem>
+                      <SelectItem value="super_admin">{t('inviteUser.roleSuperAdmin')}</SelectItem>
+                      <SelectItem value="admin">{t('inviteUser.roleAdmin')}</SelectItem>
+                      <SelectItem value="event_organizer">{t('inviteUser.roleOrganizer')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -214,18 +216,18 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
               name="institution_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Institution (Optional)</FormLabel>
+                  <FormLabel>{t('inviteUser.institution')}</FormLabel>
                   <Select 
                     onValueChange={(value) => field.onChange(value === '__none__' ? '' : value)} 
                     value={field.value || '__none__'}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select an institution" />
+                        <SelectValue placeholder={t('inviteUser.selectInstitution')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="__none__">No institution</SelectItem>
+                      <SelectItem value="__none__">{t('inviteUser.noInstitution')}</SelectItem>
                       {institutions?.filter(inst => inst.id).map((inst) => (
                         <SelectItem key={inst.id} value={inst.id!}>
                           {inst.name}
@@ -245,16 +247,16 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
                 onClick={() => handleClose(false)}
                 disabled={isSubmitting}
               >
-                Cancel
+                {t('inviteUser.cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
+                    {t('inviteUser.sending')}
                   </>
                 ) : (
-                  'Send Invitation'
+                  t('inviteUser.submit')
                 )}
               </Button>
             </div>
