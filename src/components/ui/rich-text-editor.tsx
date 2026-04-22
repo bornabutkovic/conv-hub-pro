@@ -33,6 +33,17 @@ export function RichTextEditor({ value = '', onChange, placeholder, className, d
     },
   });
 
+  useEffect(() => {
+    if (!editor) return;
+    // Only sync if editor is empty but value has content
+    // This handles async data loading (e.g. edit forms)
+    const currentHTML = editor.getHTML();
+    const isEmpty = currentHTML === '<p></p>' || currentHTML === '';
+    if (isEmpty && value && value !== '<p></p>' && value !== '') {
+      editor.commands.setContent(value, false);
+    }
+  }, [editor, value]);
+
   if (!editor) return null;
 
   return (
