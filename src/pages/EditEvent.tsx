@@ -667,10 +667,7 @@ export default function EditEvent() {
                 />
 
                 {/* Co-organizers / Technical organizer */}
-                <OrganizersSection
-                  eventId={event.id}
-                  primaryInstitutionId={event.institution_uuid}
-                />
+                <OrganizersSection eventId={event.id} />
 
                 {/* Section 2: Location */}
                 <div className="space-y-4">

@@ -639,6 +639,7 @@ export type Database = {
           name: string
           notification_sender_email: string | null
           notification_sender_name: string | null
+          organizers_info: Json | null
           payment_due_days: number | null
           price: number | null
           rejection_reason: string | null
@@ -688,6 +689,7 @@ export type Database = {
           name: string
           notification_sender_email?: string | null
           notification_sender_name?: string | null
+          organizers_info?: Json | null
           payment_due_days?: number | null
           price?: number | null
           rejection_reason?: string | null
@@ -737,6 +739,7 @@ export type Database = {
           name?: string
           notification_sender_email?: string | null
           notification_sender_name?: string | null
+          organizers_info?: Json | null
           payment_due_days?: number | null
           price?: number | null
           rejection_reason?: string | null
