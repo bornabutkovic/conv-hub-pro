@@ -359,7 +359,7 @@ const translations = {
   'user.noUsersMatch': { hr: 'Nijedan korisnik ne odgovara pretrazi.', en: 'No users match your search.' },
   'user.noAdminsOrganizers': { hr: 'Nema administratora ili organizatora.', en: 'No admins or organizers found.' },
   'user.conveyoTeamFull': { hr: 'Conwayo tim', en: 'Conveyo Team' },
-  'user.conveyoTeamDesc': { hr: 'Interni članovi tima s ovlastima super administratora.', en: 'Internal team members with super admin privileges.' },
+  // user.conveyoTeamDesc already defined above
   'user.removeUserPortal': { hr: 'Korisnik uklonjen iz admin portala', en: 'User removed from admin portal' },
   'user.roleUpdated': { hr: 'Uloga ažurirana', en: 'Role updated' },
 
