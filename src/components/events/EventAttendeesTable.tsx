@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Users, Phone, Mail, Calendar, UserPlus, CheckCircle2, Circle, Copy, Search, FileText, Hash, UsersRound } from 'lucide-react';
+import { Users, Phone, Mail, Calendar, UserPlus, CheckCircle2, Circle, Copy, Search, FileText, Hash, UsersRound, Download } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { AddAttendeeModal } from './AddAttendeeModal';
 import { AttendeeDetailModal } from './AttendeeDetailModal';
 import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export interface InvoiceAttendee {
@@ -47,15 +48,17 @@ interface EventAttendeesTableProps {
   isLoading: boolean;
   eventId: string;
   currency?: string;
+  eventName?: string;
 }
 
 type PaymentFilter = 'all' | 'paid' | 'pending' | 'overdue';
 
-export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 'EUR' }: EventAttendeesTableProps) {
+export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 'EUR', eventName }: EventAttendeesTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>('all');
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [selectedAttendee, setSelectedAttendee] = useState<InvoiceAttendee | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const { t } = useAdminLanguage();
 
   const getStatusVariant = (status: string | null) => {
