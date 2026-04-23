@@ -50,6 +50,9 @@ const cleanEntry = (e: OrganizerEntry): OrganizerEntry => {
     const v = (e[k] || '').trim();
     if (v) (out as any)[k] = v;
   });
+  if (e.same_as_organizer) {
+    out.same_as_organizer = true;
+  }
   return out;
 };
 
