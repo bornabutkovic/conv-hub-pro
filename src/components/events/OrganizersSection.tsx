@@ -290,7 +290,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
     onSave: () => void,
     onCancel: () => void,
     saveLabel: string,
-    topSlot?: React.ReactNode
+    topSlot?: ReactNode
   ) => (
     <div className="space-y-3 rounded-md border bg-muted/20 p-3">
       {topSlot}
