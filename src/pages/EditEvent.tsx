@@ -563,7 +563,7 @@ export default function EditEvent() {
                           name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Naziv eventa (HR) *</FormLabel>
+                              <FormLabel>{t('editEvent.nameHR')} *</FormLabel>
                               <FormControl>
                                 <Input
                                   placeholder="Moja konferencija 2026"
@@ -580,7 +580,7 @@ export default function EditEvent() {
                           name="description"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Opis eventa (HR)</FormLabel>
+                              <FormLabel>{t('editEvent.descriptionHR')}</FormLabel>
                               <FormControl>
                                 <RichTextEditor
                                   key="description-hr"
@@ -598,7 +598,7 @@ export default function EditEvent() {
                           name="cancellation_policy"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Politika otkazivanja (HR)</FormLabel>
+                              <FormLabel>{t('editEvent.cancellationHR')}</FormLabel>
                               <FormControl>
                                 <Textarea
                                   value={field.value || ''}
