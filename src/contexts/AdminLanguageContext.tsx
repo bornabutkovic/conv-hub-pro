@@ -54,6 +54,16 @@ const translations = {
   'dashboard.invoice': { hr: 'Faktura', en: 'Invoice' },
   'dashboard.topEvents': { hr: 'Najpopularniji događaji', en: 'Top Events' },
   'dashboard.noData': { hr: 'Nema podataka', en: 'No data' },
+  'dashboard.registrationsTimeline': { hr: 'Vremenski prikaz registracija', en: 'Registrations Timeline' },
+  'dashboard.registrationsTimelineDesc': { hr: 'Nove registracije u zadnjih 14 dana', en: 'New registrations over the last 14 days' },
+  'dashboard.revenueByEvent': { hr: 'Prihod po eventu', en: 'Revenue by Event' },
+  'dashboard.ticketDistribution': { hr: 'Raspodjela ulaznica', en: 'Ticket Distribution' },
+  'dashboard.revenueByEventDesc': { hr: 'Prihod od plaćenih ulaznica po eventu', en: 'Paid ticket revenue per event' },
+  'dashboard.ticketDistributionDesc': { hr: 'Raspodjela po vrsti ulaznice', en: 'Breakdown by ticket type' },
+  'dashboard.breakdownFor': { hr: 'Raspodjela za', en: 'Breakdown for' },
+  'dashboard.recentActivityDesc': { hr: 'Najnovije registracije i kupnje', en: 'Latest registrations and purchases' },
+  'dashboard.reviewPending': { hr: 'Pregledaj na čekanju', en: 'Review Pending' },
+  'dashboard.registeredFor': { hr: 'registriran/a za', en: 'registered for' },
 
   // Events
   'events.title': { hr: 'Događaji', en: 'Events' },
