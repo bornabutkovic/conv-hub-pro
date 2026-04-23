@@ -48,6 +48,7 @@ import { ContentSection } from '@/components/events/ContentSection';
 import { LanguagesField } from '@/components/events/LanguagesField';
 import { BCReferenceField } from '@/components/events/BCReferenceField';
 import { useFormDraft } from '@/hooks/useFormDraft';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -109,6 +110,7 @@ type CreateEventForm = z.infer<typeof createEventSchema>;
 export default function CreateEvent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { t } = useAdminLanguage();
   const [enTranslations, setEnTranslations] = useState({
     name: '',
     description: '',
@@ -191,12 +193,12 @@ export default function CreateEvent() {
       : profile?.institution_uuid || null;
 
     if (!resolvedInstitutionUuid) {
-      toast.error('Please select an institution for this event');
+      toast.error(t('editEvent.selectInstitutionFirst'));
       return;
     }
 
     if (!profile?.id) {
-      toast.error('User profile not found');
+      toast.error(t('editEvent.profileNotFound'));
       return;
     }
 
@@ -286,12 +288,12 @@ export default function CreateEvent() {
       }
 
       clearDraft();
-      toast.success('Event created successfully!');
+      toast.success(t('editEvent.createdSuccess'));
 
       navigate(`/events/${newEvent.id}`);
     } catch (error: any) {
       console.error('Error creating event:', error);
-      toast.error(error.message || 'Failed to create event');
+      toast.error(error.message || t('editEvent.createFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -301,13 +303,13 @@ export default function CreateEvent() {
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => navigate('/events')} className="mb-2">
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Events
+        {t('editEvent.backToEvents')}
       </Button>
 
       <div className="max-w-[720px] mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Create New Event</CardTitle>
+            <CardTitle className="text-xl">{t('editEvent.createTitle')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -330,8 +332,8 @@ export default function CreateEvent() {
                 {/* Section 1: Event Details */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Event Details</h3>
-                    <p className="text-sm text-muted-foreground">Basic information about your event</p>
+                    <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionDetails')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('editEvent.sectionDetailsDesc')}</p>
                   </div>
                   <Separator />
 
@@ -341,11 +343,11 @@ export default function CreateEvent() {
                       name="institution_uuid"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Institution *</FormLabel>
+                          <FormLabel>{t('editEvent.institution')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select an institution" />
+                                <SelectValue placeholder={t('editEvent.selectInstitution')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -356,7 +358,7 @@ export default function CreateEvent() {
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormDescription>Choose which institution owns this event</FormDescription>
+                          <FormDescription>{t('editEvent.institutionDesc')}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -368,7 +370,7 @@ export default function CreateEvent() {
                     name="short_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Short Name</FormLabel>
+                        <FormLabel>{t('editEvent.shortName')}</FormLabel>
                         <FormControl>
                           <Input placeholder="CONF2026" {...field} />
                         </FormControl>
@@ -382,7 +384,7 @@ export default function CreateEvent() {
                     name="website_url"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Website</FormLabel>
+                        <FormLabel>{t('editEvent.website')}</FormLabel>
                         <FormControl>
                           <Input type="url" placeholder="https://example.com" {...field} />
                         </FormControl>
@@ -396,7 +398,7 @@ export default function CreateEvent() {
                     name="event_type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Event Type / Vrsta eventa *</FormLabel>
+                        <FormLabel>{t('editEvent.eventType')}</FormLabel>
                         <FormControl>
                           <div className="grid grid-cols-3 gap-3">
                             {[
@@ -486,19 +488,19 @@ export default function CreateEvent() {
                     ) : lang === 'en' ? (
                       <>
                         <FormItem>
-                          <FormLabel>Event Name (EN)</FormLabel>
+                          <FormLabel>{t('editEvent.eventNameEn')}</FormLabel>
                           <FormControl>
                             <Input
                               value={enTranslations.name}
                               onChange={(e) =>
                                 setEnTranslations((prev) => ({ ...prev, name: e.target.value }))
                               }
-                              placeholder="Leave empty to use Croatian name"
+                              placeholder={t('editEvent.leaveEmptyName')}
                             />
                           </FormControl>
                         </FormItem>
                         <FormItem>
-                          <FormLabel>Event Description (EN)</FormLabel>
+                          <FormLabel>{t('editEvent.eventDescEn')}</FormLabel>
                           <FormControl>
                             <RichTextEditor
                               key="description-en"
@@ -506,12 +508,12 @@ export default function CreateEvent() {
                               onChange={(v) =>
                                 setEnTranslations((prev) => ({ ...prev, description: v }))
                               }
-                              placeholder="Tell attendees about this event in English..."
+                              placeholder={t('editEvent.leaveEmptyDesc')}
                             />
                           </FormControl>
                         </FormItem>
                         <FormItem>
-                          <FormLabel>Cancellation Policy (EN)</FormLabel>
+                          <FormLabel>{t('editEvent.cancellationPolicyEn')}</FormLabel>
                           <FormControl>
                             <Textarea
                               value={enTranslations.cancellation_policy}
@@ -521,7 +523,7 @@ export default function CreateEvent() {
                                   cancellation_policy: e.target.value,
                                 }))
                               }
-                              placeholder="Leave empty to use Croatian policy"
+                              placeholder={t('editEvent.leaveEmptyPolicy')}
                               className="min-h-[120px]"
                             />
                           </FormControl>
@@ -533,8 +535,8 @@ export default function CreateEvent() {
 
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Location</h3>
-                    <p className="text-sm text-muted-foreground">Where will the event take place?</p>
+                    <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionLocation')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('editEvent.sectionLocationDesc')}</p>
                   </div>
                   <Separator />
 
@@ -543,7 +545,7 @@ export default function CreateEvent() {
                     name="venue_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Venue *</FormLabel>
+                        <FormLabel>{t('editEvent.venue')}</FormLabel>
                         <FormControl>
                           <Input placeholder="Hotel Westin" {...field} />
                         </FormControl>
@@ -558,9 +560,9 @@ export default function CreateEvent() {
                       name="location_address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Venue Address / Adresa mjesta {form.watch('event_type') === 'face2face' ? '*' : ''}</FormLabel>
+                          <FormLabel>{t('editEvent.venueAddress')} {form.watch('event_type') === 'face2face' ? '*' : ''}</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ilica 1 / Street and number" {...field} />
+                            <Input placeholder={t('editEvent.venueAddressPlaceholder')} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -574,7 +576,7 @@ export default function CreateEvent() {
                       name="location_city"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>City *</FormLabel>
+                          <FormLabel>{t('editEvent.city')}</FormLabel>
                           <FormControl>
                             <Input placeholder="Zagreb" {...field} />
                           </FormControl>
@@ -588,7 +590,7 @@ export default function CreateEvent() {
                       name="location_postal_code"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>ZIP / Postal Code</FormLabel>
+                          <FormLabel>{t('editEvent.postalCode')}</FormLabel>
                           <FormControl>
                             <Input placeholder="10000" {...field} />
                           </FormControl>
@@ -603,11 +605,11 @@ export default function CreateEvent() {
                     name="location_country"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Country *</FormLabel>
+                        <FormLabel>{t('editEvent.country')}</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select country" />
+                              <SelectValue placeholder={t('editEvent.selectCountry')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -633,12 +635,12 @@ export default function CreateEvent() {
                 {/* Section 3: Dates & Billing */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Dates & Billing Settings</h3>
-                    <p className="text-sm text-muted-foreground">Configure event timing and payment terms</p>
+                    <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionDates')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('editEvent.sectionDatesDesc')}</p>
                   </div>
                   <Separator />
 
-                  <DateRangePickers form={form} startName="start_date" endName="end_date" startLabel="Start Date *" endLabel="End Date *" disablePast />
+                  <DateRangePickers form={form} startName="start_date" endName="end_date" startLabel={t('editEvent.startDate')} endLabel={t('editEvent.endDate')} disablePast />
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -646,11 +648,11 @@ export default function CreateEvent() {
                       name="start_time"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Start Time</FormLabel>
+                          <FormLabel>{t('editEvent.startTime')}</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
-                          <FormDescription>Nije obavezno / Optional</FormDescription>
+                          <FormDescription>{t('editEvent.optional')}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -660,11 +662,11 @@ export default function CreateEvent() {
                       name="end_time"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>End Time</FormLabel>
+                          <FormLabel>{t('editEvent.endTime')}</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
-                          <FormDescription>Nije obavezno / Optional</FormDescription>
+                          <FormDescription>{t('editEvent.optional')}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -676,12 +678,12 @@ export default function CreateEvent() {
                     name="payment_due_days"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Payment Due Days *</FormLabel>
+                        <FormLabel>{t('editEvent.paymentDueDays')}</FormLabel>
                         <FormControl>
                           <Input type="number" min="1" placeholder="7" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Number of days a bank-transfer reservation remains valid
+                          {t('editEvent.paymentDueDaysDesc')}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -692,8 +694,8 @@ export default function CreateEvent() {
                 {/* Section 4: Financials & Settings */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Financials & Settings</h3>
-                    <p className="text-sm text-muted-foreground">Financial configuration and Business Central integration</p>
+                    <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionFinancials')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('editEvent.sectionFinancialsDesc')}</p>
                   </div>
                   <Separator />
 
@@ -703,11 +705,11 @@ export default function CreateEvent() {
                       name="currency"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Currency</FormLabel>
+                          <FormLabel>{t('editEvent.currency')}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select currency" />
+                                <SelectValue placeholder={t('editEvent.selectCurrency')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -725,17 +727,17 @@ export default function CreateEvent() {
                       name="tax_location"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tax Location</FormLabel>
+                          <FormLabel>{t('editEvent.taxLocation')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select tax location" />
+                                <SelectValue placeholder={t('editEvent.selectTaxLocation')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="Croatia">Croatia</SelectItem>
-                              <SelectItem value="EU">EU</SelectItem>
-                              <SelectItem value="Outside EU">Outside EU</SelectItem>
+                              <SelectItem value="Croatia">{t('editEvent.taxCroatia')}</SelectItem>
+                              <SelectItem value="EU">{t('editEvent.taxEU')}</SelectItem>
+                              <SelectItem value="Outside EU">{t('editEvent.taxOutsideEU')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -751,9 +753,9 @@ export default function CreateEvent() {
                         name="bc_position"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Business Central Position</FormLabel>
+                            <FormLabel>{t('editEvent.bcPosition')}</FormLabel>
                             <FormControl>
-                              <Input placeholder="Position reference" {...field} />
+                              <Input placeholder={t('editEvent.bcPositionPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -765,7 +767,7 @@ export default function CreateEvent() {
                         name="bc_reference"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Business Central Referent</FormLabel>
+                            <FormLabel>{t('editEvent.bcReference')}</FormLabel>
                             <FormControl>
                               <BCReferenceField value={field.value || ''} onChange={field.onChange} />
                             </FormControl>
@@ -777,7 +779,7 @@ export default function CreateEvent() {
                   )}
 
                   <div className="pt-2">
-                    <p className="text-sm font-medium text-foreground mb-3">Notifications & Support</p>
+                    <p className="text-sm font-medium text-foreground mb-3">{t('editEvent.sectionNotifications')}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -786,9 +788,9 @@ export default function CreateEvent() {
                       name="notification_sender_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sender Name *</FormLabel>
+                          <FormLabel>{t('editEvent.senderName')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Ivan Horvat" {...field} />
+                            <Input placeholder={t('editEvent.senderNamePlaceholder')} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -800,7 +802,7 @@ export default function CreateEvent() {
                       name="notification_sender_email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sender Email *</FormLabel>
+                          <FormLabel>{t('editEvent.senderEmail')}</FormLabel>
                           <FormControl>
                             <Input type="email" placeholder="email@example.com" {...field} />
                           </FormControl>
@@ -815,7 +817,7 @@ export default function CreateEvent() {
                     name="support_phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Support Phone</FormLabel>
+                        <FormLabel>{t('editEvent.supportPhone')}</FormLabel>
                         <FormControl>
                           <PhoneInput value={field.value} onChange={field.onChange} />
                         </FormControl>
@@ -829,10 +831,10 @@ export default function CreateEvent() {
                     name="support_contacts"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Support Contacts</FormLabel>
+                        <FormLabel>{t('editEvent.supportContacts')}</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Additional support contact information..."
+                            placeholder={t('editEvent.supportContactsPlaceholder')}
                             className="min-h-[80px]"
                             {...field}
                           />
@@ -843,7 +845,7 @@ export default function CreateEvent() {
                   />
 
                   <div className="pt-2">
-                    <p className="text-sm font-medium text-foreground mb-3">Administration</p>
+                    <p className="text-sm font-medium text-foreground mb-3">{t('editEvent.sectionAdministration')}</p>
                   </div>
 
                   <FormField
@@ -851,12 +853,12 @@ export default function CreateEvent() {
                     name="additional_admins"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Additional Admins</FormLabel>
+                        <FormLabel>{t('editEvent.additionalAdmins')}</FormLabel>
                         <FormControl>
                           <Input placeholder="admin1@email.com, admin2@email.com" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Enter multiple emails separated by commas
+                          {t('editEvent.additionalAdminsDesc')}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -877,11 +879,11 @@ export default function CreateEvent() {
 
                 <div className="flex justify-end gap-3 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={() => navigate('/events')}>
-                    Cancel
+                    {t('editEvent.cancel')}
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Event
+                    {t('editEvent.createEvent')}
                   </Button>
                 </div>
               </form>
