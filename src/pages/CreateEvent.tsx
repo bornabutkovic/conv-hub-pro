@@ -303,13 +303,13 @@ export default function CreateEvent() {
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => navigate('/events')} className="mb-2">
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Events
+        {t('editEvent.backToEvents')}
       </Button>
 
       <div className="max-w-[720px] mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Create New Event</CardTitle>
+            <CardTitle className="text-xl">{t('editEvent.createTitle')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -332,8 +332,8 @@ export default function CreateEvent() {
                 {/* Section 1: Event Details */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Event Details</h3>
-                    <p className="text-sm text-muted-foreground">Basic information about your event</p>
+                    <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionDetails')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('editEvent.sectionDetailsDesc')}</p>
                   </div>
                   <Separator />
 
@@ -343,11 +343,11 @@ export default function CreateEvent() {
                       name="institution_uuid"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Institution *</FormLabel>
+                          <FormLabel>{t('editEvent.institution')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select an institution" />
+                                <SelectValue placeholder={t('editEvent.selectInstitution')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -358,7 +358,7 @@ export default function CreateEvent() {
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormDescription>Choose which institution owns this event</FormDescription>
+                          <FormDescription>{t('editEvent.institutionDesc')}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -370,7 +370,7 @@ export default function CreateEvent() {
                     name="short_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Short Name</FormLabel>
+                        <FormLabel>{t('editEvent.shortName')}</FormLabel>
                         <FormControl>
                           <Input placeholder="CONF2026" {...field} />
                         </FormControl>
@@ -384,7 +384,7 @@ export default function CreateEvent() {
                     name="website_url"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Website</FormLabel>
+                        <FormLabel>{t('editEvent.website')}</FormLabel>
                         <FormControl>
                           <Input type="url" placeholder="https://example.com" {...field} />
                         </FormControl>
