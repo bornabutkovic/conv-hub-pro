@@ -775,12 +775,12 @@ export default function EditEvent() {
                 {/* Section 3: Dates & Billing */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Dates & Billing Settings</h3>
-                    <p className="text-sm text-muted-foreground">Configure event timing and payment terms</p>
+                    <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionDates')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('editEvent.sectionDatesDesc')}</p>
                   </div>
                   <Separator />
 
-                  <DateRangePickers form={form} startName="start_date" endName="end_date" startLabel="Start Date *" endLabel="End Date *" disabled={isLockedEvent} />
+                  <DateRangePickers form={form} startName="start_date" endName="end_date" startLabel={t('editEvent.startDate')} endLabel={t('editEvent.endDate')} disabled={isLockedEvent} />
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -788,11 +788,11 @@ export default function EditEvent() {
                       name="start_time"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Start Time</FormLabel>
+                          <FormLabel>{t('editEvent.startTime')}</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} disabled={isLockedEvent} />
                           </FormControl>
-                          <FormDescription>Nije obavezno / Optional</FormDescription>
+                          <FormDescription>{t('editEvent.optional')}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -803,11 +803,11 @@ export default function EditEvent() {
                       name="end_time"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>End Time</FormLabel>
+                          <FormLabel>{t('editEvent.endTime')}</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} disabled={isLockedEvent} />
                           </FormControl>
-                          <FormDescription>Nije obavezno / Optional</FormDescription>
+                          <FormDescription>{t('editEvent.optional')}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -819,12 +819,12 @@ export default function EditEvent() {
                     name="payment_due_days"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Payment Due Days *</FormLabel>
+                        <FormLabel>{t('editEvent.paymentDueDays')}</FormLabel>
                         <FormControl>
                           <Input type="number" min="1" placeholder="7" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Number of days a bank-transfer reservation remains valid
+                          {t('editEvent.paymentDueDaysDesc')}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -837,18 +837,18 @@ export default function EditEvent() {
                       name="status"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Status</FormLabel>
+                          <FormLabel>{t('editEvent.status')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
+                                <SelectValue placeholder={t('editEvent.selectStatus')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="draft">Draft</SelectItem>
-                              <SelectItem value="pending_approval">Pending Approval</SelectItem>
-                              <SelectItem value="active">Active (Published)</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
+                              <SelectItem value="draft">{t('editEvent.statusDraft')}</SelectItem>
+                              <SelectItem value="pending_approval">{t('editEvent.statusPendingApproval')}</SelectItem>
+                              <SelectItem value="active">{t('editEvent.statusActive')}</SelectItem>
+                              <SelectItem value="completed">{t('editEvent.statusCompleted')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -857,7 +857,7 @@ export default function EditEvent() {
                     />
                   ) : (
                     <div className="text-sm text-muted-foreground">
-                      Status: <span className="font-medium capitalize">{form.getValues('status')?.replace('_', ' ')}</span>
+                      {t('editEvent.status')}: <span className="font-medium capitalize">{form.getValues('status')?.replace('_', ' ')}</span>
                     </div>
                   )}
                 </div>
@@ -865,8 +865,8 @@ export default function EditEvent() {
                 {/* Section 4: Financials & Settings */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Financials & Settings</h3>
-                    <p className="text-sm text-muted-foreground">Financial configuration and Business Central integration</p>
+                    <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionFinancials')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('editEvent.sectionFinancialsDesc')}</p>
                   </div>
                   <Separator />
 
@@ -876,11 +876,11 @@ export default function EditEvent() {
                       name="currency"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Currency</FormLabel>
+                          <FormLabel>{t('editEvent.currency')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select currency" />
+                                <SelectValue placeholder={t('editEvent.selectCurrency')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -898,17 +898,17 @@ export default function EditEvent() {
                       name="tax_location"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tax Location</FormLabel>
+                          <FormLabel>{t('editEvent.taxLocation')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select tax location" />
+                                <SelectValue placeholder={t('editEvent.selectTaxLocation')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="Croatia">Croatia</SelectItem>
-                              <SelectItem value="EU">EU</SelectItem>
-                              <SelectItem value="Outside EU">Outside EU</SelectItem>
+                              <SelectItem value="Croatia">{t('editEvent.taxCroatia')}</SelectItem>
+                              <SelectItem value="EU">{t('editEvent.taxEU')}</SelectItem>
+                              <SelectItem value="Outside EU">{t('editEvent.taxOutsideEU')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -924,9 +924,9 @@ export default function EditEvent() {
                         name="bc_position"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Business Central Position</FormLabel>
+                            <FormLabel>{t('editEvent.bcPosition')}</FormLabel>
                             <FormControl>
-                              <Input placeholder="Position reference" {...field} />
+                              <Input placeholder={t('editEvent.bcPositionPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -938,7 +938,7 @@ export default function EditEvent() {
                         name="bc_reference"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Business Central Referent</FormLabel>
+                            <FormLabel>{t('editEvent.bcReference')}</FormLabel>
                             <FormControl>
                               <BCReferenceField value={field.value || ''} onChange={field.onChange} />
                             </FormControl>
@@ -950,7 +950,7 @@ export default function EditEvent() {
                   )}
 
                   <div className="pt-2">
-                    <p className="text-sm font-medium text-foreground mb-3">Notifications & Support</p>
+                    <p className="text-sm font-medium text-foreground mb-3">{t('editEvent.sectionNotifications')}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -959,9 +959,9 @@ export default function EditEvent() {
                       name="notification_sender_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sender Name *</FormLabel>
+                          <FormLabel>{t('editEvent.senderName')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Ivan Horvat" {...field} />
+                            <Input placeholder={t('editEvent.senderNamePlaceholder')} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -973,7 +973,7 @@ export default function EditEvent() {
                       name="notification_sender_email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sender Email *</FormLabel>
+                          <FormLabel>{t('editEvent.senderEmail')}</FormLabel>
                           <FormControl>
                             <Input type="email" placeholder="email@example.com" {...field} />
                           </FormControl>
@@ -988,7 +988,7 @@ export default function EditEvent() {
                     name="support_phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Support Phone</FormLabel>
+                        <FormLabel>{t('editEvent.supportPhone')}</FormLabel>
                         <FormControl>
                           <PhoneInput value={field.value} onChange={field.onChange} />
                         </FormControl>
@@ -998,7 +998,7 @@ export default function EditEvent() {
                   />
 
                   <div className="pt-2">
-                    <p className="text-sm font-medium text-foreground mb-3">Administration</p>
+                    <p className="text-sm font-medium text-foreground mb-3">{t('editEvent.sectionAdministration')}</p>
                   </div>
 
                   <FormField
@@ -1006,12 +1006,12 @@ export default function EditEvent() {
                     name="additional_admins"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Additional Admins</FormLabel>
+                        <FormLabel>{t('editEvent.additionalAdmins')}</FormLabel>
                         <FormControl>
                           <Input placeholder="admin1@email.com, admin2@email.com" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Enter multiple emails separated by commas
+                          {t('editEvent.additionalAdminsDesc')}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -1031,15 +1031,15 @@ export default function EditEvent() {
                 {showErpSection && (
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-sm font-semibold text-foreground">ERP Codes (Admin)</h3>
-                      <p className="text-sm text-muted-foreground">Assign ERP codes before approving this event</p>
+                      <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionErpCodes')}</h3>
+                      <p className="text-sm text-muted-foreground">{t('editEvent.sectionErpCodesDesc')}</p>
                     </div>
                     <Separator />
 
                     {hasTiers && (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-foreground">Ticket Tiers</p>
+                          <p className="text-sm font-medium text-foreground">{t('editEvent.ticketTiers')}</p>
                           <Button
                             type="button"
                             size="sm"
@@ -1048,14 +1048,14 @@ export default function EditEvent() {
                             disabled={savingTiers}
                           >
                             {savingTiers ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
-                            Save
+                            {t('editEvent.save')}
                           </Button>
                         </div>
                         {ticketTiers!.map((tier) => (
                           <div key={tier.id} className="grid grid-cols-2 gap-3 items-center">
                             <span className="text-sm text-muted-foreground truncate">{tier.name}</span>
                             <Input
-                              placeholder="ERP Code"
+                              placeholder={t('editEvent.erpCodePlaceholder')}
                               value={tierErpCodes[tier.id] || ''}
                               onChange={(e) =>
                                 setTierErpCodes((prev) => ({ ...prev, [tier.id]: e.target.value }))
@@ -1069,7 +1069,7 @@ export default function EditEvent() {
                     {hasServices && (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-foreground">Services</p>
+                          <p className="text-sm font-medium text-foreground">{t('editEvent.services')}</p>
                           <Button
                             type="button"
                             size="sm"
@@ -1078,14 +1078,14 @@ export default function EditEvent() {
                             disabled={savingServices}
                           >
                             {savingServices ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
-                            Save
+                            {t('editEvent.save')}
                           </Button>
                         </div>
                         {eventServices!.map((svc) => (
                           <div key={svc.id} className="grid grid-cols-2 gap-3 items-center">
                             <span className="text-sm text-muted-foreground truncate">{svc.name}</span>
                             <Input
-                              placeholder="ERP Code"
+                              placeholder={t('editEvent.erpCodePlaceholder')}
                               value={serviceErpCodes[svc.id] || ''}
                               onChange={(e) =>
                                 setServiceErpCodes((prev) => ({ ...prev, [svc.id]: e.target.value }))
@@ -1100,11 +1100,11 @@ export default function EditEvent() {
 
                 <div className="flex justify-end gap-3 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={() => navigate(`/events/${event.id}`)}>
-                    Cancel
+                    {t('editEvent.cancel')}
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
+                    {t('editEvent.saveChanges')}
                   </Button>
                 </div>
               </form>
