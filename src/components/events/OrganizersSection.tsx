@@ -453,7 +453,18 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
               setTechDraft,
               saveTechnical,
               cancelTechForm,
-              technicalOrganizer ? 'Ažuriraj' : 'Spremi'
+              technicalOrganizer ? 'Ažuriraj' : 'Spremi',
+              <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
+                <Checkbox
+                  id="tech-same-as-organizer"
+                  checked={techSameAsOrganizer}
+                  onCheckedChange={(c) => handleTechSameAsOrganizerChange(c === true)}
+                  disabled={busy}
+                />
+                <Label htmlFor="tech-same-as-organizer" className="text-xs cursor-pointer">
+                  Isti kao organizator / Same as organizer
+                </Label>
+              </div>
             )
           ) : (
             !technicalOrganizer && (
