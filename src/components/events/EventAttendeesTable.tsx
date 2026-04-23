@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Users, Phone, Mail, Calendar, UserPlus, CheckCircle2, Circle, Copy, Search, FileText, Hash, UsersRound } from 'lucide-react';
+import { Users, Phone, Mail, Calendar, UserPlus, CheckCircle2, Circle, Copy, Search, FileText, Hash, UsersRound, Download } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { AddAttendeeModal } from './AddAttendeeModal';
 import { AttendeeDetailModal } from './AttendeeDetailModal';
 import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export interface InvoiceAttendee {
@@ -47,15 +48,17 @@ interface EventAttendeesTableProps {
   isLoading: boolean;
   eventId: string;
   currency?: string;
+  eventName?: string;
 }
 
 type PaymentFilter = 'all' | 'paid' | 'pending' | 'overdue';
 
-export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 'EUR' }: EventAttendeesTableProps) {
+export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 'EUR', eventName }: EventAttendeesTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>('all');
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [selectedAttendee, setSelectedAttendee] = useState<InvoiceAttendee | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const { t } = useAdminLanguage();
 
   const getStatusVariant = (status: string | null) => {
@@ -96,6 +99,139 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
 
   const getFullName = (attendee: InvoiceAttendee) =>
     `${attendee.first_name || ''} ${attendee.last_name || ''}`.trim() || '—';
+
+  const handleExportCsv = async () => {
+    if (!attendees.length) return;
+    setIsExporting(true);
+    try {
+      // Helpers
+      const formatCsvCell = (value: string) => `"${(value || '').replace(/"/g, '""')}"`;
+      const formatEuropeanDecimal = (value: number) => value.toFixed(2).replace('.', ',');
+      const formatDateTime = (d: string | null) =>
+        d ? format(new Date(d), 'dd.MM.yyyy HH:mm') : '';
+
+      const paymentStatusLabel = (s: string | null) => {
+        switch (s) {
+          case 'paid': return 'Plaćeno';
+          case 'pending': return 'Na čekanju';
+          case 'unpaid': return 'Neplaćeno';
+          case 'overdue': return 'Kasni';
+          default: return s || '';
+        }
+      };
+
+      const paymentMethodLabel = (m: string | null) => {
+        if (!m) return '';
+        if (m === 'stripe') return 'Kartica';
+        if (m === 'invoice') return 'Transakcijski račun';
+        return m;
+      };
+
+      // Fetch supplemental data not present in attendee_invoice_summary view
+      const attendeeIds = attendees.map(a => a.attendee_id).filter(Boolean) as string[];
+      const orderIds = Array.from(new Set(attendees.map(a => a.order_id).filter(Boolean) as string[]));
+      const tierIds = Array.from(new Set(attendees.map(a => a.ticket_tier_id).filter(Boolean) as string[]));
+
+      const [attendeeRowsRes, orderRowsRes, tierRowsRes] = await Promise.all([
+        attendeeIds.length
+          ? supabase
+              .from('attendees')
+              .select('id, phone, price_paid')
+              .in('id', attendeeIds)
+          : Promise.resolve({ data: [], error: null } as any),
+        orderIds.length
+          ? supabase
+              .from('orders')
+              .select('id, payer_oib, billing_email, contact_email')
+              .in('id', orderIds)
+          : Promise.resolve({ data: [], error: null } as any),
+        tierIds.length
+          ? supabase
+              .from('ticket_tiers')
+              .select('id, name')
+              .in('id', tierIds)
+          : Promise.resolve({ data: [], error: null } as any),
+      ]);
+
+      const attendeeMap = new Map<string, { phone: string | null; price_paid: number | null }>(
+        (attendeeRowsRes.data || []).map((r: any) => [r.id, { phone: r.phone, price_paid: r.price_paid }])
+      );
+      const orderMap = new Map<string, { payer_oib: string | null; billing_email: string | null }>(
+        (orderRowsRes.data || []).map((r: any) => [
+          r.id,
+          { payer_oib: r.payer_oib, billing_email: r.billing_email || r.contact_email },
+        ])
+      );
+      const tierMap = new Map<string, string>(
+        (tierRowsRes.data || []).map((r: any) => [r.id, r.name])
+      );
+
+      // payer_name from view stands in for company name on B2B orders
+      const headers = [
+        'Ime',
+        'Prezime',
+        'Email',
+        'Telefon',
+        'Vrsta ulaznice',
+        'Cijena (EUR)',
+        'Status plaćanja',
+        'Način plaćanja',
+        'Broj ponude / računa',
+        'Broj narudžbe',
+        'Vrsta narudžbe',
+        'Naziv tvrtke',
+        'OIB platitelja',
+        'Email za račun',
+        'Check-in',
+        'Datum registracije',
+      ];
+
+      const rows = attendees.map(a => {
+        const extra = attendeeMap.get(a.attendee_id || '') || { phone: null, price_paid: null };
+        const order = orderMap.get(a.order_id || '') || { payer_oib: null, billing_email: null };
+        const tierName = tierMap.get(a.ticket_tier_id || '') || '';
+        const price = Number(extra.price_paid || 0);
+
+        return [
+          a.first_name || '',
+          a.last_name || '',
+          a.email || '',
+          extra.phone || '',
+          tierName,
+          formatEuropeanDecimal(price),
+          paymentStatusLabel(a.payment_status),
+          paymentMethodLabel(a.payment_method),
+          a.bc_invoice_number || '',
+          a.order_number != null ? `#${a.order_number}` : '',
+          a.is_group_order ? 'Grupna' : 'Individualna',
+          a.payer_type === 'company' ? (a.payer_name || '') : '',
+          order.payer_oib || '',
+          order.billing_email || '',
+          a.checked_in ? 'Da' : 'Ne',
+          formatDateTime(a.registered_at),
+        ].map(formatCsvCell).join(';');
+      });
+
+      const headerLine = headers.map(formatCsvCell).join(';');
+      const csv = '\uFEFF' + [headerLine, ...rows].join('\r\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const safeName = (eventName || eventId).replace(/[^a-zA-Z0-9_-]+/g, '_');
+      link.href = url;
+      link.download = `polaznici_${safeName}_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error('CSV export failed:', err);
+      toast.error(err?.message || 'Export failed');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Apply filters
   let filteredAttendees = paymentFilter === 'all'
@@ -138,10 +274,20 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
               </CardTitle>
               <CardDescription>{t('attendeeTable.subtitle')}</CardDescription>
             </div>
-            <Button onClick={() => setIsAddModalOpen(true)}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              {t('attendeeTable.addAttendee')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleExportCsv}
+                disabled={!attendees.length || isExporting}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {t('eventDetails.exportCsv')}
+              </Button>
+              <Button onClick={() => setIsAddModalOpen(true)}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                {t('attendeeTable.addAttendee')}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="text-center py-12">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -171,10 +317,20 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
             </CardTitle>
             <CardDescription>{t('attendeeTable.subtitle')}</CardDescription>
           </div>
-          <Button onClick={() => setIsAddModalOpen(true)}>
-            <UserPlus className="h-4 w-4 mr-2" />
-            {t('attendeeTable.addAttendee')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleExportCsv}
+              disabled={!attendees.length || isExporting}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {t('eventDetails.exportCsv')}
+            </Button>
+            <Button onClick={() => setIsAddModalOpen(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              {t('attendeeTable.addAttendee')}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {/* Filter Bar */}
