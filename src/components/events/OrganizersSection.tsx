@@ -63,6 +63,43 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
   // Technical organizer form state
   const [showTechForm, setShowTechForm] = useState(false);
   const [techDraft, setTechDraft] = useState<OrganizerEntry>(emptyDraft());
+  const [techSameAsOrganizer, setTechSameAsOrganizer] = useState<boolean>(false);
+
+  const handleTechSameAsOrganizerChange = async (checked: boolean) => {
+    setTechSameAsOrganizer(checked);
+    if (!checked) {
+      setTechDraft(emptyDraft());
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('institutions:institution_uuid(*)')
+        .eq('id', eventId)
+        .maybeSingle();
+      if (error) throw error;
+      const inst: any = (data as any)?.institutions;
+      if (!inst) {
+        toast.error('Podaci o organizatoru nisu dostupni');
+        setTechSameAsOrganizer(false);
+        return;
+      }
+      setTechDraft({
+        name: inst.name || '',
+        address: inst.address || '',
+        city: inst.city || '',
+        postal_code: inst.postal_code || '',
+        country: inst.country || '',
+        website: inst.website || '',
+        phone: inst.phone || '',
+        oib: inst.oib || '',
+        email: inst.invoice_email || '',
+      });
+    } catch (err: any) {
+      toast.error(err.message || 'Greška pri dohvaćanju podataka');
+      setTechSameAsOrganizer(false);
+    }
+  };
 
   const { data: info } = useQuery({
     queryKey: ['event-organizers-info', eventId],
