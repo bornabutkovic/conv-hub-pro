@@ -877,6 +877,13 @@ export default function CreateEvent() {
                   onChange={setOrganizersInfo}
                 />
 
+                <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <Info className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>
+                    Detaljne informacije o suorganizatorima i tehničkom organizatoru (adresa, web, kontakt) možete unijeti nakon kreiranja eventa u postavkama eventa. / Detailed info about co-organizers and technical organizer can be entered after the event is created, in the event settings.
+                  </span>
+                </div>
+
                 <div className="flex justify-end gap-3 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={() => navigate('/events')}>
                     {t('editEvent.cancel')}
