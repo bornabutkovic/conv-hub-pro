@@ -11,9 +11,12 @@ interface TicketDistributionChartProps {
 }
 
 export function TicketDistributionChart({ data, loading, eventName, selectedEventId }: TicketDistributionChartProps) {
+  const { t } = useAdminLanguage();
   const isAllEvents = !selectedEventId || selectedEventId === 'all';
-  const chartTitle = isAllEvents ? 'Revenue by Event' : 'Ticket Distribution';
-  const chartSubtitle = isAllEvents ? 'Paid ticket revenue per event' : (eventName ? `Breakdown for ${eventName}` : 'Breakdown by ticket type');
+  const chartTitle = isAllEvents ? t('dashboard.revenueByEvent') : t('dashboard.ticketDistribution');
+  const chartSubtitle = isAllEvents 
+    ? t('dashboard.revenueByEventDesc') 
+    : (eventName ? `${t('dashboard.breakdownFor')} ${eventName}` : t('dashboard.ticketDistributionDesc'));
 
   if (loading) {
     return (
@@ -41,9 +44,9 @@ export function TicketDistributionChart({ data, loading, eventName, selectedEven
       <CardContent>
         <div className="h-[250px] w-full">
           {data.length === 0 || total === 0 ? (
-            <div className="h-full flex items-center justify-center text-muted-foreground">
-              No ticket data available
-            </div>
+          <div className="h-full flex items-center justify-center text-muted-foreground">
+            {t('dashboard.noData')}
+          </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
