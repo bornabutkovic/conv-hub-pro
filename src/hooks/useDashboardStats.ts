@@ -205,7 +205,7 @@ export function useDashboardStats(selectedEventId?: string | null) {
         recentActivity.push({
           id: `reg-${attendee.id}`,
           userName: `${attendee.first_name} ${attendee.last_name}`,
-          action: 'registered for',
+          action: 'registeredFor',
           detail: tierName,
           timestamp: attendee.created_at || new Date().toISOString(),
           type: 'registration',

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 interface TicketDistributionChartProps {
   data: { name: string; value: number; color: string }[];
