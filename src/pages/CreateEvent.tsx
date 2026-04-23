@@ -640,7 +640,7 @@ export default function CreateEvent() {
                   </div>
                   <Separator />
 
-                  <DateRangePickers form={form} startName="start_date" endName="end_date" startLabel="Start Date *" endLabel="End Date *" disablePast />
+                  <DateRangePickers form={form} startName="start_date" endName="end_date" startLabel={t('editEvent.startDate')} endLabel={t('editEvent.endDate')} disablePast />
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -648,11 +648,11 @@ export default function CreateEvent() {
                       name="start_time"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Start Time</FormLabel>
+                          <FormLabel>{t('editEvent.startTime')}</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
-                          <FormDescription>Nije obavezno / Optional</FormDescription>
+                          <FormDescription>{t('editEvent.optional')}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -662,11 +662,11 @@ export default function CreateEvent() {
                       name="end_time"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>End Time</FormLabel>
+                          <FormLabel>{t('editEvent.endTime')}</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
-                          <FormDescription>Nije obavezno / Optional</FormDescription>
+                          <FormDescription>{t('editEvent.optional')}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -678,12 +678,12 @@ export default function CreateEvent() {
                     name="payment_due_days"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Payment Due Days *</FormLabel>
+                        <FormLabel>{t('editEvent.paymentDueDays')}</FormLabel>
                         <FormControl>
                           <Input type="number" min="1" placeholder="7" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Number of days a bank-transfer reservation remains valid
+                          {t('editEvent.paymentDueDaysDesc')}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -694,8 +694,8 @@ export default function CreateEvent() {
                 {/* Section 4: Financials & Settings */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Financials & Settings</h3>
-                    <p className="text-sm text-muted-foreground">Financial configuration and Business Central integration</p>
+                    <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionFinancials')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('editEvent.sectionFinancialsDesc')}</p>
                   </div>
                   <Separator />
 
@@ -705,11 +705,11 @@ export default function CreateEvent() {
                       name="currency"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Currency</FormLabel>
+                          <FormLabel>{t('editEvent.currency')}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select currency" />
+                                <SelectValue placeholder={t('editEvent.selectCurrency')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -727,17 +727,17 @@ export default function CreateEvent() {
                       name="tax_location"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tax Location</FormLabel>
+                          <FormLabel>{t('editEvent.taxLocation')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select tax location" />
+                                <SelectValue placeholder={t('editEvent.selectTaxLocation')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="Croatia">Croatia</SelectItem>
-                              <SelectItem value="EU">EU</SelectItem>
-                              <SelectItem value="Outside EU">Outside EU</SelectItem>
+                              <SelectItem value="Croatia">{t('editEvent.taxCroatia')}</SelectItem>
+                              <SelectItem value="EU">{t('editEvent.taxEU')}</SelectItem>
+                              <SelectItem value="Outside EU">{t('editEvent.taxOutsideEU')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -753,9 +753,9 @@ export default function CreateEvent() {
                         name="bc_position"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Business Central Position</FormLabel>
+                            <FormLabel>{t('editEvent.bcPosition')}</FormLabel>
                             <FormControl>
-                              <Input placeholder="Position reference" {...field} />
+                              <Input placeholder={t('editEvent.bcPositionPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -767,7 +767,7 @@ export default function CreateEvent() {
                         name="bc_reference"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Business Central Referent</FormLabel>
+                            <FormLabel>{t('editEvent.bcReference')}</FormLabel>
                             <FormControl>
                               <BCReferenceField value={field.value || ''} onChange={field.onChange} />
                             </FormControl>
@@ -779,7 +779,7 @@ export default function CreateEvent() {
                   )}
 
                   <div className="pt-2">
-                    <p className="text-sm font-medium text-foreground mb-3">Notifications & Support</p>
+                    <p className="text-sm font-medium text-foreground mb-3">{t('editEvent.sectionNotifications')}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -788,9 +788,9 @@ export default function CreateEvent() {
                       name="notification_sender_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sender Name *</FormLabel>
+                          <FormLabel>{t('editEvent.senderName')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Ivan Horvat" {...field} />
+                            <Input placeholder={t('editEvent.senderNamePlaceholder')} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -802,7 +802,7 @@ export default function CreateEvent() {
                       name="notification_sender_email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sender Email *</FormLabel>
+                          <FormLabel>{t('editEvent.senderEmail')}</FormLabel>
                           <FormControl>
                             <Input type="email" placeholder="email@example.com" {...field} />
                           </FormControl>
@@ -817,7 +817,7 @@ export default function CreateEvent() {
                     name="support_phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Support Phone</FormLabel>
+                        <FormLabel>{t('editEvent.supportPhone')}</FormLabel>
                         <FormControl>
                           <PhoneInput value={field.value} onChange={field.onChange} />
                         </FormControl>
@@ -831,10 +831,10 @@ export default function CreateEvent() {
                     name="support_contacts"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Support Contacts</FormLabel>
+                        <FormLabel>{t('editEvent.supportContacts')}</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Additional support contact information..."
+                            placeholder={t('editEvent.supportContactsPlaceholder')}
                             className="min-h-[80px]"
                             {...field}
                           />
@@ -845,7 +845,7 @@ export default function CreateEvent() {
                   />
 
                   <div className="pt-2">
-                    <p className="text-sm font-medium text-foreground mb-3">Administration</p>
+                    <p className="text-sm font-medium text-foreground mb-3">{t('editEvent.sectionAdministration')}</p>
                   </div>
 
                   <FormField
@@ -853,12 +853,12 @@ export default function CreateEvent() {
                     name="additional_admins"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Additional Admins</FormLabel>
+                        <FormLabel>{t('editEvent.additionalAdmins')}</FormLabel>
                         <FormControl>
                           <Input placeholder="admin1@email.com, admin2@email.com" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Enter multiple emails separated by commas
+                          {t('editEvent.additionalAdminsDesc')}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -879,11 +879,11 @@ export default function CreateEvent() {
 
                 <div className="flex justify-end gap-3 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={() => navigate('/events')}>
-                    Cancel
+                    {t('editEvent.cancel')}
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Event
+                    {t('editEvent.createEvent')}
                   </Button>
                 </div>
               </form>
