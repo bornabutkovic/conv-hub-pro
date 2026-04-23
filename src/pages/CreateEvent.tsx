@@ -193,12 +193,12 @@ export default function CreateEvent() {
       : profile?.institution_uuid || null;
 
     if (!resolvedInstitutionUuid) {
-      toast.error('Please select an institution for this event');
+      toast.error(t('editEvent.selectInstitutionFirst'));
       return;
     }
 
     if (!profile?.id) {
-      toast.error('User profile not found');
+      toast.error(t('editEvent.profileNotFound'));
       return;
     }
 
@@ -288,12 +288,12 @@ export default function CreateEvent() {
       }
 
       clearDraft();
-      toast.success('Event created successfully!');
+      toast.success(t('editEvent.createdSuccess'));
 
       navigate(`/events/${newEvent.id}`);
     } catch (error: any) {
       console.error('Error creating event:', error);
-      toast.error(error.message || 'Failed to create event');
+      toast.error(error.message || t('editEvent.createFailed'));
     } finally {
       setIsSubmitting(false);
     }
