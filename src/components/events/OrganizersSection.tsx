@@ -39,11 +39,13 @@ const emptyDraft = (): OrganizerEntry => ({
   country: '',
   website: '',
   phone: '',
+  oib: '',
+  email: '',
 });
 
 const cleanEntry = (e: OrganizerEntry): OrganizerEntry => {
   const out: OrganizerEntry = { name: e.name.trim() };
-  (['address', 'city', 'postal_code', 'country', 'website', 'phone'] as const).forEach((k) => {
+  (['address', 'city', 'postal_code', 'country', 'website', 'phone', 'oib', 'email'] as const).forEach((k) => {
     const v = (e[k] || '').trim();
     if (v) (out as any)[k] = v;
   });
