@@ -49,6 +49,7 @@ import { Tables } from '@/integrations/supabase/types';
 import { BrandingSection } from './BrandingSection';
 import { TranslatableFields } from './TranslatableFields';
 import { BCReferenceField } from './BCReferenceField';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -133,6 +134,7 @@ export function EditEventModal({
   const [enTranslations, setEnTranslations] = useState({ name: '', description: '', auto_translated: false });
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
+  const { t } = useAdminLanguage();
 
   const [branding, setBranding] = useState({
     branding_primary_color: '#6366f1',
