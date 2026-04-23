@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CalendarIcon, Loader2, ArrowLeft } from 'lucide-react';
+import { CalendarIcon, Loader2, ArrowLeft, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   Form,
