@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { X, Building2, Loader2, Plus, Pencil } from 'lucide-react';
 
 interface OrganizerEntry {
@@ -17,6 +18,8 @@ interface OrganizerEntry {
   country?: string;
   website?: string;
   phone?: string;
+  oib?: string;
+  email?: string;
 }
 
 interface OrganizersInfo {
