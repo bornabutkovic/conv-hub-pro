@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -11,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { X, Building2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface OrganizersPickerProps {
   primaryInstitutionId?: string | null;
@@ -30,6 +32,7 @@ export function OrganizersPicker({
 }: OrganizersPickerProps) {
   const [pendingCo, setPendingCo] = useState('');
   const [pendingTech, setPendingTech] = useState('');
+  const [sameAsMain, setSameAsMain] = useState(false);
 
   const { data: institutions = [] } = useQuery({
     queryKey: ['all-institutions'],
@@ -53,6 +56,22 @@ export function OrganizersPicker({
   const availableForTech = institutions.filter(
     (i) => i.id !== primaryInstitutionId && i.id !== technicalOrganizerId
   );
+
+  // Reset "same as main" whenever the primary institution changes
+  useEffect(() => {
+    setSameAsMain(false);
+  }, [primaryInstitutionId]);
+
+  const handleSameAsMainChange = (checked: boolean) => {
+    setSameAsMain(checked);
+    if (checked && primaryInstitutionId) {
+      onTechnicalOrganizerChange(primaryInstitutionId);
+      setPendingTech('');
+    } else {
+      onTechnicalOrganizerChange(null);
+      setPendingTech('');
+    }
+  };
 
   const addCo = () => {
     if (!pendingCo) return;
@@ -142,7 +161,11 @@ export function OrganizersPicker({
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7"
-                onClick={() => onTechnicalOrganizerChange(null)}
+                onClick={() => {
+                  onTechnicalOrganizerChange(null);
+                  setSameAsMain(false);
+                }}
+                disabled={sameAsMain}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -151,7 +174,11 @@ export function OrganizersPicker({
             <p className="text-sm text-muted-foreground">No technical organizer set.</p>
           )}
           <div className="flex gap-2">
-            <Select value={pendingTech} onValueChange={setPendingTech}>
+            <Select
+              value={pendingTech}
+              onValueChange={setPendingTech}
+              disabled={sameAsMain}
+            >
               <SelectTrigger className="flex-1">
                 <SelectValue placeholder="Odaberite instituciju" />
               </SelectTrigger>
@@ -169,9 +196,40 @@ export function OrganizersPicker({
                 )}
               </SelectContent>
             </Select>
-            <Button type="button" onClick={setTech} disabled={!pendingTech}>
+            <Button
+              type="button"
+              onClick={setTech}
+              disabled={!pendingTech || sameAsMain}
+            >
               Postavi
             </Button>
+          </div>
+
+          {/* Same as main organizer */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="tech-same-as-main"
+                checked={sameAsMain}
+                onCheckedChange={(c) => handleSameAsMainChange(!!c)}
+                disabled={!primaryInstitutionId}
+              />
+              <Label
+                htmlFor="tech-same-as-main"
+                className={
+                  !primaryInstitutionId
+                    ? 'text-sm text-muted-foreground cursor-not-allowed'
+                    : 'text-sm cursor-pointer'
+                }
+              >
+                Isti kao glavni organizator / Same as main organizer
+              </Label>
+            </div>
+            {!primaryInstitutionId && (
+              <p className="text-xs text-muted-foreground pl-6">
+                Odaberite instituciju za event da biste koristili ovu opciju / Select the event institution first
+              </p>
+            )}
           </div>
         </div>
       </CardContent>
