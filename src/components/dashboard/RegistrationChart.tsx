@@ -9,11 +9,13 @@ interface RegistrationChartProps {
 }
 
 export function RegistrationChart({ data, loading }: RegistrationChartProps) {
+  const { t } = useAdminLanguage();
+
   if (loading) {
     return (
       <Card className="shadow-brand">
         <CardHeader>
-          <CardTitle className="text-lg font-heading">Registrations Timeline</CardTitle>
+          <CardTitle className="text-lg font-heading">{t('dashboard.registrationsTimeline')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[250px] w-full" />
@@ -27,14 +29,14 @@ export function RegistrationChart({ data, loading }: RegistrationChartProps) {
   return (
     <Card className="shadow-brand glow-hover">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-heading font-semibold">Registrations Timeline</CardTitle>
-        <p className="text-sm text-muted-foreground">New registrations over the last 14 days</p>
+        <CardTitle className="text-lg font-heading font-semibold">{t('dashboard.registrationsTimeline')}</CardTitle>
+        <p className="text-sm text-muted-foreground">{t('dashboard.registrationsTimelineDesc')}</p>
       </CardHeader>
       <CardContent>
         <div className="h-[250px] w-full">
           {data.every(d => d.count === 0) ? (
             <div className="h-full flex items-center justify-center text-muted-foreground">
-              No registrations in the last 14 days
+              {t('dashboard.noData')}
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
