@@ -313,6 +313,7 @@ export default function EventDetails() {
             isLoading={attendeesLoading}
             eventId={event.id}
             currency={event.currency || 'EUR'}
+            eventName={event.name}
           />
         </TabsContent>
         <TabsContent value="ticket-tiers" className="mt-4">
