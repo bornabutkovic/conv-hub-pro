@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { X, Building2, Loader2, Plus, Pencil } from 'lucide-react';
 
 interface OrganizerEntry {
@@ -17,6 +18,8 @@ interface OrganizerEntry {
   country?: string;
   website?: string;
   phone?: string;
+  oib?: string;
+  email?: string;
 }
 
 interface OrganizersInfo {
@@ -36,11 +39,13 @@ const emptyDraft = (): OrganizerEntry => ({
   country: '',
   website: '',
   phone: '',
+  oib: '',
+  email: '',
 });
 
 const cleanEntry = (e: OrganizerEntry): OrganizerEntry => {
   const out: OrganizerEntry = { name: e.name.trim() };
-  (['address', 'city', 'postal_code', 'country', 'website', 'phone'] as const).forEach((k) => {
+  (['address', 'city', 'postal_code', 'country', 'website', 'phone', 'oib', 'email'] as const).forEach((k) => {
     const v = (e[k] || '').trim();
     if (v) (out as any)[k] = v;
   });
@@ -58,6 +63,43 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
   // Technical organizer form state
   const [showTechForm, setShowTechForm] = useState(false);
   const [techDraft, setTechDraft] = useState<OrganizerEntry>(emptyDraft());
+  const [techSameAsOrganizer, setTechSameAsOrganizer] = useState<boolean>(false);
+
+  const handleTechSameAsOrganizerChange = async (checked: boolean) => {
+    setTechSameAsOrganizer(checked);
+    if (!checked) {
+      setTechDraft(emptyDraft());
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('institutions:institution_uuid(*)')
+        .eq('id', eventId)
+        .maybeSingle();
+      if (error) throw error;
+      const inst: any = (data as any)?.institutions;
+      if (!inst) {
+        toast.error('Podaci o organizatoru nisu dostupni');
+        setTechSameAsOrganizer(false);
+        return;
+      }
+      setTechDraft({
+        name: inst.name || '',
+        address: inst.address || '',
+        city: inst.city || '',
+        postal_code: inst.postal_code || '',
+        country: inst.country || '',
+        website: inst.website || '',
+        phone: inst.phone || '',
+        oib: inst.oib || '',
+        email: inst.invoice_email || '',
+      });
+    } catch (err: any) {
+      toast.error(err.message || 'Greška pri dohvaćanju podataka');
+      setTechSameAsOrganizer(false);
+    }
+  };
 
   const { data: info } = useQuery({
     queryKey: ['event-organizers-info', eventId],
@@ -161,6 +203,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
       toast.success('Tehnički organizator spremljen');
       setTechDraft(emptyDraft());
       setShowTechForm(false);
+      setTechSameAsOrganizer(false);
     } catch (err: any) {
       toast.error(err.message || 'Greška pri spremanju');
     } finally {
@@ -175,6 +218,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
       toast.success('Tehnički organizator uklonjen');
       setShowTechForm(false);
       setTechDraft(emptyDraft());
+      setTechSameAsOrganizer(false);
     } catch (err: any) {
       toast.error(err.message || 'Greška pri uklanjanju');
     } finally {
@@ -185,18 +229,21 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
   const startEditTech = () => {
     if (technicalOrganizer) {
       setTechDraft({ ...emptyDraft(), ...technicalOrganizer });
+      setTechSameAsOrganizer(false);
       setShowTechForm(true);
     }
   };
 
   const startNewTech = () => {
     setTechDraft(emptyDraft());
+    setTechSameAsOrganizer(false);
     setShowTechForm(true);
   };
 
   const cancelTechForm = () => {
     setShowTechForm(false);
     setTechDraft(emptyDraft());
+    setTechSameAsOrganizer(false);
   };
 
   const renderEntryRow = (
@@ -242,9 +289,11 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
     setDraft: (d: OrganizerEntry) => void,
     onSave: () => void,
     onCancel: () => void,
-    saveLabel: string
+    saveLabel: string,
+    topSlot?: ReactNode
   ) => (
     <div className="space-y-3 rounded-md border bg-muted/20 p-3">
+      {topSlot}
       <div className="space-y-1.5">
         <Label className="text-xs">Naziv *</Label>
         <Input
@@ -288,6 +337,25 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
             value={draft.country || ''}
             onChange={(e) => setDraft({ ...draft, country: e.target.value })}
             placeholder="Hrvatska"
+            disabled={busy}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">OIB / VAT</Label>
+          <Input
+            value={draft.oib || ''}
+            onChange={(e) => setDraft({ ...draft, oib: e.target.value })}
+            placeholder="12345678901"
+            disabled={busy}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Email</Label>
+          <Input
+            type="email"
+            value={draft.email || ''}
+            onChange={(e) => setDraft({ ...draft, email: e.target.value })}
+            placeholder="info@example.com"
             disabled={busy}
           />
         </div>
@@ -385,7 +453,18 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
               setTechDraft,
               saveTechnical,
               cancelTechForm,
-              technicalOrganizer ? 'Ažuriraj' : 'Spremi'
+              technicalOrganizer ? 'Ažuriraj' : 'Spremi',
+              <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
+                <Checkbox
+                  id="tech-same-as-organizer"
+                  checked={techSameAsOrganizer}
+                  onCheckedChange={(c) => handleTechSameAsOrganizerChange(c === true)}
+                  disabled={busy}
+                />
+                <Label htmlFor="tech-same-as-organizer" className="text-xs cursor-pointer">
+                  Isti kao organizator / Same as organizer
+                </Label>
+              </div>
             )
           ) : (
             !technicalOrganizer && (
