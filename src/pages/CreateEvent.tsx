@@ -110,6 +110,7 @@ type CreateEventForm = z.infer<typeof createEventSchema>;
 export default function CreateEvent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { t } = useAdminLanguage();
   const [enTranslations, setEnTranslations] = useState({
     name: '',
     description: '',

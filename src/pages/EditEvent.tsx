@@ -113,6 +113,7 @@ export default function EditEvent() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
+  const { t } = useAdminLanguage();
 
   const [branding, setBranding] = useState({
     branding_primary_color: '#6366f1',
