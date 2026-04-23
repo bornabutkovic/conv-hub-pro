@@ -49,6 +49,7 @@ import { OrganizersSection } from '@/components/events/OrganizersSection';
 import { ContentSection } from '@/components/events/ContentSection';
 import { LanguagesField } from '@/components/events/LanguagesField';
 import { BCReferenceField } from '@/components/events/BCReferenceField';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
