@@ -289,9 +289,11 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
     setDraft: (d: OrganizerEntry) => void,
     onSave: () => void,
     onCancel: () => void,
-    saveLabel: string
+    saveLabel: string,
+    topSlot?: React.ReactNode
   ) => (
     <div className="space-y-3 rounded-md border bg-muted/20 p-3">
+      {topSlot}
       <div className="space-y-1.5">
         <Label className="text-xs">Naziv *</Label>
         <Input
@@ -335,6 +337,25 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
             value={draft.country || ''}
             onChange={(e) => setDraft({ ...draft, country: e.target.value })}
             placeholder="Hrvatska"
+            disabled={busy}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">OIB / VAT</Label>
+          <Input
+            value={draft.oib || ''}
+            onChange={(e) => setDraft({ ...draft, oib: e.target.value })}
+            placeholder="12345678901"
+            disabled={busy}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Email</Label>
+          <Input
+            type="email"
+            value={draft.email || ''}
+            onChange={(e) => setDraft({ ...draft, email: e.target.value })}
+            placeholder="info@example.com"
             disabled={busy}
           />
         </div>
