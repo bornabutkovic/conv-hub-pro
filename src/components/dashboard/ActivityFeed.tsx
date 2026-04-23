@@ -49,11 +49,11 @@ export function ActivityFeed({ activities, loading }: ActivityFeedProps) {
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle className="text-lg font-heading font-semibold">{t('dashboard.recentActivity')}</CardTitle>
-          <p className="text-sm text-muted-foreground">Latest registrations and purchases</p>
+          <p className="text-sm text-muted-foreground">{t('dashboard.recentActivityDesc')}</p>
         </div>
         <Button variant="outline" size="sm" asChild className="rounded-xl">
           <Link to="/attendees?status=pending" className="gap-2">
-            Review Pending
+            {t('dashboard.reviewPending')}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>
@@ -83,7 +83,7 @@ export function ActivityFeed({ activities, loading }: ActivityFeedProps) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm">
                     <span className="font-medium">{activity.userName}</span>
-                    {' '}{activity.action}{' '}
+                    {' '}{activity.action === 'registeredFor' ? t('dashboard.registeredFor') : activity.action}{' '}
                     <Badge variant="secondary" className="font-normal">
                       {activity.detail}
                     </Badge>
