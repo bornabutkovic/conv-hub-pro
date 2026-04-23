@@ -20,6 +20,7 @@ interface OrganizerEntry {
   phone?: string;
   oib?: string;
   email?: string;
+  same_as_organizer?: boolean;
 }
 
 interface OrganizersInfo {
@@ -49,6 +50,9 @@ const cleanEntry = (e: OrganizerEntry): OrganizerEntry => {
     const v = (e[k] || '').trim();
     if (v) (out as any)[k] = v;
   });
+  if (e.same_as_organizer) {
+    out.same_as_organizer = true;
+  }
   return out;
 };
 
@@ -94,6 +98,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
         phone: inst.phone || '',
         oib: inst.oib || '',
         email: inst.invoice_email || '',
+        same_as_organizer: true,
       });
     } catch (err: any) {
       toast.error(err.message || 'Greška pri dohvaćanju podataka');
