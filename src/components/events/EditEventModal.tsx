@@ -304,12 +304,12 @@ export function EditEventModal({
 
       if (error) throw error;
 
-      toast.success('Event updated successfully!');
+      toast.success(t('editEvent.updatedSuccess'));
       onOpenChange(false);
       onEventUpdated();
     } catch (error: any) {
       console.error('Error updating event:', error);
-      toast.error(error.message || 'Failed to update event');
+      toast.error(error.message || t('editEvent.updateFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -319,7 +319,7 @@ export function EditEventModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] p-0">
         <DialogHeader className="px-6 pt-6 pb-2">
-          <DialogTitle className="text-xl">Edit Event</DialogTitle>
+          <DialogTitle className="text-xl">{t('editEvent.title')}</DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="max-h-[calc(90vh-120px)] px-6">
@@ -328,8 +328,8 @@ export function EditEventModal({
               {/* Section 1: Event Details */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground">Event Details</h3>
-                  <p className="text-sm text-muted-foreground">Basic information about your event</p>
+                  <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionDetails')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('editEvent.sectionDetailsDesc')}</p>
                 </div>
                 <Separator />
                 
@@ -338,7 +338,7 @@ export function EditEventModal({
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Event Name *</FormLabel>
+                      <FormLabel>{t('editEvent.nameHR')} *</FormLabel>
                       <FormControl>
                         <Input placeholder="My Conference 2026" {...field} />
                       </FormControl>
@@ -352,7 +352,7 @@ export function EditEventModal({
                   name="short_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Short Name</FormLabel>
+                      <FormLabel>{t('editEvent.shortName')}</FormLabel>
                       <FormControl>
                         <Input placeholder="CONF2026" {...field} />
                       </FormControl>
@@ -366,7 +366,7 @@ export function EditEventModal({
                   name="website_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Website</FormLabel>
+                      <FormLabel>{t('editEvent.website')}</FormLabel>
                       <FormControl>
                         <Input type="url" placeholder="https://example.com" {...field} />
                       </FormControl>
@@ -379,8 +379,8 @@ export function EditEventModal({
               {/* Section 2: Location */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground">Location</h3>
-                  <p className="text-sm text-muted-foreground">Where will the event take place?</p>
+                  <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionLocation')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('editEvent.sectionLocationDesc')}</p>
                 </div>
                 <Separator />
 
@@ -389,7 +389,7 @@ export function EditEventModal({
                   name="venue_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Venue *</FormLabel>
+                      <FormLabel>{t('editEvent.venueName')} *</FormLabel>
                       <FormControl>
                         <Input placeholder="Hotel Westin" {...field} />
                       </FormControl>
@@ -404,7 +404,7 @@ export function EditEventModal({
                     name="location_city"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>City *</FormLabel>
+                        <FormLabel>{t('editEvent.city')} *</FormLabel>
                         <FormControl>
                           <Input placeholder="Zagreb" {...field} />
                         </FormControl>
@@ -418,7 +418,7 @@ export function EditEventModal({
                     name="location_postal_code"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>ZIP / Postal Code</FormLabel>
+                        <FormLabel>{t('editEvent.postalCode')}</FormLabel>
                         <FormControl>
                           <Input placeholder="10000" {...field} />
                         </FormControl>
@@ -433,11 +433,11 @@ export function EditEventModal({
                   name="location_country"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Country *</FormLabel>
+                      <FormLabel>{t('editEvent.country')} *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select country" />
+                            <SelectValue placeholder={t('editEvent.selectCountry')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -463,12 +463,12 @@ export function EditEventModal({
               {/* Section 3: Dates & Billing Settings */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground">Dates & Billing Settings</h3>
-                  <p className="text-sm text-muted-foreground">Configure event timing and payment terms</p>
+                  <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionDates')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('editEvent.sectionDatesDesc')}</p>
                 </div>
                 <Separator />
 
-                <DateRangePickers form={form} startName="start_date" endName="end_date" startLabel="Start Date *" endLabel="End Date *" />
+                <DateRangePickers form={form} startName="start_date" endName="end_date" startLabel={`${t('editEvent.startDate')} *`} endLabel={`${t('editEvent.endDate')} *`} />
 
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
@@ -476,11 +476,11 @@ export function EditEventModal({
                     name="start_time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Time</FormLabel>
+                        <FormLabel>{t('editEvent.startTime')}</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
-                        <FormDescription>Nije obavezno / Optional</FormDescription>
+                        <FormDescription>{t('editEvent.optional')}</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -490,11 +490,11 @@ export function EditEventModal({
                     name="end_time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>End Time</FormLabel>
+                        <FormLabel>{t('editEvent.endTime')}</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
-                        <FormDescription>Nije obavezno / Optional</FormDescription>
+                        <FormDescription>{t('editEvent.optional')}</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -504,8 +504,8 @@ export function EditEventModal({
               {/* Translations */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground">Translations</h3>
-                  <p className="text-sm text-muted-foreground">Provide English translations for event content</p>
+                  <h3 className="text-sm font-semibold text-foreground">{t('editEvent.translations')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('editEvent.translationsDesc')}</p>
                 </div>
                 <Separator />
                 <TranslatableFields
@@ -528,7 +528,7 @@ export function EditEventModal({
                   name="payment_due_days"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Payment Due Days *</FormLabel>
+                      <FormLabel>{t('editEvent.paymentDueDays')} *</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -538,7 +538,7 @@ export function EditEventModal({
                         />
                       </FormControl>
                       <FormDescription>
-                        Number of days a bank-transfer reservation remains valid
+                        {t('editEvent.paymentDueDaysDesc')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -551,21 +551,21 @@ export function EditEventModal({
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Status</FormLabel>
+                      <FormLabel>{t('editEvent.status')}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
+                            <SelectValue placeholder={t('editEvent.selectStatus')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="pending_approval">Pending Approval</SelectItem>
-                          <SelectItem value="active">Active (Published)</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="draft">{t('editEvent.statusDraft')}</SelectItem>
+                          <SelectItem value="pending_approval">{t('editEvent.statusPendingApproval')}</SelectItem>
+                          <SelectItem value="active">{t('editEvent.statusActive')}</SelectItem>
+                          <SelectItem value="completed">{t('editEvent.statusCompleted')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -574,7 +574,7 @@ export function EditEventModal({
                 />
                 ) : (
                   <div className="text-sm text-muted-foreground">
-                    Status: <span className="font-medium capitalize">{form.getValues('status')?.replace('_', ' ')}</span>
+                    {t('editEvent.status')}: <span className="font-medium capitalize">{form.getValues('status')?.replace('_', ' ')}</span>
                   </div>
                 )}
               </div>
@@ -582,8 +582,8 @@ export function EditEventModal({
               {/* Section 4: Financials & Settings */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground">Financials & Settings</h3>
-                  <p className="text-sm text-muted-foreground">Financial configuration and Business Central integration</p>
+                  <h3 className="text-sm font-semibold text-foreground">{t('editEvent.sectionFinancials')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('editEvent.sectionFinancialsDesc')}</p>
                 </div>
                 <Separator />
 
@@ -594,11 +594,11 @@ export function EditEventModal({
                     name="currency"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Currency</FormLabel>
+                        <FormLabel>{t('editEvent.currency')}</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select currency" />
+                              <SelectValue placeholder={t('editEvent.selectCurrency')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -616,17 +616,17 @@ export function EditEventModal({
                     name="tax_location"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tax Location</FormLabel>
+                        <FormLabel>{t('editEvent.taxLocation')}</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select tax location" />
+                              <SelectValue placeholder={t('editEvent.selectTaxLocation')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Croatia">Croatia</SelectItem>
-                            <SelectItem value="EU">EU</SelectItem>
-                            <SelectItem value="Outside EU">Outside EU</SelectItem>
+                            <SelectItem value="Croatia">{t('editEvent.taxCroatia')}</SelectItem>
+                            <SelectItem value="EU">{t('editEvent.taxEU')}</SelectItem>
+                            <SelectItem value="Outside EU">{t('editEvent.taxOutsideEU')}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -642,9 +642,9 @@ export function EditEventModal({
                     name="bc_position"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Business Central Position</FormLabel>
+                        <FormLabel>{t('editEvent.bcPosition')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Position reference" {...field} />
+                          <Input placeholder={t('editEvent.bcPositionPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -656,7 +656,7 @@ export function EditEventModal({
                     name="bc_reference"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Business Central Referent</FormLabel>
+                        <FormLabel>{t('editEvent.bcReference')}</FormLabel>
                         <FormControl>
                           <BCReferenceField value={field.value || ''} onChange={field.onChange} />
                         </FormControl>
@@ -669,7 +669,7 @@ export function EditEventModal({
 
                 {/* Notifications & Support */}
                 <div className="pt-2">
-                  <p className="text-sm font-medium text-foreground mb-3">Notifications & Support</p>
+                  <p className="text-sm font-medium text-foreground mb-3">{t('editEvent.sectionNotifications')}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -678,9 +678,9 @@ export function EditEventModal({
                     name="notification_sender_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sender Name *</FormLabel>
+                        <FormLabel>{t('editEvent.senderName')} *</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. Ivan Horvat" {...field} />
+                          <Input placeholder={t('editEvent.senderNamePlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -692,7 +692,7 @@ export function EditEventModal({
                     name="notification_sender_email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sender Email *</FormLabel>
+                        <FormLabel>{t('editEvent.senderEmail')} *</FormLabel>
                         <FormControl>
                           <Input type="email" placeholder="email@example.com" {...field} />
                         </FormControl>
@@ -707,7 +707,7 @@ export function EditEventModal({
                   name="support_phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Support Phone</FormLabel>
+                      <FormLabel>{t('editEvent.supportPhone')}</FormLabel>
                       <FormControl>
                         <Input placeholder="+385 91 234 5678" {...field} />
                       </FormControl>
@@ -718,7 +718,7 @@ export function EditEventModal({
 
                 {/* Administration */}
                 <div className="pt-2">
-                  <p className="text-sm font-medium text-foreground mb-3">Administration</p>
+                  <p className="text-sm font-medium text-foreground mb-3">{t('editEvent.sectionAdministration')}</p>
                 </div>
 
                 <FormField
@@ -726,12 +726,12 @@ export function EditEventModal({
                   name="additional_admins"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Additional Admins</FormLabel>
+                      <FormLabel>{t('editEvent.additionalAdmins')}</FormLabel>
                       <FormControl>
                         <Input placeholder="admin1@email.com, admin2@email.com" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Enter multiple emails separated by commas
+                        {t('editEvent.additionalAdminsDesc')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -743,7 +743,7 @@ export function EditEventModal({
                   name="supported_languages"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Languages</FormLabel>
+                      <FormLabel>{t('editEvent.languages')}</FormLabel>
                       <div className="flex flex-wrap gap-4 pt-2">
                         {LANGUAGE_OPTIONS.map((lang) => (
                           <div key={lang.value} className="flex items-center space-x-2">
@@ -793,13 +793,13 @@ export function EditEventModal({
                   variant="outline"
                   onClick={() => onOpenChange(false)}
                 >
-                  Cancel
+                  {t('editEvent.cancel')}
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Save Changes
+                  {t('editEvent.saveChanges')}
                 </Button>
               </div>
             </form>
