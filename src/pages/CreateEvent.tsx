@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CalendarIcon, Loader2, ArrowLeft } from 'lucide-react';
+import { CalendarIcon, Loader2, ArrowLeft, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   Form,
@@ -876,6 +876,13 @@ export default function CreateEvent() {
                   value={organizersInfo}
                   onChange={setOrganizersInfo}
                 />
+
+                <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <Info className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>
+                    Detaljne informacije o suorganizatorima i tehničkom organizatoru (adresa, web, kontakt) možete unijeti nakon kreiranja eventa u postavkama eventa. / Detailed info about co-organizers and technical organizer can be entered after the event is created, in the event settings.
+                  </span>
+                </div>
 
                 <div className="flex justify-end gap-3 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={() => navigate('/events')}>
