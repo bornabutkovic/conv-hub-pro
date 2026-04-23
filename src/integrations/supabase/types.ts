@@ -1984,9 +1984,11 @@ export type Database = {
           branding_secondary_color: string | null
           branding_text_color: string | null
           cancellation_policy: string | null
+          cancellation_policy_en: string | null
           created_at: string | null
           currency: string | null
           description: string | null
+          description_en: string | null
           early_bird_deadline: string | null
           end_date: string | null
           event_id: string | null
@@ -1999,6 +2001,7 @@ export type Database = {
           location_country: string | null
           location_postal_code: string | null
           name: string | null
+          name_en: string | null
           notification_sender_email: string | null
           notification_sender_name: string | null
           payment_due_days: number | null
@@ -2033,9 +2036,11 @@ export type Database = {
           branding_secondary_color?: string | null
           branding_text_color?: string | null
           cancellation_policy?: string | null
+          cancellation_policy_en?: never
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          description_en?: never
           early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
@@ -2048,6 +2053,7 @@ export type Database = {
           location_country?: string | null
           location_postal_code?: string | null
           name?: string | null
+          name_en?: never
           notification_sender_email?: string | null
           notification_sender_name?: string | null
           payment_due_days?: number | null
@@ -2082,9 +2088,11 @@ export type Database = {
           branding_secondary_color?: string | null
           branding_text_color?: string | null
           cancellation_policy?: string | null
+          cancellation_policy_en?: never
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          description_en?: never
           early_bird_deadline?: string | null
           end_date?: string | null
           event_id?: string | null
@@ -2097,6 +2105,7 @@ export type Database = {
           location_country?: string | null
           location_postal_code?: string | null
           name?: string | null
+          name_en?: never
           notification_sender_email?: string | null
           notification_sender_name?: string | null
           payment_due_days?: number | null
@@ -2145,7 +2154,7 @@ export type Database = {
             referencedColumns: ["code"]
           },
           {
-            foreignKeyName: "events_institution_id_fkey"
+            foreignKeyName: "events_institution_uuid_fkey"
             columns: ["institution_id"]
             isOneToOne: false
             referencedRelation: "institutions"
