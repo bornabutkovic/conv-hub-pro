@@ -20,6 +20,7 @@ interface OrganizerEntry {
   phone?: string;
   oib?: string;
   email?: string;
+  same_as_organizer?: boolean;
 }
 
 interface OrganizersInfo {
