@@ -48,6 +48,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { OrganizersSection } from '@/components/events/OrganizersSection';
 import { ContentSection } from '@/components/events/ContentSection';
 import { LanguagesField } from '@/components/events/LanguagesField';
+import { BCReferenceField } from '@/components/events/BCReferenceField';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },

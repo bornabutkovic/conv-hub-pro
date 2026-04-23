@@ -47,6 +47,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQuery } from '@tanstack/react-query';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { OrganizersPicker } from '@/components/events/OrganizersPicker';
+import { BCReferenceField } from '@/components/events/BCReferenceField';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
