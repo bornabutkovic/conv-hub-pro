@@ -48,6 +48,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tables } from '@/integrations/supabase/types';
 import { BrandingSection } from './BrandingSection';
 import { TranslatableFields } from './TranslatableFields';
+import { BCReferenceField } from './BCReferenceField';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
