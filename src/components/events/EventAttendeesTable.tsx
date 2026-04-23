@@ -274,10 +274,20 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
               </CardTitle>
               <CardDescription>{t('attendeeTable.subtitle')}</CardDescription>
             </div>
-            <Button onClick={() => setIsAddModalOpen(true)}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              {t('attendeeTable.addAttendee')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleExportCsv}
+                disabled={!attendees.length || isExporting}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {t('eventDetails.exportCsv')}
+              </Button>
+              <Button onClick={() => setIsAddModalOpen(true)}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                {t('attendeeTable.addAttendee')}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="text-center py-12">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -307,10 +317,20 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
             </CardTitle>
             <CardDescription>{t('attendeeTable.subtitle')}</CardDescription>
           </div>
-          <Button onClick={() => setIsAddModalOpen(true)}>
-            <UserPlus className="h-4 w-4 mr-2" />
-            {t('attendeeTable.addAttendee')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleExportCsv}
+              disabled={!attendees.length || isExporting}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {t('eventDetails.exportCsv')}
+            </Button>
+            <Button onClick={() => setIsAddModalOpen(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              {t('attendeeTable.addAttendee')}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {/* Filter Bar */}
