@@ -203,6 +203,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
       toast.success('Tehnički organizator spremljen');
       setTechDraft(emptyDraft());
       setShowTechForm(false);
+      setTechSameAsOrganizer(false);
     } catch (err: any) {
       toast.error(err.message || 'Greška pri spremanju');
     } finally {
