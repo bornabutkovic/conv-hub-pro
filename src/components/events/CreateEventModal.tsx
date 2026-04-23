@@ -640,7 +640,7 @@ export function CreateEventModal({
                       <FormItem>
                         <FormLabel>Business Central Referent</FormLabel>
                         <FormControl>
-                          <Input placeholder="Referent name" {...field} />
+                          <BCReferenceField value={field.value || ''} onChange={field.onChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
