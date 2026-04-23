@@ -313,10 +313,10 @@ export default function EditEvent() {
         supabase.from('ticket_tiers').update({ erp_code: erp_code || null }).eq('id', tid)
       );
       await Promise.all(updates);
-      toast.success('Ticket tier ERP codes saved');
+      toast.success(t('editEvent.tierErpSaved'));
       refetchTiers();
     } catch (err: any) {
-      toast.error(err.message || 'Failed to save ERP codes');
+      toast.error(err.message || t('editEvent.erpSaveFailed'));
     } finally {
       setSavingTiers(false);
     }
@@ -329,10 +329,10 @@ export default function EditEvent() {
         supabase.from('event_services').update({ erp_code: erp_code || null }).eq('id', sid)
       );
       await Promise.all(updates);
-      toast.success('Service ERP codes saved');
+      toast.success(t('editEvent.serviceErpSaved'));
       refetchServices();
     } catch (err: any) {
-      toast.error(err.message || 'Failed to save ERP codes');
+      toast.error(err.message || t('editEvent.erpSaveFailed'));
     } finally {
       setSavingServices(false);
     }
@@ -410,11 +410,11 @@ export default function EditEvent() {
 
       if (error) throw error;
 
-      toast.success('Event updated successfully!');
+      toast.success(t('editEvent.updatedSuccess'));
       navigate(`/events/${event.id}`);
     } catch (error: any) {
       console.error('Error updating event:', error);
-      toast.error(error.message || 'Failed to update event');
+      toast.error(error.message || t('editEvent.updateFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -431,8 +431,8 @@ export default function EditEvent() {
   if (!event) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Event not found.</p>
-        <Button variant="link" onClick={() => navigate('/events')}>Back to Events</Button>
+        <p className="text-muted-foreground">{t('editEvent.eventNotFound')}</p>
+        <Button variant="link" onClick={() => navigate('/events')}>{t('editEvent.backToEvents')}</Button>
       </div>
     );
   }
@@ -445,20 +445,20 @@ export default function EditEvent() {
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => navigate(`/events/${event.id}`)} className="mb-2">
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Event
+        {t('editEvent.backToEvent')}
       </Button>
 
       <div className="max-w-[720px] mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Edit Event</CardTitle>
+            <CardTitle className="text-xl">{t('editEvent.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             {isLockedEvent && (
               <Alert className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-amber-800 dark:text-amber-200">
-                  ⚠️ Some fields are locked because tickets have already been sold. You can still update description, branding, support info, and ticket tier availability.
+                  {t('editEvent.lockedNotice')}
                 </AlertDescription>
               </Alert>
             )}
