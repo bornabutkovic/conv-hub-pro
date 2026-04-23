@@ -98,6 +98,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
         phone: inst.phone || '',
         oib: inst.oib || '',
         email: inst.invoice_email || '',
+        same_as_organizer: true,
       });
     } catch (err: any) {
       toast.error(err.message || 'Greška pri dohvaćanju podataka');
