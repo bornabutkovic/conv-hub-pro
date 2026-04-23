@@ -48,6 +48,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { OrganizersSection } from '@/components/events/OrganizersSection';
 import { ContentSection } from '@/components/events/ContentSection';
 import { LanguagesField } from '@/components/events/LanguagesField';
+import { BCReferenceField } from '@/components/events/BCReferenceField';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -937,7 +938,7 @@ export default function EditEvent() {
                           <FormItem>
                             <FormLabel>Business Central Referent</FormLabel>
                             <FormControl>
-                              <Input placeholder="Referent name" {...field} />
+                              <BCReferenceField value={field.value || ''} onChange={field.onChange} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

@@ -48,6 +48,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tables } from '@/integrations/supabase/types';
 import { BrandingSection } from './BrandingSection';
 import { TranslatableFields } from './TranslatableFields';
+import { BCReferenceField } from './BCReferenceField';
 
 const LANGUAGE_OPTIONS = [
   { value: 'hr', label: 'HR - Croatian' },
@@ -655,7 +656,7 @@ export function EditEventModal({
                       <FormItem>
                         <FormLabel>Business Central Referent</FormLabel>
                         <FormControl>
-                          <Input placeholder="Referent name" {...field} />
+                          <BCReferenceField value={field.value || ''} onChange={field.onChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
