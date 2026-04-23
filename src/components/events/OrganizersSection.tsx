@@ -217,6 +217,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
       toast.success('Tehnički organizator uklonjen');
       setShowTechForm(false);
       setTechDraft(emptyDraft());
+      setTechSameAsOrganizer(false);
     } catch (err: any) {
       toast.error(err.message || 'Greška pri uklanjanju');
     } finally {
@@ -227,18 +228,21 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
   const startEditTech = () => {
     if (technicalOrganizer) {
       setTechDraft({ ...emptyDraft(), ...technicalOrganizer });
+      setTechSameAsOrganizer(false);
       setShowTechForm(true);
     }
   };
 
   const startNewTech = () => {
     setTechDraft(emptyDraft());
+    setTechSameAsOrganizer(false);
     setShowTechForm(true);
   };
 
   const cancelTechForm = () => {
     setShowTechForm(false);
     setTechDraft(emptyDraft());
+    setTechSameAsOrganizer(false);
   };
 
   const renderEntryRow = (
