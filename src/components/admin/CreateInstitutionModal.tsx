@@ -32,6 +32,7 @@ const formSchema = z.object({
   postal_code: z.string().min(1, 'Postal code is required'),
   country: z.string().min(1, 'Country is required'),
   invoice_email: z.string().email('Valid email is required'),
+  website: z.string().url('Enter a valid URL').optional().or(z.literal('')),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -56,6 +57,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
       postal_code: '',
       country: 'Croatia',
       invoice_email: '',
+      website: '',
     },
   });
 
@@ -72,6 +74,7 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
         postal_code: data.postal_code,
         country: data.country,
         invoice_email: data.invoice_email,
+        website: data.website || null,
       });
 
       if (error) throw error;
@@ -191,6 +194,20 @@ export function CreateInstitutionModal({ open, onOpenChange }: CreateInstitution
                   <FormLabel>{t('institutionModal.invoiceEmail')}</FormLabel>
                   <FormControl>
                     <Input type="email" placeholder="invoices@company.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="website"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('institutionModal.website') || 'Web stranica / Website'}</FormLabel>
+                  <FormControl>
+                    <Input type="url" placeholder="https://www.example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
