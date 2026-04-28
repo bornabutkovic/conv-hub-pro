@@ -17,9 +17,19 @@ export interface OrganizerEntry {
   phone?: string;
 }
 
+export interface SupportContactEntry {
+  name?: string;
+  email?: string;
+  phone_mobile?: string;
+  phone_landline?: string;
+  working_hours?: string;
+  website?: string;
+}
+
 export interface OrganizersInfo {
   co_organizers: OrganizerEntry[];
   technical_organizer: OrganizerEntry | null;
+  support_contact?: SupportContactEntry | null;
 }
 
 interface Props {
@@ -55,6 +65,71 @@ export function OrganizersInlineEditor({ value, onChange }: Props) {
 
   const [showTechForm, setShowTechForm] = useState(false);
   const [techDraft, setTechDraft] = useState<OrganizerEntry>(emptyDraft());
+
+  const supportContact = value.support_contact || null;
+  const emptySupportDraft = (): SupportContactEntry => ({
+    name: '',
+    email: '',
+    phone_mobile: '',
+    phone_landline: '',
+    working_hours: '',
+    website: '',
+  });
+  const [showSupportForm, setShowSupportForm] = useState(false);
+  const [supportDraft, setSupportDraft] = useState<SupportContactEntry>(emptySupportDraft());
+
+  const cleanSupport = (s: SupportContactEntry): SupportContactEntry => {
+    const out: SupportContactEntry = {};
+    (['name', 'email', 'phone_mobile', 'phone_landline', 'working_hours', 'website'] as const).forEach((k) => {
+      const v = (s[k] || '').trim();
+      if (v) (out as any)[k] = v;
+    });
+    return out;
+  };
+
+  const supportHasData = (s: SupportContactEntry | null): boolean => {
+    if (!s) return false;
+    return Boolean(
+      (s.name || '').trim() ||
+      (s.email || '').trim() ||
+      (s.phone_mobile || '').trim() ||
+      (s.phone_landline || '').trim() ||
+      (s.working_hours || '').trim() ||
+      (s.website || '').trim()
+    );
+  };
+
+  const removeSupport = () => {
+    onChange({ ...value, support_contact: null });
+    setShowSupportForm(false);
+    setSupportDraft(emptySupportDraft());
+  };
+
+  const saveSupport = () => {
+    const cleaned = cleanSupport(supportDraft);
+    if (Object.keys(cleaned).length === 0) {
+      removeSupport();
+      return;
+    }
+    onChange({ ...value, support_contact: cleaned });
+    setSupportDraft(emptySupportDraft());
+    setShowSupportForm(false);
+  };
+
+  const startEditSupport = () => {
+    setSupportDraft({ ...emptySupportDraft(), ...(supportContact || {}) });
+    setShowSupportForm(true);
+  };
+
+  const startNewSupport = () => {
+    setSupportDraft(emptySupportDraft());
+    setShowSupportForm(true);
+  };
+
+  const cancelSupportForm = () => {
+    setShowSupportForm(false);
+    setSupportDraft(emptySupportDraft());
+  };
 
   const saveCoOrganizer = () => {
     if (!coDraft.name.trim()) {
@@ -289,6 +364,102 @@ export function OrganizersInlineEditor({ value, onChange }: Props) {
               <Button type="button" variant="outline" size="sm" onClick={startNewTech}>
                 <Plus className="h-4 w-4 mr-1" />
                 Dodaj tehničkog organizatora
+              </Button>
+            )
+          )}
+        </div>
+
+        <Separator />
+
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold">Kontakt podrške / Support Contact</h4>
+          {supportHasData(supportContact) ? (
+            <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
+              <div className="flex items-center gap-2 text-sm min-w-0">
+                <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="truncate font-medium">
+                  {supportContact?.name || supportContact?.email || 'Kontakt podrške'}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={startEditSupport}>
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={removeSupport}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nema kontakta podrške</p>
+          )}
+
+          {showSupportForm ? (
+            <div className="space-y-3 rounded-md border bg-muted/20 p-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Naziv / Name</Label>
+                  <Input
+                    value={supportDraft.name || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Email</Label>
+                  <Input
+                    type="email"
+                    value={supportDraft.email || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, email: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Telefon mobilni</Label>
+                  <Input
+                    value={supportDraft.phone_mobile || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, phone_mobile: e.target.value })}
+                    placeholder="+385..."
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Telefon fiksni</Label>
+                  <Input
+                    value={supportDraft.phone_landline || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, phone_landline: e.target.value })}
+                    placeholder="+385 1 ..."
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Radno vrijeme</Label>
+                  <Input
+                    value={supportDraft.working_hours || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, working_hours: e.target.value })}
+                    placeholder="Pon – Pet 08–17h"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Web stranica</Label>
+                  <Input
+                    type="url"
+                    value={supportDraft.website || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, website: e.target.value })}
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button type="button" variant="ghost" size="sm" onClick={cancelSupportForm}>
+                  Odustani
+                </Button>
+                <Button type="button" size="sm" onClick={saveSupport}>
+                  Spremi
+                </Button>
+              </div>
+            </div>
+          ) : (
+            !supportHasData(supportContact) && (
+              <Button type="button" variant="outline" size="sm" onClick={startNewSupport}>
+                <Plus className="h-4 w-4 mr-1" />
+                Dodaj kontakt podrške
               </Button>
             )
           )}
