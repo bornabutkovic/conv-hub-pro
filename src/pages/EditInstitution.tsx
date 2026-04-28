@@ -227,6 +227,20 @@ export default function EditInstitution() {
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="website"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Web stranica / Website</FormLabel>
+                      <FormControl>
+                        <Input type="url" placeholder="https://www.example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <div className="flex justify-end gap-3 pt-4">
                   <Button type="button" variant="outline" onClick={() => navigate('/admin')}>
                     Cancel
