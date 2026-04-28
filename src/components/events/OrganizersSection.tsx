@@ -23,9 +23,19 @@ interface OrganizerEntry {
   same_as_organizer?: boolean;
 }
 
+interface SupportContact {
+  name?: string;
+  email?: string;
+  phone_mobile?: string;
+  phone_landline?: string;
+  working_hours?: string;
+  website?: string;
+}
+
 interface OrganizersInfo {
   co_organizers?: OrganizerEntry[];
   technical_organizer?: OrganizerEntry | null;
+  support_contact?: SupportContact | null;
 }
 
 interface OrganizersSectionProps {
@@ -55,6 +65,23 @@ const cleanEntry = (e: OrganizerEntry): OrganizerEntry => {
   }
   return out;
 };
+
+const emptySupportDraft = (): SupportContact => ({
+  name: '', email: '', phone_mobile: '', phone_landline: '', working_hours: '', website: ''
+});
+
+const cleanSupport = (e: SupportContact): SupportContact => {
+  const out: SupportContact = {};
+  (['name', 'email', 'phone_mobile', 'phone_landline', 'working_hours', 'website'] as const).forEach((k) => {
+    const v = (e[k] || '').trim();
+    if (v) (out as any)[k] = v;
+  });
+  return out;
+};
+
+const isSupportEmpty = (e: SupportContact): boolean =>
+  !['name', 'email', 'phone_mobile', 'phone_landline', 'working_hours', 'website']
+    .some((k) => ((e as any)[k] || '').trim());
 
 export function OrganizersSection({ eventId }: OrganizersSectionProps) {
   const queryClient = useQueryClient();
