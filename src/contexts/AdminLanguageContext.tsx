@@ -350,6 +350,7 @@ const translations = {
   'institutionModal.postalCode': { hr: 'Poštanski broj', en: 'Postal Code' },
   'institutionModal.country': { hr: 'Država', en: 'Country' },
   'institutionModal.invoiceEmail': { hr: 'Email za fakture', en: 'Invoice Email' },
+  'institutionModal.website': { hr: 'Web stranica', en: 'Website' },
   'institutionModal.save': { hr: 'Spremi', en: 'Save' },
   'institutionModal.create': { hr: 'Stvori instituciju', en: 'Create Institution' },
   'institutionModal.creating': { hr: 'Stvaranje...', en: 'Creating...' },
