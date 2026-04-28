@@ -96,6 +96,10 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
   const [techDraft, setTechDraft] = useState<OrganizerEntry>(emptyDraft());
   const [techSameAsOrganizer, setTechSameAsOrganizer] = useState<boolean>(false);
 
+  // Support contact form state
+  const [showSupportForm, setShowSupportForm] = useState(false);
+  const [supportDraft, setSupportDraft] = useState<SupportContact>(emptySupportDraft());
+
   const handleTechSameAsOrganizerChange = async (checked: boolean) => {
     setTechSameAsOrganizer(checked);
     if (!checked) {
