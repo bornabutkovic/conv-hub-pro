@@ -66,6 +66,71 @@ export function OrganizersInlineEditor({ value, onChange }: Props) {
   const [showTechForm, setShowTechForm] = useState(false);
   const [techDraft, setTechDraft] = useState<OrganizerEntry>(emptyDraft());
 
+  const supportContact = value.support_contact || null;
+  const emptySupportDraft = (): SupportContactEntry => ({
+    name: '',
+    email: '',
+    phone_mobile: '',
+    phone_landline: '',
+    working_hours: '',
+    website: '',
+  });
+  const [showSupportForm, setShowSupportForm] = useState(false);
+  const [supportDraft, setSupportDraft] = useState<SupportContactEntry>(emptySupportDraft());
+
+  const cleanSupport = (s: SupportContactEntry): SupportContactEntry => {
+    const out: SupportContactEntry = {};
+    (['name', 'email', 'phone_mobile', 'phone_landline', 'working_hours', 'website'] as const).forEach((k) => {
+      const v = (s[k] || '').trim();
+      if (v) (out as any)[k] = v;
+    });
+    return out;
+  };
+
+  const supportHasData = (s: SupportContactEntry | null): boolean => {
+    if (!s) return false;
+    return Boolean(
+      (s.name || '').trim() ||
+      (s.email || '').trim() ||
+      (s.phone_mobile || '').trim() ||
+      (s.phone_landline || '').trim() ||
+      (s.working_hours || '').trim() ||
+      (s.website || '').trim()
+    );
+  };
+
+  const removeSupport = () => {
+    onChange({ ...value, support_contact: null });
+    setShowSupportForm(false);
+    setSupportDraft(emptySupportDraft());
+  };
+
+  const saveSupport = () => {
+    const cleaned = cleanSupport(supportDraft);
+    if (Object.keys(cleaned).length === 0) {
+      removeSupport();
+      return;
+    }
+    onChange({ ...value, support_contact: cleaned });
+    setSupportDraft(emptySupportDraft());
+    setShowSupportForm(false);
+  };
+
+  const startEditSupport = () => {
+    setSupportDraft({ ...emptySupportDraft(), ...(supportContact || {}) });
+    setShowSupportForm(true);
+  };
+
+  const startNewSupport = () => {
+    setSupportDraft(emptySupportDraft());
+    setShowSupportForm(true);
+  };
+
+  const cancelSupportForm = () => {
+    setShowSupportForm(false);
+    setSupportDraft(emptySupportDraft());
+  };
+
   const saveCoOrganizer = () => {
     if (!coDraft.name.trim()) {
       toast.error('Naziv je obavezan');
