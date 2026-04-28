@@ -17,9 +17,19 @@ export interface OrganizerEntry {
   phone?: string;
 }
 
+export interface SupportContactEntry {
+  name?: string;
+  email?: string;
+  phone_mobile?: string;
+  phone_landline?: string;
+  working_hours?: string;
+  website?: string;
+}
+
 export interface OrganizersInfo {
   co_organizers: OrganizerEntry[];
   technical_organizer: OrganizerEntry | null;
+  support_contact?: SupportContactEntry | null;
 }
 
 interface Props {
