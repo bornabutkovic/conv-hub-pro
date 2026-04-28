@@ -20,6 +20,7 @@ interface Institution {
   postal_code: string | null;
   country: string | null;
   invoice_email: string;
+  website?: string | null;
 }
 
 export default function Settings() {
@@ -56,7 +57,7 @@ export default function Settings() {
       try {
         const { data, error } = await supabase
           .from('institutions')
-          .select('id, name, oib, address, city, postal_code, country, invoice_email')
+          .select('id, name, oib, address, city, postal_code, country, invoice_email, website')
           .eq('id', profile.institution_uuid)
           .single();
 
@@ -277,6 +278,14 @@ export default function Settings() {
                   <label className="text-sm font-medium text-muted-foreground">{t('settings.invoiceEmail')}</label>
                   <p>{institution.invoice_email}</p>
                 </div>
+                {institution.website && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">{t('settings.website')}</label>
+                    <a href={institution.website} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">
+                      {institution.website}
+                    </a>
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-center py-8 text-muted-foreground">

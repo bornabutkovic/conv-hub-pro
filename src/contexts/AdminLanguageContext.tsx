@@ -433,6 +433,7 @@ const translations = {
   'settings.vatOib': { hr: 'OIB / Porezni broj', en: 'VAT Number / OIB' },
   'settings.address': { hr: 'Adresa', en: 'Address' },
   'settings.invoiceEmail': { hr: 'Email za fakture', en: 'Invoice Email' },
+  'settings.website': { hr: 'Web stranica', en: 'Website' },
   'settings.noInstitution': { hr: 'Nema povezane institucije', en: 'No institution linked' },
   'settings.contactAdmin': { hr: 'Kontaktirajte administratora za dodjelu organizacije.', en: 'Contact an admin to assign you to an organization.' },
 
