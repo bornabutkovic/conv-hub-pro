@@ -368,6 +368,102 @@ export function OrganizersInlineEditor({ value, onChange }: Props) {
             )
           )}
         </div>
+
+        <Separator />
+
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold">Kontakt podrške / Support Contact</h4>
+          {supportHasData(supportContact) ? (
+            <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
+              <div className="flex items-center gap-2 text-sm min-w-0">
+                <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="truncate font-medium">
+                  {supportContact?.name || supportContact?.email || 'Kontakt podrške'}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={startEditSupport}>
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={removeSupport}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nema kontakta podrške</p>
+          )}
+
+          {showSupportForm ? (
+            <div className="space-y-3 rounded-md border bg-muted/20 p-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Naziv / Name</Label>
+                  <Input
+                    value={supportDraft.name || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Email</Label>
+                  <Input
+                    type="email"
+                    value={supportDraft.email || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, email: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Telefon mobilni</Label>
+                  <Input
+                    value={supportDraft.phone_mobile || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, phone_mobile: e.target.value })}
+                    placeholder="+385..."
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Telefon fiksni</Label>
+                  <Input
+                    value={supportDraft.phone_landline || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, phone_landline: e.target.value })}
+                    placeholder="+385 1 ..."
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Radno vrijeme</Label>
+                  <Input
+                    value={supportDraft.working_hours || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, working_hours: e.target.value })}
+                    placeholder="Pon – Pet 08–17h"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Web stranica</Label>
+                  <Input
+                    type="url"
+                    value={supportDraft.website || ''}
+                    onChange={(e) => setSupportDraft({ ...supportDraft, website: e.target.value })}
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button type="button" variant="ghost" size="sm" onClick={cancelSupportForm}>
+                  Odustani
+                </Button>
+                <Button type="button" size="sm" onClick={saveSupport}>
+                  Spremi
+                </Button>
+              </div>
+            </div>
+          ) : (
+            !supportHasData(supportContact) && (
+              <Button type="button" variant="outline" size="sm" onClick={startNewSupport}>
+                <Plus className="h-4 w-4 mr-1" />
+                Dodaj kontakt podrške
+              </Button>
+            )
+          )}
+        </div>
       </CardContent>
     </Card>
   );
