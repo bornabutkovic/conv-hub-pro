@@ -219,6 +219,28 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
             )}
             Upload Banner
           </Button>
+
+          {/* Banner Height */}
+          <div className="space-y-1.5 pt-2">
+            <Label className="text-xs text-muted-foreground">Banner Height (px)</Label>
+            <Input
+              type="number"
+              min={100}
+              max={1000}
+              step={10}
+              placeholder="e.g. 400"
+              value={values.branding_banner_height ?? ''}
+              onChange={(e) =>
+                updateField(
+                  'branding_banner_height',
+                  e.target.value ? parseInt(e.target.value) : null
+                )
+              }
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty to use responsive default (300px mobile / 400px desktop)
+            </p>
+          </div>
         </div>
       </div>
 
