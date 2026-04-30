@@ -154,6 +154,13 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
   // Support contact form state
   const [showSupportForm, setShowSupportForm] = useState(false);
   const [supportDraft, setSupportDraft] = useState<SupportContact>(emptySupportDraft());
+  const [workingHoursParts, setWorkingHoursParts] = useState<WorkingHoursParts>(emptyWorkingHoursParts());
+
+  const updateWorkingHoursPart = (key: keyof WorkingHoursParts, val: string) => {
+    const next = { ...workingHoursParts, [key]: val };
+    setWorkingHoursParts(next);
+    setSupportDraft((d) => ({ ...d, working_hours: formatWorkingHours(next) }));
+  };
 
   const handleTechSameAsOrganizerChange = async (checked: boolean) => {
     setTechSameAsOrganizer(checked);
