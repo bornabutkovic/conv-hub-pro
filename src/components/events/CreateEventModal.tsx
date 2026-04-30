@@ -267,6 +267,7 @@ export function CreateEventModal({
           branding_text_color: branding.branding_text_color,
           branding_logo_url: branding.branding_logo_url,
           branding_banner_url: branding.branding_banner_url,
+          branding_banner_height: branding.branding_banner_height,
         })
         .select('id')
         .single();
