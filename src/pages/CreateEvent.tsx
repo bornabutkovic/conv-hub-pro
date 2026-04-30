@@ -267,6 +267,7 @@ export default function CreateEvent() {
           branding_text_color: branding.branding_text_color,
           branding_logo_url: branding.branding_logo_url,
           branding_banner_url: branding.branding_banner_url,
+          branding_banner_height: branding.branding_banner_height,
           organizers_info: (organizersInfo.co_organizers.length > 0 || organizersInfo.technical_organizer)
             ? (organizersInfo as any)
             : {},
