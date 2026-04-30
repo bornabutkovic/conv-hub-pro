@@ -8,7 +8,62 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { X, Building2, Loader2, Plus, Pencil } from 'lucide-react';
+
+const WORKING_DAYS = [
+  { value: 'Monday', label: 'Ponedjeljak' },
+  { value: 'Tuesday', label: 'Utorak' },
+  { value: 'Wednesday', label: 'Srijeda' },
+  { value: 'Thursday', label: 'Četvrtak' },
+  { value: 'Friday', label: 'Petak' },
+  { value: 'Saturday', label: 'Subota' },
+  { value: 'Sunday', label: 'Nedjelja' },
+];
+
+const WORKING_HOURS_OPTIONS = Array.from({ length: 15 }, (_, i) => {
+  const h = (7 + i).toString().padStart(2, '0');
+  return `${h}:00`;
+});
+
+interface WorkingHoursParts {
+  dayFrom: string;
+  dayTo: string;
+  timeFrom: string;
+  timeTo: string;
+}
+
+const emptyWorkingHoursParts = (): WorkingHoursParts => ({
+  dayFrom: '', dayTo: '', timeFrom: '', timeTo: '',
+});
+
+const parseWorkingHours = (value?: string): WorkingHoursParts => {
+  const parts = emptyWorkingHoursParts();
+  if (!value) return parts;
+  // Format: "Monday–Friday 08:00–17:00" (en-dash). Be lenient and accept "-" too.
+  const m = value.match(/^([A-Za-z]+)\s*[–-]\s*([A-Za-z]+)\s+(\d{2}:\d{2})\s*[–-]\s*(\d{2}:\d{2})$/);
+  if (!m) return parts;
+  const [, df, dt, tf, tt] = m;
+  const validDays = WORKING_DAYS.map((d) => d.value);
+  if (validDays.includes(df)) parts.dayFrom = df;
+  if (validDays.includes(dt)) parts.dayTo = dt;
+  if (WORKING_HOURS_OPTIONS.includes(tf)) parts.timeFrom = tf;
+  if (WORKING_HOURS_OPTIONS.includes(tt)) parts.timeTo = tt;
+  return parts;
+};
+
+const formatWorkingHours = (p: WorkingHoursParts): string => {
+  if (p.dayFrom && p.dayTo && p.timeFrom && p.timeTo) {
+    return `${p.dayFrom}–${p.dayTo} ${p.timeFrom}–${p.timeTo}`;
+  }
+  return '';
+};
 
 interface OrganizerEntry {
   name: string;
