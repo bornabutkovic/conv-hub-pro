@@ -253,7 +253,14 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
         >
           {/* Banner preview */}
           {values.branding_banner_url ? (
-            <div className="w-full h-20 overflow-hidden">
+            <div
+              className="w-full overflow-hidden"
+              style={{
+                height: values.branding_banner_height
+                  ? `${Math.round(values.branding_banner_height / 6)}px`
+                  : '5rem',
+              }}
+            >
               <img
                 src={values.branding_banner_url}
                 alt="Banner preview"
@@ -262,8 +269,13 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
             </div>
           ) : (
             <div
-              className="w-full h-20"
-              style={{ backgroundColor: values.branding_primary_color }}
+              className="w-full"
+              style={{
+                backgroundColor: values.branding_primary_color,
+                height: values.branding_banner_height
+                  ? `${Math.round(values.branding_banner_height / 6)}px`
+                  : '5rem',
+              }}
             />
           )}
           {/* Content preview */}
