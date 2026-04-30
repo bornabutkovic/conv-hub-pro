@@ -8,7 +8,62 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { X, Building2, Loader2, Plus, Pencil } from 'lucide-react';
+
+const WORKING_DAYS = [
+  { value: 'Monday', label: 'Ponedjeljak' },
+  { value: 'Tuesday', label: 'Utorak' },
+  { value: 'Wednesday', label: 'Srijeda' },
+  { value: 'Thursday', label: 'Četvrtak' },
+  { value: 'Friday', label: 'Petak' },
+  { value: 'Saturday', label: 'Subota' },
+  { value: 'Sunday', label: 'Nedjelja' },
+];
+
+const WORKING_HOURS_OPTIONS = Array.from({ length: 15 }, (_, i) => {
+  const h = (7 + i).toString().padStart(2, '0');
+  return `${h}:00`;
+});
+
+interface WorkingHoursParts {
+  dayFrom: string;
+  dayTo: string;
+  timeFrom: string;
+  timeTo: string;
+}
+
+const emptyWorkingHoursParts = (): WorkingHoursParts => ({
+  dayFrom: '', dayTo: '', timeFrom: '', timeTo: '',
+});
+
+const parseWorkingHours = (value?: string): WorkingHoursParts => {
+  const parts = emptyWorkingHoursParts();
+  if (!value) return parts;
+  // Format: "Monday–Friday 08:00–17:00" (en-dash). Be lenient and accept "-" too.
+  const m = value.match(/^([A-Za-z]+)\s*[–-]\s*([A-Za-z]+)\s+(\d{2}:\d{2})\s*[–-]\s*(\d{2}:\d{2})$/);
+  if (!m) return parts;
+  const [, df, dt, tf, tt] = m;
+  const validDays = WORKING_DAYS.map((d) => d.value);
+  if (validDays.includes(df)) parts.dayFrom = df;
+  if (validDays.includes(dt)) parts.dayTo = dt;
+  if (WORKING_HOURS_OPTIONS.includes(tf)) parts.timeFrom = tf;
+  if (WORKING_HOURS_OPTIONS.includes(tt)) parts.timeTo = tt;
+  return parts;
+};
+
+const formatWorkingHours = (p: WorkingHoursParts): string => {
+  if (p.dayFrom && p.dayTo && p.timeFrom && p.timeTo) {
+    return `${p.dayFrom}–${p.dayTo} ${p.timeFrom}–${p.timeTo}`;
+  }
+  return '';
+};
 
 interface OrganizerEntry {
   name: string;
@@ -99,6 +154,13 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
   // Support contact form state
   const [showSupportForm, setShowSupportForm] = useState(false);
   const [supportDraft, setSupportDraft] = useState<SupportContact>(emptySupportDraft());
+  const [workingHoursParts, setWorkingHoursParts] = useState<WorkingHoursParts>(emptyWorkingHoursParts());
+
+  const updateWorkingHoursPart = (key: keyof WorkingHoursParts, val: string) => {
+    const next = { ...workingHoursParts, [key]: val };
+    setWorkingHoursParts(next);
+    setSupportDraft((d) => ({ ...d, working_hours: formatWorkingHours(next) }));
+  };
 
   const handleTechSameAsOrganizerChange = async (checked: boolean) => {
     setTechSameAsOrganizer(checked);
@@ -294,6 +356,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
       await persist({ ...info, support_contact: entry });
       toast.success('Kontakt podrške spremljen');
       setSupportDraft(emptySupportDraft());
+      setWorkingHoursParts(emptyWorkingHoursParts());
       setShowSupportForm(false);
     } catch (err: any) {
       toast.error(err.message || 'Greška pri spremanju');
@@ -309,6 +372,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
       toast.success('Kontakt podrške uklonjen');
       setShowSupportForm(false);
       setSupportDraft(emptySupportDraft());
+      setWorkingHoursParts(emptyWorkingHoursParts());
     } catch (err: any) {
       toast.error(err.message || 'Greška pri uklanjanju');
     } finally {
@@ -319,18 +383,21 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
   const startEditSupport = () => {
     if (supportContact) {
       setSupportDraft({ ...emptySupportDraft(), ...supportContact });
+      setWorkingHoursParts(parseWorkingHours(supportContact.working_hours));
       setShowSupportForm(true);
     }
   };
 
   const startNewSupport = () => {
     setSupportDraft(emptySupportDraft());
+    setWorkingHoursParts(emptyWorkingHoursParts());
     setShowSupportForm(true);
   };
 
   const cancelSupportForm = () => {
     setShowSupportForm(false);
     setSupportDraft(emptySupportDraft());
+    setWorkingHoursParts(emptyWorkingHoursParts());
   };
 
   const renderEntryRow = (
@@ -614,9 +681,70 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
                   <Label className="text-xs">Telefon fiksni</Label>
                   <Input value={supportDraft.phone_landline || ''} onChange={(e) => setSupportDraft({ ...supportDraft, phone_landline: e.target.value })} placeholder="+385 1 ..." disabled={busy} />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 sm:col-span-2">
                   <Label className="text-xs">Radno vrijeme</Label>
-                  <Input value={supportDraft.working_hours || ''} onChange={(e) => setSupportDraft({ ...supportDraft, working_hours: e.target.value })} placeholder="Pon – Pet 08–17h" disabled={busy} />
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Od dana</Label>
+                      <Select
+                        value={workingHoursParts.dayFrom}
+                        onValueChange={(v) => updateWorkingHoursPart('dayFrom', v)}
+                        disabled={busy}
+                      >
+                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectContent>
+                          {WORKING_DAYS.map((d) => (
+                            <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Do dana</Label>
+                      <Select
+                        value={workingHoursParts.dayTo}
+                        onValueChange={(v) => updateWorkingHoursPart('dayTo', v)}
+                        disabled={busy}
+                      >
+                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectContent>
+                          {WORKING_DAYS.map((d) => (
+                            <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Od</Label>
+                      <Select
+                        value={workingHoursParts.timeFrom}
+                        onValueChange={(v) => updateWorkingHoursPart('timeFrom', v)}
+                        disabled={busy}
+                      >
+                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectContent>
+                          {WORKING_HOURS_OPTIONS.map((t) => (
+                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Do</Label>
+                      <Select
+                        value={workingHoursParts.timeTo}
+                        onValueChange={(v) => updateWorkingHoursPart('timeTo', v)}
+                        disabled={busy}
+                      >
+                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectContent>
+                          {WORKING_HOURS_OPTIONS.map((t) => (
+                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Web stranica</Label>
