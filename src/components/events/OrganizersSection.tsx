@@ -356,6 +356,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
       await persist({ ...info, support_contact: entry });
       toast.success('Kontakt podrške spremljen');
       setSupportDraft(emptySupportDraft());
+      setWorkingHoursParts(emptyWorkingHoursParts());
       setShowSupportForm(false);
     } catch (err: any) {
       toast.error(err.message || 'Greška pri spremanju');
@@ -371,6 +372,7 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
       toast.success('Kontakt podrške uklonjen');
       setShowSupportForm(false);
       setSupportDraft(emptySupportDraft());
+      setWorkingHoursParts(emptyWorkingHoursParts());
     } catch (err: any) {
       toast.error(err.message || 'Greška pri uklanjanju');
     } finally {
@@ -381,18 +383,21 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
   const startEditSupport = () => {
     if (supportContact) {
       setSupportDraft({ ...emptySupportDraft(), ...supportContact });
+      setWorkingHoursParts(parseWorkingHours(supportContact.working_hours));
       setShowSupportForm(true);
     }
   };
 
   const startNewSupport = () => {
     setSupportDraft(emptySupportDraft());
+    setWorkingHoursParts(emptyWorkingHoursParts());
     setShowSupportForm(true);
   };
 
   const cancelSupportForm = () => {
     setShowSupportForm(false);
     setSupportDraft(emptySupportDraft());
+    setWorkingHoursParts(emptyWorkingHoursParts());
   };
 
   const renderEntryRow = (
