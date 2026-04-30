@@ -681,9 +681,70 @@ export function OrganizersSection({ eventId }: OrganizersSectionProps) {
                   <Label className="text-xs">Telefon fiksni</Label>
                   <Input value={supportDraft.phone_landline || ''} onChange={(e) => setSupportDraft({ ...supportDraft, phone_landline: e.target.value })} placeholder="+385 1 ..." disabled={busy} />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 sm:col-span-2">
                   <Label className="text-xs">Radno vrijeme</Label>
-                  <Input value={supportDraft.working_hours || ''} onChange={(e) => setSupportDraft({ ...supportDraft, working_hours: e.target.value })} placeholder="Pon – Pet 08–17h" disabled={busy} />
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Od dana</Label>
+                      <Select
+                        value={workingHoursParts.dayFrom}
+                        onValueChange={(v) => updateWorkingHoursPart('dayFrom', v)}
+                        disabled={busy}
+                      >
+                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectContent>
+                          {WORKING_DAYS.map((d) => (
+                            <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Do dana</Label>
+                      <Select
+                        value={workingHoursParts.dayTo}
+                        onValueChange={(v) => updateWorkingHoursPart('dayTo', v)}
+                        disabled={busy}
+                      >
+                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectContent>
+                          {WORKING_DAYS.map((d) => (
+                            <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Od</Label>
+                      <Select
+                        value={workingHoursParts.timeFrom}
+                        onValueChange={(v) => updateWorkingHoursPart('timeFrom', v)}
+                        disabled={busy}
+                      >
+                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectContent>
+                          {WORKING_HOURS_OPTIONS.map((t) => (
+                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Do</Label>
+                      <Select
+                        value={workingHoursParts.timeTo}
+                        onValueChange={(v) => updateWorkingHoursPart('timeTo', v)}
+                        disabled={busy}
+                      >
+                        <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectContent>
+                          {WORKING_HOURS_OPTIONS.map((t) => (
+                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Web stranica</Label>
