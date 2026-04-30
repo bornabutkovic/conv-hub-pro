@@ -13,6 +13,7 @@ interface BrandingValues {
   branding_text_color: string;
   branding_logo_url: string | null;
   branding_banner_url: string | null;
+  branding_banner_height: number | null;
 }
 
 interface BrandingSectionProps {
@@ -218,6 +219,28 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
             )}
             Upload Banner
           </Button>
+
+          {/* Banner Height */}
+          <div className="space-y-1.5 pt-2">
+            <Label className="text-xs text-muted-foreground">Banner Height (px)</Label>
+            <Input
+              type="number"
+              min={100}
+              max={1000}
+              step={10}
+              placeholder="e.g. 400"
+              value={values.branding_banner_height ?? ''}
+              onChange={(e) =>
+                updateField(
+                  'branding_banner_height',
+                  e.target.value ? parseInt(e.target.value) : null
+                )
+              }
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty to use responsive default (300px mobile / 400px desktop)
+            </p>
+          </div>
         </div>
       </div>
 
@@ -230,7 +253,14 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
         >
           {/* Banner preview */}
           {values.branding_banner_url ? (
-            <div className="w-full h-20 overflow-hidden">
+            <div
+              className="w-full overflow-hidden"
+              style={{
+                height: values.branding_banner_height
+                  ? `${Math.round(values.branding_banner_height / 6)}px`
+                  : '5rem',
+              }}
+            >
               <img
                 src={values.branding_banner_url}
                 alt="Banner preview"
@@ -239,8 +269,13 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
             </div>
           ) : (
             <div
-              className="w-full h-20"
-              style={{ backgroundColor: values.branding_primary_color }}
+              className="w-full"
+              style={{
+                backgroundColor: values.branding_primary_color,
+                height: values.branding_banner_height
+                  ? `${Math.round(values.branding_banner_height / 6)}px`
+                  : '5rem',
+              }}
             />
           )}
           {/* Content preview */}

@@ -126,6 +126,7 @@ export default function CreateEvent() {
     branding_text_color: '#1f2937',
     branding_logo_url: null as string | null,
     branding_banner_url: null as string | null,
+    branding_banner_height: null as number | null,
   });
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
@@ -266,6 +267,7 @@ export default function CreateEvent() {
           branding_text_color: branding.branding_text_color,
           branding_logo_url: branding.branding_logo_url,
           branding_banner_url: branding.branding_banner_url,
+          branding_banner_height: branding.branding_banner_height,
           organizers_info: (organizersInfo.co_organizers.length > 0 || organizersInfo.technical_organizer)
             ? (organizersInfo as any)
             : {},

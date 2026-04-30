@@ -142,6 +142,7 @@ export function EditEventModal({
     branding_text_color: '#1f2937',
     branding_logo_url: null as string | null,
     branding_banner_url: null as string | null,
+    branding_banner_height: null as number | null,
   });
 
   const form = useForm<EditEventForm>({
@@ -225,6 +226,7 @@ export function EditEventModal({
         branding_text_color: event.branding_text_color || '#1f2937',
         branding_logo_url: event.branding_logo_url || null,
         branding_banner_url: event.branding_banner_url || null,
+        branding_banner_height: (event as any).branding_banner_height ?? null,
       });
 
       const trans = (event.translations as any)?.en || {};
@@ -299,6 +301,7 @@ export function EditEventModal({
           branding_text_color: branding.branding_text_color,
           branding_logo_url: branding.branding_logo_url,
           branding_banner_url: branding.branding_banner_url,
+          branding_banner_height: branding.branding_banner_height,
         })
         .eq('id', event.id);
 

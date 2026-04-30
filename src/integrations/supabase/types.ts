@@ -615,6 +615,7 @@ export type Database = {
           bc_position: string | null
           bc_reference: string | null
           bc_vat_bus_posting_group: string | null
+          branding_banner_height: number | null
           branding_banner_url: string | null
           branding_favicon_url: string | null
           branding_logo_url: string | null
@@ -624,6 +625,7 @@ export type Database = {
           cancellation_policy: string | null
           created_at: string | null
           currency: string | null
+          default_lang: string | null
           description: string | null
           early_bird_deadline: string | null
           end_date: string | null
@@ -665,6 +667,7 @@ export type Database = {
           bc_position?: string | null
           bc_reference?: string | null
           bc_vat_bus_posting_group?: string | null
+          branding_banner_height?: number | null
           branding_banner_url?: string | null
           branding_favicon_url?: string | null
           branding_logo_url?: string | null
@@ -674,6 +677,7 @@ export type Database = {
           cancellation_policy?: string | null
           created_at?: string | null
           currency?: string | null
+          default_lang?: string | null
           description?: string | null
           early_bird_deadline?: string | null
           end_date?: string | null
@@ -715,6 +719,7 @@ export type Database = {
           bc_position?: string | null
           bc_reference?: string | null
           bc_vat_bus_posting_group?: string | null
+          branding_banner_height?: number | null
           branding_banner_url?: string | null
           branding_favicon_url?: string | null
           branding_logo_url?: string | null
@@ -724,6 +729,7 @@ export type Database = {
           cancellation_policy?: string | null
           created_at?: string | null
           currency?: string | null
+          default_lang?: string | null
           description?: string | null
           early_bird_deadline?: string | null
           end_date?: string | null
@@ -1610,6 +1616,69 @@ export type Database = {
           },
         ]
       }
+      whatsapp_consents: {
+        Row: {
+          channel: string
+          consent_message: string | null
+          consent_text: string
+          consent_version: string
+          consented_at: string
+          created_at: string
+          event_id: string | null
+          event_slug: string | null
+          id: string
+          ip_address: string | null
+          privacy_policy_url: string
+          user_agent: string | null
+          wa_id: string
+        }
+        Insert: {
+          channel?: string
+          consent_message?: string | null
+          consent_text: string
+          consent_version: string
+          consented_at?: string
+          created_at?: string
+          event_id?: string | null
+          event_slug?: string | null
+          id?: string
+          ip_address?: string | null
+          privacy_policy_url: string
+          user_agent?: string | null
+          wa_id: string
+        }
+        Update: {
+          channel?: string
+          consent_message?: string | null
+          consent_text?: string
+          consent_version?: string
+          consented_at?: string
+          created_at?: string
+          event_id?: string | null
+          event_slug?: string | null
+          id?: string
+          ip_address?: string | null
+          privacy_policy_url?: string
+          user_agent?: string | null
+          wa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_consents_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_consents_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "view_events_full"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_session: {
         Row: {
           attendees_collected: number | null
@@ -1621,6 +1690,9 @@ export type Database = {
           company_address: string | null
           company_name: string | null
           company_oib: string | null
+          consent_given: boolean | null
+          consent_given_at: string | null
+          consent_version: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
@@ -1632,6 +1704,8 @@ export type Database = {
           event_name: string | null
           event_slug: string | null
           first_name: string | null
+          lang: string | null
+          language: string | null
           last_ai_message: string | null
           last_human_message: string | null
           last_intent: string | null
@@ -1663,6 +1737,9 @@ export type Database = {
           company_address?: string | null
           company_name?: string | null
           company_oib?: string | null
+          consent_given?: boolean | null
+          consent_given_at?: string | null
+          consent_version?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -1674,6 +1751,8 @@ export type Database = {
           event_name?: string | null
           event_slug?: string | null
           first_name?: string | null
+          lang?: string | null
+          language?: string | null
           last_ai_message?: string | null
           last_human_message?: string | null
           last_intent?: string | null
@@ -1705,6 +1784,9 @@ export type Database = {
           company_address?: string | null
           company_name?: string | null
           company_oib?: string | null
+          consent_given?: boolean | null
+          consent_given_at?: string | null
+          consent_version?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -1716,6 +1798,8 @@ export type Database = {
           event_name?: string | null
           event_slug?: string | null
           first_name?: string | null
+          lang?: string | null
+          language?: string | null
           last_ai_message?: string | null
           last_human_message?: string | null
           last_intent?: string | null
@@ -2231,9 +2315,9 @@ export type Database = {
       get_session_missing_fields: {
         Args: { p_wa_id: string }
         Returns: {
+          is_ready: boolean
           missing_fields: string[]
-          missing_summary: string
-          ready_for_submit: boolean
+          summary: string
         }[]
       }
       get_user_event_status: {
@@ -2258,6 +2342,18 @@ export type Database = {
       jwt_is_admin: { Args: never; Returns: boolean }
       jwt_role: { Args: never; Returns: string }
       normalize_phone_to_waid: { Args: { phone: string }; Returns: string }
+      record_whatsapp_consent: {
+        Args: {
+          p_consent_message: string
+          p_consent_text: string
+          p_consent_version: string
+          p_event_id?: string
+          p_event_slug?: string
+          p_privacy_url: string
+          p_wa_id: string
+        }
+        Returns: undefined
+      }
       unaccent: { Args: { "": string }; Returns: string }
       update_completed_events: { Args: never; Returns: undefined }
       upsert_wa_session: {
@@ -2267,25 +2363,16 @@ export type Database = {
           wa_id: string
         }[]
       }
-      upsert_whatsapp_session:
-        | { Args: { p_event_slug?: string; p_wa_id: string }; Returns: Json }
-        | {
-            Args: {
-              p_event_slug?: string
-              p_last_message?: string
-              p_wa_id: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_event_slug?: string
-              p_force_reset?: boolean
-              p_last_message?: string
-              p_wa_id: string
-            }
-            Returns: Json
-          }
+      upsert_whatsapp_session: {
+        Args: {
+          p_event_slug?: string
+          p_force_reset?: boolean
+          p_lang?: string
+          p_last_message?: string
+          p_wa_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       payer_type: "individual" | "company" | "sponsor"
