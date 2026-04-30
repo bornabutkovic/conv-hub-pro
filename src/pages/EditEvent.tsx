@@ -228,6 +228,7 @@ export default function EditEvent() {
         branding_text_color: event.branding_text_color || '#1f2937',
         branding_logo_url: event.branding_logo_url || null,
         branding_banner_url: event.branding_banner_url || null,
+        branding_banner_height: (event as any).branding_banner_height ?? null,
       });
 
       const trans = (event.translations as any)?.en || {};
