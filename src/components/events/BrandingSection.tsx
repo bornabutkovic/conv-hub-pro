@@ -13,6 +13,7 @@ interface BrandingValues {
   branding_text_color: string;
   branding_logo_url: string | null;
   branding_banner_url: string | null;
+  branding_banner_height: number | null;
 }
 
 interface BrandingSectionProps {
