@@ -158,11 +158,11 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
         if (orderError) throw orderError;
       }
 
-      toast.success('Promjene su spremljene / Changes saved');
+      toast.success('Promjene su spremljene');
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.message || 'Greška pri spremanju / Save failed');
+      toast.error(err.message || 'Greška pri spremanju');
     } finally {
       setIsSaving(false);
     }
