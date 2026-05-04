@@ -487,7 +487,7 @@ export function EventAttendeesTable({
         <AttendeeDetailModal
           open={!!selectedAttendee}
           onOpenChange={open => { if (!open) setSelectedAttendee(null); }}
-          attendee={{ ...selectedAttendee, bc_invoice_number: selectedAttendee.bc_quote_number || selectedAttendee.fiscal_invoice_number }}
+          attendee={selectedAttendee}
           currency={currency}
         />
       )}
