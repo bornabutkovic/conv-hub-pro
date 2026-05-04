@@ -423,45 +423,45 @@ export function EventAttendeesTable({
                     return (
                       <TableRow
                         key={attendee.attendee_id}
-                        className="cursor-pointer hover:bg-muted/40 text-sm"
+                        className="h-10 cursor-pointer hover:bg-muted/40 text-xs"
                         onClick={() => setSelectedAttendee(attendee)}
                       >
-                        <TableCell className="font-mono text-sm">
+                        <TableCell className="py-2 px-3 text-xs font-mono">
                           {attendee.order_number ? `#${attendee.order_number}` : '—'}
                         </TableCell>
-                        <TableCell className="font-medium whitespace-nowrap">
+                        <TableCell className="py-2 px-3 text-xs font-medium whitespace-nowrap">
                           {`${attendee.first_name || ''} ${attendee.last_name || ''}`.trim() || '—'}
                         </TableCell>
-                        <TableCell className="text-muted-foreground max-w-[180px] truncate">
+                        <TableCell className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">
                           {attendee.email || '—'}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {formatDate(attendee.registered_at)}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {deadline}
                         </TableCell>
-                        <TableCell className="font-mono text-sm">
+                        <TableCell className="py-2 px-3 text-xs font-mono">
                           {attendee.bc_quote_number || '—'}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {formatDate(attendee.paid_at)}
                         </TableCell>
-                        <TableCell className="font-mono text-sm">
+                        <TableCell className="py-2 px-3 text-xs font-mono">
                           {attendee.fiscal_invoice_number || '—'}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">
+                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {getPaymentMethodLabel(attendee.payment_method)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-2 px-3 text-xs">
                           {getPaymentBadge(attendee.payment_status)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-2 px-3 text-xs">
                           {getCheckinBadge(attendee.checked_in)}
                         </TableCell>
                         <TableCell
                           onClick={e => { e.stopPropagation(); setEditAttendee(attendee); }}
-                          className="text-right"
+                          className="py-2 px-3 text-right"
                         >
                           <Button variant="ghost" size="icon" className="h-7 w-7">
                             <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
