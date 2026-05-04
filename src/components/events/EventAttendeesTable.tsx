@@ -26,13 +26,15 @@ export interface InvoiceAttendee {
   email: string | null;
   event_id: string | null;
   payment_status: string | null;
-  registration_status: string | null;
   checked_in: boolean | null;
   ticket_tier_id: string | null;
   registered_at: string | null;
   order_id: string | null;
   order_number: number | null;
-  bc_invoice_number: string | null;
+  bc_quote_number: string | null;
+  fiscal_invoice_number: string | null;
+  paid_at: string | null;
+  payment_due_days: number | null;
   bc_invoice_id: string | null;
   bc_customer_no: string | null;
   order_status: string | null;
