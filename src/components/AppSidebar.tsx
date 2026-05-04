@@ -119,6 +119,16 @@ export function AppSidebar() {
                             {item.title}
                           </span>
                         )}
+                        {showPendingBadge && pendingCount > 0 && (item.url === '/admin/users' || item.url === '/admin') && (
+                          <span
+                            className={`ml-auto inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs font-semibold ${
+                              collapsed ? 'h-2 w-2 p-0' : 'min-w-[1.25rem] h-5 px-1.5'
+                            }`}
+                            aria-label={`${pendingCount} pending users`}
+                          >
+                            {!collapsed && pendingCount}
+                          </span>
+                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
