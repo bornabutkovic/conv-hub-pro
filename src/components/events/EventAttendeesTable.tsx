@@ -340,13 +340,13 @@ export function EventAttendeesTable({
   return (
     <>
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-2 pt-4 px-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <span>Polaznici / Attendees ({attendees.length})</span>
+                <span>Polaznici ({attendees.length})</span>
               </CardTitle>
-              <CardDescription>Upravljajte registracijama / Manage event registrations</CardDescription>
+              <CardDescription>Upravljajte registracijama</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -360,7 +360,7 @@ export function EventAttendeesTable({
               </Button>
               <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
                 <UserPlus className="h-4 w-4 mr-1.5" />
-                Dodaj polaznika / Add Attendee
+                Dodaj polaznika
               </Button>
             </div>
           </div>
@@ -371,47 +371,47 @@ export function EventAttendeesTable({
               value={paymentFilter}
               onValueChange={v => setPaymentFilter(v as PaymentStatusFilter)}
             >
-              <SelectTrigger className="w-56">
+              <SelectTrigger className="w-44">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Svi / All ({attendees.length})</SelectItem>
-                <SelectItem value="paid">Plaćeno / Paid ({attendees.filter(a => a.payment_status === 'paid').length})</SelectItem>
-                <SelectItem value="pending">Nije plaćeno / Unpaid ({attendees.filter(a => a.payment_status === 'pending').length})</SelectItem>
-                <SelectItem value="overdue">Kasni / Overdue ({attendees.filter(a => a.payment_status === 'overdue').length})</SelectItem>
-                <SelectItem value="refunded">Refundirano / Refunded ({attendees.filter(a => a.payment_status === 'refunded').length})</SelectItem>
-                <SelectItem value="cancelled">Otkazano / Cancelled ({attendees.filter(a => a.payment_status === 'cancelled').length})</SelectItem>
+                <SelectItem value="all">Svi ({attendees.length})</SelectItem>
+                <SelectItem value="paid">Plaćeno ({attendees.filter(a => a.payment_status === 'paid').length})</SelectItem>
+                <SelectItem value="pending">Nije plaćeno ({attendees.filter(a => a.payment_status === 'pending').length})</SelectItem>
+                <SelectItem value="overdue">Kasni ({attendees.filter(a => a.payment_status === 'overdue').length})</SelectItem>
+                <SelectItem value="refunded">Refundirano ({attendees.filter(a => a.payment_status === 'refunded').length})</SelectItem>
+                <SelectItem value="cancelled">Otkazano ({attendees.filter(a => a.payment_status === 'cancelled').length})</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardHeader>
 
-        <CardContent className="p-0">
+        <CardContent className="px-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
-              Učitavanje... / Loading...
+              Učitavanje...
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
-              Nema polaznika / No attendees found
+              Nema polaznika
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="text-xs">
-                    <TableHead className="w-20">Narudžba # / Order #</TableHead>
-                    <TableHead>Ime i prezime / Full Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead className="whitespace-nowrap">Datum reg. / Reg. Date</TableHead>
-                    <TableHead className="whitespace-nowrap">Rok plaćanja / Deadline</TableHead>
-                    <TableHead className="whitespace-nowrap">Broj ponude / Proforma #</TableHead>
-                    <TableHead className="whitespace-nowrap">Datum uplate / Payment Date</TableHead>
-                    <TableHead className="whitespace-nowrap">Broj računa / Invoice #</TableHead>
-                    <TableHead className="whitespace-nowrap">Način plaćanja / Method</TableHead>
-                    <TableHead className="whitespace-nowrap">Status plaćanja / Payment</TableHead>
-                    <TableHead className="whitespace-nowrap">Check-in</TableHead>
-                    <TableHead className="w-10"></TableHead>
+                  <TableRow className="h-10">
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-20">Narudžba #</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Ime i prezime</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Datum reg.</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Rok plaćanja</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. ponude</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Datum uplate</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. računa</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Plaćanje</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Status</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Check-in</TableHead>
+                    <TableHead className="py-2 px-3 w-10"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
