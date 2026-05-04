@@ -1028,13 +1028,6 @@ export type Database = {
             foreignKeyName: "order_items_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "attendee_invoice_summary"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "order_items_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1598,13 +1591,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "view_events_full"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voice_session_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "attendee_invoice_summary"
-            referencedColumns: ["order_id"]
           },
           {
             foreignKeyName: "voice_session_order_id_fkey"
