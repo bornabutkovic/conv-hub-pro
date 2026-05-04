@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
-import { Users, Phone, Mail, Calendar, UserPlus, CheckCircle2, Circle, Copy, Search, FileText, Hash, UsersRound, Download } from 'lucide-react';
+import { format, addDays } from 'date-fns';
+import { Pencil, UserPlus, Download } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -9,15 +9,31 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { AddAttendeeModal } from './AddAttendeeModal';
 import { AttendeeDetailModal } from './AttendeeDetailModal';
 import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 export interface InvoiceAttendee {
   attendee_id: string | null;
@@ -26,23 +42,24 @@ export interface InvoiceAttendee {
   email: string | null;
   event_id: string | null;
   payment_status: string | null;
+  registration_status: string | null;
   checked_in: boolean | null;
   ticket_tier_id: string | null;
   registered_at: string | null;
   order_id: string | null;
   order_number: number | null;
   bc_quote_number: string | null;
-  fiscal_invoice_number: string | null;
-  paid_at: string | null;
-  payment_due_days: number | null;
   bc_invoice_id: string | null;
   bc_customer_no: string | null;
+  fiscal_invoice_number: string | null;
   order_status: string | null;
   payment_method: string | null;
   payer_type: string | null;
   payer_name: string | null;
   total_amount: number | null;
   is_group_order: boolean | null;
+  paid_at: string | null;
+  payment_due_days: number | null;
 }
 
 interface EventAttendeesTableProps {
@@ -53,440 +70,436 @@ interface EventAttendeesTableProps {
   eventName?: string;
 }
 
-type PaymentFilter = 'all' | 'paid' | 'pending' | 'overdue';
+type PaymentStatusFilter = 'all' | 'paid' | 'pending' | 'overdue' | 'refunded' | 'cancelled';
 
-export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 'EUR', eventName }: EventAttendeesTableProps) {
+function getPaymentBadge(status: string | null) {
+  switch (status) {
+    case 'paid':
+      return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15">Plaćeno / Paid</Badge>;
+    case 'pending':
+      return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15">Nije plaćeno / Unpaid</Badge>;
+    case 'overdue':
+      return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15">Kasni / Overdue</Badge>;
+    case 'refunded':
+      return <Badge className="bg-purple-500/15 text-purple-700 border-purple-500/20 hover:bg-purple-500/15">Refundirano / Refunded</Badge>;
+    case 'cancelled':
+      return <Badge variant="secondary">Otkazano / Cancelled</Badge>;
+    default:
+      return <span className="text-muted-foreground text-sm">—</span>;
+  }
+}
+
+function getCheckinBadge(checkedIn: boolean | null) {
+  if (checkedIn) {
+    return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20">Prijavljen / Checked in</Badge>;
+  }
+  return <Badge variant="outline" className="text-muted-foreground">Nije prijavljen / Not checked in</Badge>;
+}
+
+function getPaymentMethodLabel(method: string | null) {
+  if (method === 'stripe') return 'Kreditna kartica / Credit Card';
+  if (method === 'invoice') return 'Bankovna transakcija / Bank Transfer';
+  return '—';
+}
+
+function formatDate(d: string | null | undefined) {
+  if (!d) return '—';
+  try { return format(new Date(d), 'dd MMM yyyy'); } catch { return '—'; }
+}
+
+// ─── Edit Modal ───────────────────────────────────────────────────────────────
+
+interface EditModalProps {
+  attendee: InvoiceAttendee;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  eventId: string;
+}
+
+function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalProps) {
+  const queryClient = useQueryClient();
+  const [isSaving, setIsSaving] = useState(false);
+  const [form, setForm] = useState({
+    first_name: attendee.first_name || '',
+    last_name: attendee.last_name || '',
+    paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
+    fiscal_invoice_number: attendee.fiscal_invoice_number || '',
+    payment_method: attendee.payment_method || '',
+    payment_status: attendee.payment_status || 'pending',
+  });
+
+  const handleSave = async () => {
+    if (!attendee.attendee_id) return;
+    setIsSaving(true);
+    try {
+      // Update attendees table
+      const { error: attError } = await supabase
+        .from('attendees')
+        .update({
+          first_name: form.first_name,
+          last_name: form.last_name,
+          payment_status: form.payment_status,
+        })
+        .eq('id', attendee.attendee_id);
+
+      if (attError) throw attError;
+
+      // Update orders table if order exists
+      if (attendee.order_id) {
+        const { error: orderError } = await supabase
+          .from('orders')
+          .update({
+            paid_at: form.paid_at ? new Date(form.paid_at).toISOString() : null,
+            fiscal_invoice_number: form.fiscal_invoice_number || null,
+            payment_method: form.payment_method || null,
+          })
+          .eq('id', attendee.order_id);
+
+        if (orderError) throw orderError;
+      }
+
+      toast.success('Promjene su spremljene / Changes saved');
+      queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
+      onOpenChange(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Greška pri spremanju / Save failed');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Uredi polaznika / Edit Attendee</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Ime / First Name</Label>
+              <Input
+                value={form.first_name}
+                onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Prezime / Last Name</Label>
+              <Input
+                value={form.last_name}
+                onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Datum plaćanja / Payment Date</Label>
+            <Input
+              type="date"
+              value={form.paid_at}
+              onChange={e => setForm(f => ({ ...f, paid_at: e.target.value }))}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Broj računa / Invoice #</Label>
+            <Input
+              placeholder="npr. 2026-01-0001"
+              value={form.fiscal_invoice_number}
+              onChange={e => setForm(f => ({ ...f, fiscal_invoice_number: e.target.value }))}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Način plaćanja / Payment Method</Label>
+            <Select
+              value={form.payment_method}
+              onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Odaberi / Select" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="stripe">Kreditna kartica / Credit Card</SelectItem>
+                <SelectItem value="invoice">Bankovna transakcija / Bank Transfer</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Status plaćanja / Payment Status</Label>
+            <Select
+              value={form.payment_status}
+              onValueChange={v => setForm(f => ({ ...f, payment_status: v }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Nije plaćeno / Unpaid</SelectItem>
+                <SelectItem value="paid">Plaćeno / Paid</SelectItem>
+                <SelectItem value="overdue">Kasni / Overdue</SelectItem>
+                <SelectItem value="refunded">Refundirano / Refunded</SelectItem>
+                <SelectItem value="cancelled">Otkazano / Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+            Odustani / Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? 'Spremanje...' : 'Spremi / Save'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export function EventAttendeesTable({
+  attendees,
+  isLoading,
+  eventId,
+  currency = 'EUR',
+  eventName,
+}: EventAttendeesTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>('all');
-  const [invoiceSearch, setInvoiceSearch] = useState('');
   const [selectedAttendee, setSelectedAttendee] = useState<InvoiceAttendee | null>(null);
+  const [editAttendee, setEditAttendee] = useState<InvoiceAttendee | null>(null);
+  const [paymentFilter, setPaymentFilter] = useState<PaymentStatusFilter>('all');
   const [isExporting, setIsExporting] = useState(false);
   const { t } = useAdminLanguage();
 
-  const getStatusVariant = (status: string | null) => {
-    switch (status) {
-      case 'approved': return 'default';
-      case 'pending': return 'secondary';
-      case 'cancelled': return 'destructive';
-      default: return 'secondary';
-    }
-  };
-
-  const getStatusLabel = (status: string | null) => {
-    switch (status) {
-      case 'approved': return t('attendeeTable.registered');
-      case 'pending': return t('attendeeTable.pending');
-      case 'cancelled': return t('attendeeTable.cancelled');
-      default: return t('attendeeTable.pending');
-    }
-  };
-
-  const getPaymentBadge = (paymentStatus: string | null) => {
-    switch (paymentStatus) {
-      case 'paid':
-        return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15">{t('attendeeTable.paid')}</Badge>;
-      case 'pending':
-        return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15">{t('attendeeTable.pending')}</Badge>;
-      case 'overdue':
-        return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15">{t('attendeeTable.overdue')}</Badge>;
-      default:
-        return <Badge variant="secondary">{paymentStatus || 'N/A'}</Badge>;
-    }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(t('attendeeTable.copied'));
-  };
-
-  const getFullName = (attendee: InvoiceAttendee) =>
-    `${attendee.first_name || ''} ${attendee.last_name || ''}`.trim() || '—';
+  const filtered = attendees.filter(a => {
+    if (paymentFilter === 'all') return true;
+    return a.payment_status === paymentFilter;
+  });
 
   const handleExportCsv = async () => {
     if (!attendees.length) return;
     setIsExporting(true);
     try {
-      // Helpers
-      const formatCsvCell = (value: string) => `"${(value || '').replace(/"/g, '""')}"`;
-      const formatEuropeanDecimal = (value: number) => value.toFixed(2).replace('.', ',');
-      const formatDateTime = (d: string | null) =>
-        d ? format(new Date(d), 'dd.MM.yyyy HH:mm') : '';
-
-      const paymentStatusLabel = (s: string | null) => {
-        switch (s) {
-          case 'paid': return 'Plaćeno';
-          case 'pending': return 'Na čekanju';
-          case 'unpaid': return 'Neplaćeno';
-          case 'overdue': return 'Kasni';
-          default: return s || '';
-        }
-      };
-
-      const paymentMethodLabel = (m: string | null) => {
-        if (!m) return '';
-        if (m === 'stripe') return 'Kartica';
-        if (m === 'invoice') return 'Transakcijski račun';
-        return m;
-      };
-
-      // Fetch supplemental data not present in attendee_invoice_summary view
-      const attendeeIds = attendees.map(a => a.attendee_id).filter(Boolean) as string[];
-      const orderIds = Array.from(new Set(attendees.map(a => a.order_id).filter(Boolean) as string[]));
-      const tierIds = Array.from(new Set(attendees.map(a => a.ticket_tier_id).filter(Boolean) as string[]));
-
-      const [attendeeRowsRes, orderRowsRes, tierRowsRes] = await Promise.all([
-        attendeeIds.length
-          ? supabase
-              .from('attendees')
-              .select('id, phone, price_paid')
-              .in('id', attendeeIds)
-          : Promise.resolve({ data: [], error: null } as any),
-        orderIds.length
-          ? supabase
-              .from('orders')
-              .select('id, payer_oib, billing_email, contact_email')
-              .in('id', orderIds)
-          : Promise.resolve({ data: [], error: null } as any),
-        tierIds.length
-          ? supabase
-              .from('ticket_tiers')
-              .select('id, name')
-              .in('id', tierIds)
-          : Promise.resolve({ data: [], error: null } as any),
-      ]);
-
-      const attendeeMap = new Map<string, { phone: string | null; price_paid: number | null }>(
-        (attendeeRowsRes.data || []).map((r: any) => [r.id, { phone: r.phone, price_paid: r.price_paid }])
-      );
-      const orderMap = new Map<string, { payer_oib: string | null; billing_email: string | null }>(
-        (orderRowsRes.data || []).map((r: any) => [
-          r.id,
-          { payer_oib: r.payer_oib, billing_email: r.billing_email || r.contact_email },
-        ])
-      );
-      const tierMap = new Map<string, string>(
-        (tierRowsRes.data || []).map((r: any) => [r.id, r.name])
-      );
-
-      // payer_name from view stands in for company name on B2B orders
       const headers = [
-        'Ime',
-        'Prezime',
+        'Narudžba #',
+        'Ime i prezime',
         'Email',
-        'Telefon',
-        'Vrsta ulaznice',
-        'Cijena (EUR)',
-        'Status plaćanja',
-        'Način plaćanja',
-        'Broj ponude / računa',
-        'Broj narudžbe',
-        'Vrsta narudžbe',
-        'Naziv tvrtke',
-        'OIB platitelja',
-        'Email za račun',
-        'Check-in',
         'Datum registracije',
+        'Rok plaćanja',
+        'Broj ponude',
+        'Datum plaćanja',
+        'Broj računa',
+        'Način plaćanja',
+        'Status plaćanja',
+        'Check-in',
       ];
 
       const rows = attendees.map(a => {
-        const extra = attendeeMap.get(a.attendee_id || '') || { phone: null, price_paid: null };
-        const order = orderMap.get(a.order_id || '') || { payer_oib: null, billing_email: null };
-        const tierName = tierMap.get(a.ticket_tier_id || '') || '';
-        const price = Number(extra.price_paid || 0);
-
+        const deadline = a.registered_at && a.payment_due_days != null
+          ? format(addDays(new Date(a.registered_at), a.payment_due_days), 'dd MMM yyyy')
+          : '—';
         return [
-          a.first_name || '',
-          a.last_name || '',
-          a.email || '',
-          extra.phone || '',
-          tierName,
-          formatEuropeanDecimal(price),
-          paymentStatusLabel(a.payment_status),
-          paymentMethodLabel(a.payment_method),
-          a.bc_quote_number || a.fiscal_invoice_number || '',
-          a.order_number != null ? `#${a.order_number}` : '',
-          a.is_group_order ? 'Grupna' : 'Individualna',
-          a.payer_type === 'company' ? (a.payer_name || '') : '',
-          order.payer_oib || '',
-          order.billing_email || '',
-          a.checked_in ? 'Da' : 'Ne',
-          formatDateTime(a.registered_at),
-        ].map(formatCsvCell).join(';');
+          a.order_number ? `#${a.order_number}` : '—',
+          `${a.first_name || ''} ${a.last_name || ''}`.trim(),
+          a.email || '—',
+          formatDate(a.registered_at),
+          deadline,
+          a.bc_quote_number || '—',
+          formatDate(a.paid_at),
+          a.fiscal_invoice_number || '—',
+          getPaymentMethodLabel(a.payment_method),
+          a.payment_status || '—',
+          a.checked_in ? 'Prijavljen' : 'Nije prijavljen',
+        ];
       });
 
-      const headerLine = headers.map(formatCsvCell).join(';');
-      const csv = '\uFEFF' + [headerLine, ...rows].join('\r\n');
+      const csvContent = '\uFEFF' + [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+        .join('\n');
 
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      const safeName = (eventName || eventId).replace(/[^a-zA-Z0-9_-]+/g, '_');
       link.href = url;
-      link.download = `polaznici_${safeName}_${format(new Date(), 'yyyy-MM-dd')}.csv`;
-      document.body.appendChild(link);
+      link.download = `polaznici-${eventName || eventId}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
       link.click();
-      document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch (err: any) {
-      console.error('CSV export failed:', err);
-      toast.error(err?.message || 'Export failed');
+      toast.success('CSV izvezen / CSV exported');
+    } catch (err) {
+      toast.error('Greška pri izvozu / Export failed');
     } finally {
       setIsExporting(false);
     }
   };
 
-  // Apply filters
-  let filteredAttendees = paymentFilter === 'all'
-    ? attendees
-    : attendees.filter(a => a.payment_status === paymentFilter);
-
-  if (invoiceSearch.trim()) {
-    const q = invoiceSearch.trim().toLowerCase();
-    filteredAttendees = filteredAttendees.filter(a =>
-      a.bc_quote_number?.toLowerCase().includes(q) || a.fiscal_invoice_number?.toLowerCase().includes(q)
-    );
-  }
-
-  const filterCounts = {
-    all: attendees.length,
-    paid: attendees.filter(a => a.payment_status === 'paid').length,
-    pending: attendees.filter(a => a.payment_status === 'pending').length,
-    overdue: attendees.filter(a => a.payment_status === 'overdue').length,
-  };
-
-  if (isLoading) {
-    return (
+  return (
+    <>
       <Card>
-        <CardContent className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!attendees.length) {
-    return (
-      <>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                {t('attendeeTable.title')}
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <span>Polaznici / Attendees ({attendees.length})</span>
               </CardTitle>
-              <CardDescription>{t('attendeeTable.subtitle')}</CardDescription>
+              <CardDescription>Upravljajte registracijama / Manage event registrations</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={handleExportCsv}
-                disabled={!attendees.length || isExporting}
+                disabled={isExporting || !attendees.length}
               >
-                <Download className="h-4 w-4 mr-2" />
-                {t('eventDetails.exportCsv')}
+                <Download className="h-4 w-4 mr-1.5" />
+                Export CSV
               </Button>
-              <Button onClick={() => setIsAddModalOpen(true)}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                {t('attendeeTable.addAttendee')}
+              <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
+                <UserPlus className="h-4 w-4 mr-1.5" />
+                Dodaj polaznika / Add Attendee
               </Button>
             </div>
-          </CardHeader>
-          <CardContent className="text-center py-12">
-            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">{t('attendeeTable.noRegistrations')}</h3>
-            <p className="text-muted-foreground mb-4">
-              {t('attendeeTable.noRegistrationsDesc')}
-            </p>
-            <Button variant="outline" onClick={() => setIsAddModalOpen(true)}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              {t('attendeeTable.addFirst')}
-            </Button>
-          </CardContent>
-        </Card>
-        <AddAttendeeModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} eventId={eventId} />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              {t('attendeeTable.title')} ({attendees.length})
-            </CardTitle>
-            <CardDescription>{t('attendeeTable.subtitle')}</CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={handleExportCsv}
-              disabled={!attendees.length || isExporting}
+
+          {/* Payment status filter */}
+          <div className="mt-3">
+            <Select
+              value={paymentFilter}
+              onValueChange={v => setPaymentFilter(v as PaymentStatusFilter)}
             >
-              <Download className="h-4 w-4 mr-2" />
-              {t('eventDetails.exportCsv')}
-            </Button>
-            <Button onClick={() => setIsAddModalOpen(true)}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              {t('attendeeTable.addAttendee')}
-            </Button>
+              <SelectTrigger className="w-56">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Svi / All ({attendees.length})</SelectItem>
+                <SelectItem value="paid">Plaćeno / Paid ({attendees.filter(a => a.payment_status === 'paid').length})</SelectItem>
+                <SelectItem value="pending">Nije plaćeno / Unpaid ({attendees.filter(a => a.payment_status === 'pending').length})</SelectItem>
+                <SelectItem value="overdue">Kasni / Overdue ({attendees.filter(a => a.payment_status === 'overdue').length})</SelectItem>
+                <SelectItem value="refunded">Refundirano / Refunded ({attendees.filter(a => a.payment_status === 'refunded').length})</SelectItem>
+                <SelectItem value="cancelled">Otkazano / Cancelled ({attendees.filter(a => a.payment_status === 'cancelled').length})</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
-        <CardContent>
-          {/* Filter Bar */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-            <div className="flex items-center gap-2">
-              {(['all', 'paid', 'pending', 'overdue'] as PaymentFilter[]).map((filter) => (
-                <Button
-                  key={filter}
-                  variant={paymentFilter === filter ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setPaymentFilter(filter)}
-                >
-                  {filter === 'all' ? t('attendeeTable.all') : t(`attendeeTable.${filter}` as any)}
-                  <span className="ml-1.5 text-xs opacity-70">({filterCounts[filter]})</span>
-                </Button>
-              ))}
-            </div>
-            <div className="relative w-full sm:w-52">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                placeholder={t('attendeeTable.searchInvoice')}
-                value={invoiceSearch}
-                onChange={(e) => setInvoiceSearch(e.target.value)}
-                className="pl-8 h-8 text-sm"
-              />
-            </div>
-          </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('attendeeTable.fullName')}</TableHead>
-                <TableHead>
-                  <div className="flex items-center gap-1.5">
-                    <Mail className="h-4 w-4" />
-                    {t('attendeeTable.email')}
-                  </div>
-                </TableHead>
-                <TableHead>{t('attendeeTable.payment')}</TableHead>
-                <TableHead>
-                  <div className="flex items-center gap-1.5">
-                    <FileText className="h-4 w-4" />
-                    {t('attendeeTable.invoiceNumber')}
-                  </div>
-                </TableHead>
-                <TableHead>
-                  <div className="flex items-center gap-1.5">
-                    <Hash className="h-4 w-4" />
-                    {t('attendeeTable.orderNumber')}
-                  </div>
-                </TableHead>
-                <TableHead>{t('attendeeTable.checkin')}</TableHead>
-                <TableHead>
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4" />
-                    {t('attendeeTable.registrationDate')}
-                  </div>
-                </TableHead>
-                <TableHead>{t('attendeeTable.status')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredAttendees.map((attendee) => (
-                <TableRow
-                  key={attendee.attendee_id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => setSelectedAttendee(attendee)}
-                >
-                  <TableCell className="font-medium">{getFullName(attendee)}</TableCell>
-                  <TableCell>
-                    {attendee.email || <span className="text-muted-foreground italic">{t('attendeeTable.noEmail')}</span>}
-                  </TableCell>
-                  <TableCell>{getPaymentBadge(attendee.payment_status)}</TableCell>
-                  <TableCell>
-                    {attendee.bc_quote_number || attendee.fiscal_invoice_number ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          copyToClipboard(attendee.bc_quote_number || attendee.fiscal_invoice_number || '');
-                        }}
-                        className="inline-flex items-center gap-1 font-mono text-sm hover:text-primary transition-colors"
-                        title={t('attendeeTable.clickToCopy')}
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              Učitavanje... / Loading...
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              Nema polaznika / No attendees found
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="text-xs">
+                    <TableHead className="w-20">Narudžba # / Order #</TableHead>
+                    <TableHead>Ime i prezime / Full Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead className="whitespace-nowrap">Datum reg. / Reg. Date</TableHead>
+                    <TableHead className="whitespace-nowrap">Rok plaćanja / Deadline</TableHead>
+                    <TableHead className="whitespace-nowrap">Broj ponude / Proforma #</TableHead>
+                    <TableHead className="whitespace-nowrap">Datum uplate / Payment Date</TableHead>
+                    <TableHead className="whitespace-nowrap">Broj računa / Invoice #</TableHead>
+                    <TableHead className="whitespace-nowrap">Način plaćanja / Method</TableHead>
+                    <TableHead className="whitespace-nowrap">Status plaćanja / Payment</TableHead>
+                    <TableHead className="whitespace-nowrap">Check-in</TableHead>
+                    <TableHead className="w-10"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map(attendee => {
+                    const deadline = attendee.registered_at && attendee.payment_due_days != null
+                      ? format(addDays(new Date(attendee.registered_at), attendee.payment_due_days), 'dd MMM yyyy')
+                      : '—';
+
+                    return (
+                      <TableRow
+                        key={attendee.attendee_id}
+                        className="cursor-pointer hover:bg-muted/40 text-sm"
+                        onClick={() => setSelectedAttendee(attendee)}
                       >
-                        {attendee.bc_quote_number || attendee.fiscal_invoice_number}
-                        <Copy className="h-3 w-3 text-muted-foreground" />
-                      </button>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {attendee.order_number != null ? (
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-sm">#{attendee.order_number}</span>
-                        {attendee.is_group_order && (
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 leading-4 border-blue-500/30 text-blue-600">
-                            <UsersRound className="h-3 w-3 mr-0.5" />
-                            {t('attendeeTable.group')}
-                          </Badge>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {attendee.checked_in ? (
-                      <div className="flex items-center gap-1.5 text-emerald-600">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span className="text-sm">{t('attendeeTable.checkedIn')}</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <Circle className="h-4 w-4" />
-                        <span className="text-sm">{t('attendeeTable.notCheckedIn')}</span>
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {attendee.registered_at
-                      ? format(new Date(attendee.registered_at), 'MMM d, yyyy')
-                      : '—'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">
-                      {attendee.order_status || '—'}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                        <TableCell className="font-mono text-sm">
+                          {attendee.order_number ? `#${attendee.order_number}` : '—'}
+                        </TableCell>
+                        <TableCell className="font-medium whitespace-nowrap">
+                          {`${attendee.first_name || ''} ${attendee.last_name || ''}`.trim() || '—'}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground max-w-[180px] truncate">
+                          {attendee.email || '—'}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {formatDate(attendee.registered_at)}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {deadline}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {attendee.bc_quote_number || '—'}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {formatDate(attendee.paid_at)}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {attendee.fiscal_invoice_number || '—'}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">
+                          {getPaymentMethodLabel(attendee.payment_method)}
+                        </TableCell>
+                        <TableCell>
+                          {getPaymentBadge(attendee.payment_status)}
+                        </TableCell>
+                        <TableCell>
+                          {getCheckinBadge(attendee.checked_in)}
+                        </TableCell>
+                        <TableCell
+                          onClick={e => { e.stopPropagation(); setEditAttendee(attendee); }}
+                          className="text-right"
+                        >
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      <AddAttendeeModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} eventId={eventId} />
-      <AttendeeDetailModal
-        open={!!selectedAttendee}
-        onOpenChange={(open) => !open && setSelectedAttendee(null)}
-        attendee={selectedAttendee ? {
-          attendee_id: selectedAttendee.attendee_id,
-          first_name: selectedAttendee.first_name,
-          last_name: selectedAttendee.last_name,
-          email: selectedAttendee.email,
-          bc_invoice_number: selectedAttendee.bc_quote_number || selectedAttendee.fiscal_invoice_number,
-          order_number: selectedAttendee.order_number,
-          order_status: selectedAttendee.order_status,
-          payment_method: selectedAttendee.payment_method,
-          payer_name: selectedAttendee.payer_name,
-          total_amount: selectedAttendee.total_amount,
-          is_group_order: selectedAttendee.is_group_order,
-        } : null}
-        currency={currency}
+      <AddAttendeeModal
+        open={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+        eventId={eventId}
       />
+
+      {selectedAttendee && (
+        <AttendeeDetailModal
+          open={!!selectedAttendee}
+          onOpenChange={open => { if (!open) setSelectedAttendee(null); }}
+          attendee={{ ...selectedAttendee, bc_invoice_number: selectedAttendee.bc_quote_number || selectedAttendee.fiscal_invoice_number }}
+          currency={currency}
+        />
+      )}
+
+      {editAttendee && (
+        <EditAttendeeModal
+          open={!!editAttendee}
+          onOpenChange={open => { if (!open) setEditAttendee(null); }}
+          attendee={editAttendee}
+          eventId={eventId}
+        />
+      )}
     </>
   );
 }
