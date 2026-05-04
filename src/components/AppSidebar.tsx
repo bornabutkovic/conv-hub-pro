@@ -45,6 +45,25 @@ export function AppSidebar() {
     { title: t('nav.whatsappInspector'), url: '/admin/chats', icon: MessageCircle },
   ];
 
+  const showPendingBadge = isAdmin(profile?.role);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    if (!showPendingBadge) return;
+    let cancelled = false;
+    const fetchCount = async () => {
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .is('institution_uuid', null)
+        .not('role', 'in', '("admin","super_admin","event_organizer","organizer_admin")');
+      if (!cancelled) setPendingCount(count ?? 0);
+    };
+    fetchCount();
+    const id = setInterval(fetchCount, 60000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [showPendingBadge]);
+
   const handleSignOut = async () => {
     await signOut();
   };
