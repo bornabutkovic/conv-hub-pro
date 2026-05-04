@@ -407,16 +407,16 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
                   </TableCell>
                   <TableCell>{getPaymentBadge(attendee.payment_status)}</TableCell>
                   <TableCell>
-                    {attendee.bc_invoice_number ? (
+                    {attendee.bc_quote_number || attendee.fiscal_invoice_number ? (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          copyToClipboard(attendee.bc_invoice_number!);
+                          copyToClipboard(attendee.bc_quote_number || attendee.fiscal_invoice_number || '');
                         }}
                         className="inline-flex items-center gap-1 font-mono text-sm hover:text-primary transition-colors"
                         title={t('attendeeTable.clickToCopy')}
                       >
-                        {attendee.bc_invoice_number}
+                        {attendee.bc_quote_number || attendee.fiscal_invoice_number}
                         <Copy className="h-3 w-3 text-muted-foreground" />
                       </button>
                     ) : (
@@ -457,8 +457,8 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
                       : '—'}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(attendee.registration_status)}>
-                      {getStatusLabel(attendee.registration_status)}
+                    <Badge variant="secondary">
+                      {attendee.order_status || '—'}
                     </Badge>
                   </TableCell>
                 </TableRow>
@@ -472,7 +472,19 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
       <AttendeeDetailModal
         open={!!selectedAttendee}
         onOpenChange={(open) => !open && setSelectedAttendee(null)}
-        attendee={selectedAttendee}
+        attendee={selectedAttendee ? {
+          attendee_id: selectedAttendee.attendee_id,
+          first_name: selectedAttendee.first_name,
+          last_name: selectedAttendee.last_name,
+          email: selectedAttendee.email,
+          bc_invoice_number: selectedAttendee.bc_quote_number || selectedAttendee.fiscal_invoice_number,
+          order_number: selectedAttendee.order_number,
+          order_status: selectedAttendee.order_status,
+          payment_method: selectedAttendee.payment_method,
+          payer_name: selectedAttendee.payer_name,
+          total_amount: selectedAttendee.total_amount,
+          is_group_order: selectedAttendee.is_group_order,
+        } : null}
         currency={currency}
       />
     </>
