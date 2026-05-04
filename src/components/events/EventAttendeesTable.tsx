@@ -203,7 +203,7 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
           formatEuropeanDecimal(price),
           paymentStatusLabel(a.payment_status),
           paymentMethodLabel(a.payment_method),
-          a.bc_invoice_number || '',
+          a.bc_quote_number || a.fiscal_invoice_number || '',
           a.order_number != null ? `#${a.order_number}` : '',
           a.is_group_order ? 'Grupna' : 'Individualna',
           a.payer_type === 'company' ? (a.payer_name || '') : '',
@@ -243,7 +243,7 @@ export function EventAttendeesTable({ attendees, isLoading, eventId, currency = 
   if (invoiceSearch.trim()) {
     const q = invoiceSearch.trim().toLowerCase();
     filteredAttendees = filteredAttendees.filter(a =>
-      a.bc_invoice_number?.toLowerCase().includes(q)
+      a.bc_quote_number?.toLowerCase().includes(q) || a.fiscal_invoice_number?.toLowerCase().includes(q)
     );
   }
 
