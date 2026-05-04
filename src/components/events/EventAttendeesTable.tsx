@@ -75,30 +75,30 @@ type PaymentStatusFilter = 'all' | 'paid' | 'pending' | 'overdue' | 'refunded' |
 function getPaymentBadge(status: string | null) {
   switch (status) {
     case 'paid':
-      return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15">Plaćeno / Paid</Badge>;
+      return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15">Plaćeno</Badge>;
     case 'pending':
-      return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15">Nije plaćeno / Unpaid</Badge>;
+      return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15">Nije plaćeno</Badge>;
     case 'overdue':
-      return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15">Kasni / Overdue</Badge>;
+      return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15">Kasni</Badge>;
     case 'refunded':
-      return <Badge className="bg-purple-500/15 text-purple-700 border-purple-500/20 hover:bg-purple-500/15">Refundirano / Refunded</Badge>;
+      return <Badge className="bg-purple-500/15 text-purple-700 border-purple-500/20 hover:bg-purple-500/15">Refundirano</Badge>;
     case 'cancelled':
-      return <Badge variant="secondary">Otkazano / Cancelled</Badge>;
+      return <Badge variant="secondary">Otkazano</Badge>;
     default:
-      return <span className="text-muted-foreground text-sm">—</span>;
+      return <span className="text-muted-foreground text-xs">—</span>;
   }
 }
 
 function getCheckinBadge(checkedIn: boolean | null) {
   if (checkedIn) {
-    return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20">Prijavljen / Checked in</Badge>;
+    return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20">Prijavljen</Badge>;
   }
-  return <Badge variant="outline" className="text-muted-foreground">Nije prijavljen / Not checked in</Badge>;
+  return <Badge variant="outline" className="text-muted-foreground">Nije prijavljen</Badge>;
 }
 
 function getPaymentMethodLabel(method: string | null) {
-  if (method === 'stripe') return 'Kreditna kartica / Credit Card';
-  if (method === 'invoice') return 'Bankovna transakcija / Bank Transfer';
+  if (method === 'stripe') return 'Kreditna kartica';
+  if (method === 'invoice') return 'Bankovna transakcija';
   return '—';
 }
 
@@ -158,11 +158,11 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
         if (orderError) throw orderError;
       }
 
-      toast.success('Promjene su spremljene / Changes saved');
+      toast.success('Promjene su spremljene');
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.message || 'Greška pri spremanju / Save failed');
+      toast.error(err.message || 'Greška pri spremanju');
     } finally {
       setIsSaving(false);
     }
@@ -172,20 +172,20 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Uredi polaznika / Edit Attendee</DialogTitle>
+          <DialogTitle>Uredi polaznika</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Ime / First Name</Label>
+              <Label>Ime</Label>
               <Input
                 value={form.first_name}
                 onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Prezime / Last Name</Label>
+              <Label>Prezime</Label>
               <Input
                 value={form.last_name}
                 onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
@@ -194,7 +194,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           </div>
 
           <div className="space-y-1.5">
-            <Label>Datum plaćanja / Payment Date</Label>
+            <Label>Datum plaćanja</Label>
             <Input
               type="date"
               value={form.paid_at}
@@ -203,7 +203,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           </div>
 
           <div className="space-y-1.5">
-            <Label>Broj računa / Invoice #</Label>
+            <Label>Broj računa</Label>
             <Input
               placeholder="npr. 2026-01-0001"
               value={form.fiscal_invoice_number}
@@ -212,23 +212,23 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           </div>
 
           <div className="space-y-1.5">
-            <Label>Način plaćanja / Payment Method</Label>
+            <Label>Način plaćanja</Label>
             <Select
               value={form.payment_method}
               onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Odaberi / Select" />
+                <SelectValue placeholder="Odaberi" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="stripe">Kreditna kartica / Credit Card</SelectItem>
-                <SelectItem value="invoice">Bankovna transakcija / Bank Transfer</SelectItem>
+                <SelectItem value="stripe">Kreditna kartica</SelectItem>
+                <SelectItem value="invoice">Bankovna transakcija</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-1.5">
-            <Label>Status plaćanja / Payment Status</Label>
+            <Label>Status plaćanja</Label>
             <Select
               value={form.payment_status}
               onValueChange={v => setForm(f => ({ ...f, payment_status: v }))}
@@ -237,11 +237,11 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Nije plaćeno / Unpaid</SelectItem>
-                <SelectItem value="paid">Plaćeno / Paid</SelectItem>
-                <SelectItem value="overdue">Kasni / Overdue</SelectItem>
-                <SelectItem value="refunded">Refundirano / Refunded</SelectItem>
-                <SelectItem value="cancelled">Otkazano / Cancelled</SelectItem>
+                <SelectItem value="pending">Nije plaćeno</SelectItem>
+                <SelectItem value="paid">Plaćeno</SelectItem>
+                <SelectItem value="overdue">Kasni</SelectItem>
+                <SelectItem value="refunded">Refundirano</SelectItem>
+                <SelectItem value="cancelled">Otkazano</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -249,10 +249,10 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
-            Odustani / Cancel
+            Odustani
           </Button>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Spremanje...' : 'Spremi / Save'}
+            {isSaving ? 'Spremanje...' : 'Spremi'}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -329,9 +329,9 @@ export function EventAttendeesTable({
       link.download = `polaznici-${eventName || eventId}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
       link.click();
       URL.revokeObjectURL(url);
-      toast.success('CSV izvezen / CSV exported');
+      toast.success('CSV izvezen');
     } catch (err) {
-      toast.error('Greška pri izvozu / Export failed');
+      toast.error('Greška pri izvozu');
     } finally {
       setIsExporting(false);
     }
@@ -340,13 +340,13 @@ export function EventAttendeesTable({
   return (
     <>
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-2 pt-4 px-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <span>Polaznici / Attendees ({attendees.length})</span>
+                <span>Polaznici ({attendees.length})</span>
               </CardTitle>
-              <CardDescription>Upravljajte registracijama / Manage event registrations</CardDescription>
+              <CardDescription>Upravljajte registracijama</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -360,7 +360,7 @@ export function EventAttendeesTable({
               </Button>
               <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
                 <UserPlus className="h-4 w-4 mr-1.5" />
-                Dodaj polaznika / Add Attendee
+                Dodaj polaznika
               </Button>
             </div>
           </div>
@@ -371,47 +371,47 @@ export function EventAttendeesTable({
               value={paymentFilter}
               onValueChange={v => setPaymentFilter(v as PaymentStatusFilter)}
             >
-              <SelectTrigger className="w-56">
+              <SelectTrigger className="w-44">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Svi / All ({attendees.length})</SelectItem>
-                <SelectItem value="paid">Plaćeno / Paid ({attendees.filter(a => a.payment_status === 'paid').length})</SelectItem>
-                <SelectItem value="pending">Nije plaćeno / Unpaid ({attendees.filter(a => a.payment_status === 'pending').length})</SelectItem>
-                <SelectItem value="overdue">Kasni / Overdue ({attendees.filter(a => a.payment_status === 'overdue').length})</SelectItem>
-                <SelectItem value="refunded">Refundirano / Refunded ({attendees.filter(a => a.payment_status === 'refunded').length})</SelectItem>
-                <SelectItem value="cancelled">Otkazano / Cancelled ({attendees.filter(a => a.payment_status === 'cancelled').length})</SelectItem>
+                <SelectItem value="all">Svi ({attendees.length})</SelectItem>
+                <SelectItem value="paid">Plaćeno ({attendees.filter(a => a.payment_status === 'paid').length})</SelectItem>
+                <SelectItem value="pending">Nije plaćeno ({attendees.filter(a => a.payment_status === 'pending').length})</SelectItem>
+                <SelectItem value="overdue">Kasni ({attendees.filter(a => a.payment_status === 'overdue').length})</SelectItem>
+                <SelectItem value="refunded">Refundirano ({attendees.filter(a => a.payment_status === 'refunded').length})</SelectItem>
+                <SelectItem value="cancelled">Otkazano ({attendees.filter(a => a.payment_status === 'cancelled').length})</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardHeader>
 
-        <CardContent className="p-0">
+        <CardContent className="px-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
-              Učitavanje... / Loading...
+              Učitavanje...
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
-              Nema polaznika / No attendees found
+              Nema polaznika
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="text-xs">
-                    <TableHead className="w-20">Narudžba # / Order #</TableHead>
-                    <TableHead>Ime i prezime / Full Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead className="whitespace-nowrap">Datum reg. / Reg. Date</TableHead>
-                    <TableHead className="whitespace-nowrap">Rok plaćanja / Deadline</TableHead>
-                    <TableHead className="whitespace-nowrap">Broj ponude / Proforma #</TableHead>
-                    <TableHead className="whitespace-nowrap">Datum uplate / Payment Date</TableHead>
-                    <TableHead className="whitespace-nowrap">Broj računa / Invoice #</TableHead>
-                    <TableHead className="whitespace-nowrap">Način plaćanja / Method</TableHead>
-                    <TableHead className="whitespace-nowrap">Status plaćanja / Payment</TableHead>
-                    <TableHead className="whitespace-nowrap">Check-in</TableHead>
-                    <TableHead className="w-10"></TableHead>
+                  <TableRow className="h-10">
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-20">Narudžba #</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Ime i prezime</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Datum reg.</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Rok plaćanja</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. ponude</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Datum uplate</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. računa</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Plaćanje</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Status</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Check-in</TableHead>
+                    <TableHead className="py-2 px-3 w-10"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -423,45 +423,45 @@ export function EventAttendeesTable({
                     return (
                       <TableRow
                         key={attendee.attendee_id}
-                        className="cursor-pointer hover:bg-muted/40 text-sm"
+                        className="h-10 cursor-pointer hover:bg-muted/40 text-xs"
                         onClick={() => setSelectedAttendee(attendee)}
                       >
-                        <TableCell className="font-mono text-sm">
+                        <TableCell className="py-2 px-3 text-xs font-mono">
                           {attendee.order_number ? `#${attendee.order_number}` : '—'}
                         </TableCell>
-                        <TableCell className="font-medium whitespace-nowrap">
+                        <TableCell className="py-2 px-3 text-xs font-medium whitespace-nowrap">
                           {`${attendee.first_name || ''} ${attendee.last_name || ''}`.trim() || '—'}
                         </TableCell>
-                        <TableCell className="text-muted-foreground max-w-[180px] truncate">
+                        <TableCell className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">
                           {attendee.email || '—'}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {formatDate(attendee.registered_at)}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {deadline}
                         </TableCell>
-                        <TableCell className="font-mono text-sm">
+                        <TableCell className="py-2 px-3 text-xs font-mono">
                           {attendee.bc_quote_number || '—'}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {formatDate(attendee.paid_at)}
                         </TableCell>
-                        <TableCell className="font-mono text-sm">
+                        <TableCell className="py-2 px-3 text-xs font-mono">
                           {attendee.fiscal_invoice_number || '—'}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">
+                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {getPaymentMethodLabel(attendee.payment_method)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-2 px-3 text-xs">
                           {getPaymentBadge(attendee.payment_status)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-2 px-3 text-xs">
                           {getCheckinBadge(attendee.checked_in)}
                         </TableCell>
                         <TableCell
                           onClick={e => { e.stopPropagation(); setEditAttendee(attendee); }}
-                          className="text-right"
+                          className="py-2 px-3 text-right"
                         >
                           <Button variant="ghost" size="icon" className="h-7 w-7">
                             <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
