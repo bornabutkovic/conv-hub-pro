@@ -1,9 +1,11 @@
 import { LayoutDashboard, Calendar, Settings, LogOut, Shield, MessageCircle, ChevronUp } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { isAdmin } from '@/lib/roles';
+import { supabase } from '@/integrations/supabase/client';
 import conwayoLogoDark from '@/assets/conwayo-logo-dark.png';
 import {
   Sidebar,
