@@ -329,9 +329,9 @@ export function EventAttendeesTable({
       link.download = `polaznici-${eventName || eventId}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
       link.click();
       URL.revokeObjectURL(url);
-      toast.success('CSV izvezen / CSV exported');
+      toast.success('CSV izvezen');
     } catch (err) {
-      toast.error('Greška pri izvozu / Export failed');
+      toast.error('Greška pri izvozu');
     } finally {
       setIsExporting(false);
     }
