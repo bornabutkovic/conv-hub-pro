@@ -172,20 +172,20 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Uredi polaznika / Edit Attendee</DialogTitle>
+          <DialogTitle>Uredi polaznika</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Ime / First Name</Label>
+              <Label>Ime</Label>
               <Input
                 value={form.first_name}
                 onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Prezime / Last Name</Label>
+              <Label>Prezime</Label>
               <Input
                 value={form.last_name}
                 onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
@@ -194,7 +194,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           </div>
 
           <div className="space-y-1.5">
-            <Label>Datum plaćanja / Payment Date</Label>
+            <Label>Datum plaćanja</Label>
             <Input
               type="date"
               value={form.paid_at}
@@ -203,7 +203,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           </div>
 
           <div className="space-y-1.5">
-            <Label>Broj računa / Invoice #</Label>
+            <Label>Broj računa</Label>
             <Input
               placeholder="npr. 2026-01-0001"
               value={form.fiscal_invoice_number}
@@ -212,23 +212,23 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           </div>
 
           <div className="space-y-1.5">
-            <Label>Način plaćanja / Payment Method</Label>
+            <Label>Način plaćanja</Label>
             <Select
               value={form.payment_method}
               onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Odaberi / Select" />
+                <SelectValue placeholder="Odaberi" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="stripe">Kreditna kartica / Credit Card</SelectItem>
-                <SelectItem value="invoice">Bankovna transakcija / Bank Transfer</SelectItem>
+                <SelectItem value="stripe">Kreditna kartica</SelectItem>
+                <SelectItem value="invoice">Bankovna transakcija</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-1.5">
-            <Label>Status plaćanja / Payment Status</Label>
+            <Label>Status plaćanja</Label>
             <Select
               value={form.payment_status}
               onValueChange={v => setForm(f => ({ ...f, payment_status: v }))}
@@ -237,11 +237,11 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Nije plaćeno / Unpaid</SelectItem>
-                <SelectItem value="paid">Plaćeno / Paid</SelectItem>
-                <SelectItem value="overdue">Kasni / Overdue</SelectItem>
-                <SelectItem value="refunded">Refundirano / Refunded</SelectItem>
-                <SelectItem value="cancelled">Otkazano / Cancelled</SelectItem>
+                <SelectItem value="pending">Nije plaćeno</SelectItem>
+                <SelectItem value="paid">Plaćeno</SelectItem>
+                <SelectItem value="overdue">Kasni</SelectItem>
+                <SelectItem value="refunded">Refundirano</SelectItem>
+                <SelectItem value="cancelled">Otkazano</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -249,10 +249,10 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
-            Odustani / Cancel
+            Odustani
           </Button>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Spremanje...' : 'Spremi / Save'}
+            {isSaving ? 'Spremanje...' : 'Spremi'}
           </Button>
         </DialogFooter>
       </DialogContent>
