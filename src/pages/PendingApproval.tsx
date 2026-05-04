@@ -23,12 +23,9 @@ export default function PendingApproval() {
             <Clock className="h-8 w-8 text-amber-500" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-foreground">{t('pending.title')}</h1>
+            <h1 className="text-2xl font-bold text-foreground">Access Restricted</h1>
             <p className="text-muted-foreground">
-              {profile?.email ? `${profile.email} — ` : ''}{t('pending.subtitle')}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t('pending.detail')}
+              You do not have access to this portal.
             </p>
           </div>
           <Button variant="outline" onClick={handleSignOut} className="gap-2">
