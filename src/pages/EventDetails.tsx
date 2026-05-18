@@ -132,7 +132,7 @@ export default function EventDetails() {
   const totalAttendees = attendees?.length || 0;
   const paidAttendees = (attendees || []).filter(a => a.payment_status === 'paid');
   const pendingAttendees = (attendees || []).filter(a => a.payment_status === 'pending');
-  const totalRevenue = paidAttendees.reduce((sum, a) => sum + Number(a.total_amount || 0), 0);
+  const totalRevenue = paidAttendees.reduce((sum, a) => sum + Number(a.price_paid || 0), 0);
   const pendingRevenue = pendingAttendees.reduce((sum, a) => sum + Number(a.total_amount || 0), 0);
 
   const formatCurrency = (amount: number) =>
