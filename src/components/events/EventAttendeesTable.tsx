@@ -54,6 +54,8 @@ export interface InvoiceAttendee {
   fiscal_invoice_number: string | null;
   order_status: string | null;
   payment_method: string | null;
+  card_brand: string | null;
+  card_wallet: string | null;
   payer_type: string | null;
   payer_name: string | null;
   total_amount: number | null;
