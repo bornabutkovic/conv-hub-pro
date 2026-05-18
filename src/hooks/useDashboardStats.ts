@@ -124,7 +124,7 @@ export function useDashboardStats(selectedEventId?: string | null) {
       const paidAttendees = (attendees || []).filter(a => a.payment_status === 'paid');
       const ticketRevenue = paidAttendees.reduce((sum, a) => sum + Number(a.price_paid || 0), 0);
 
-      const pendingAttendees = (attendees || []).filter(a => a.payment_status === 'pending');
+      const pendingAttendees = (attendees || []).filter(a => a.payment_status === 'pending' || a.payment_status ==='issued' || a.payment_status === 'overdue');
       const ticketPending = pendingAttendees.reduce((sum, a) => sum + Number(a.price_paid || 0), 0);
 
       const totalRevenue = ticketRevenue + addonRevenue;

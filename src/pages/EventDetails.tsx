@@ -129,9 +129,10 @@ export default function EventDetails() {
     );
   }
 
-  const totalAttendees = attendees?.length || 0;
-  const paidAttendees = (attendees || []).filter(a => a.payment_status === 'paid');
-  const pendingAttendees = (attendees || []).filter(a => a.payment_status === 'pending');
+  const activeAttendees = (attendees || []).filter(a => a.payment_status !== 'cancelled' && a.payment_status !== 'refunded');
+  const totalAttendees = activeAttendees.length;
+  const paidAttendees = activeAttendees.filter(a => a.payment_status === 'paid');
+  const pendingAttendees = activeAttendees.filter(a => a.payment_status === 'pending' || a.payment_status === 'issued' || a.payment_status === 'overdue');
   const totalRevenue = paidAttendees.reduce((sum, a) => sum + Number(a.price_paid || 0), 0);
   const pendingRevenue = pendingAttendees.reduce((sum, a) => sum + Number(a.total_amount || 0), 0);
 
