@@ -1956,6 +1956,7 @@ export type Database = {
           payment_due_days: number | null
           payment_method: string | null
           payment_status: string | null
+          price_paid: number | null
           registered_at: string | null
           registration_status:
             | Database["public"]["Enums"]["registration_status"]
