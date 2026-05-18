@@ -1081,6 +1081,7 @@ export type Database = {
           contact_phone: string | null
           created_at: string | null
           customer_posting_group: string | null
+          due_date: string | null
           event_id: string | null
           fiscal_invoice_number: string | null
           gen_bus_posting_group: string | null
@@ -1121,6 +1122,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string | null
           customer_posting_group?: string | null
+          due_date?: string | null
           event_id?: string | null
           fiscal_invoice_number?: string | null
           gen_bus_posting_group?: string | null
@@ -1161,6 +1163,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string | null
           customer_posting_group?: string | null
+          due_date?: string | null
           event_id?: string | null
           fiscal_invoice_number?: string | null
           gen_bus_posting_group?: string | null
