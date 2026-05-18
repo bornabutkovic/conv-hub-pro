@@ -1075,6 +1075,11 @@ export type Database = {
           bc_invoice_id: string | null
           bc_quote_number: string | null
           billing_email: string | null
+          card_brand: string | null
+          card_country: string | null
+          card_funding: string | null
+          card_last4: string | null
+          card_wallet: string | null
           company_name: string | null
           contact_email: string | null
           contact_name: string | null
@@ -1116,6 +1121,11 @@ export type Database = {
           bc_invoice_id?: string | null
           bc_quote_number?: string | null
           billing_email?: string | null
+          card_brand?: string | null
+          card_country?: string | null
+          card_funding?: string | null
+          card_last4?: string | null
+          card_wallet?: string | null
           company_name?: string | null
           contact_email?: string | null
           contact_name?: string | null
@@ -1157,6 +1167,11 @@ export type Database = {
           bc_invoice_id?: string | null
           bc_quote_number?: string | null
           billing_email?: string | null
+          card_brand?: string | null
+          card_country?: string | null
+          card_funding?: string | null
+          card_last4?: string | null
+          card_wallet?: string | null
           company_name?: string | null
           contact_email?: string | null
           contact_name?: string | null
@@ -1943,6 +1958,8 @@ export type Database = {
           bc_customer_no: string | null
           bc_invoice_id: string | null
           bc_quote_number: string | null
+          card_brand: string | null
+          card_wallet: string | null
           checked_in: boolean | null
           email: string | null
           event_id: string | null

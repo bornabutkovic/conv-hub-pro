@@ -54,6 +54,8 @@ export interface InvoiceAttendee {
   fiscal_invoice_number: string | null;
   order_status: string | null;
   payment_method: string | null;
+  card_brand: string | null;
+  card_wallet: string | null;
   payer_type: string | null;
   payer_name: string | null;
   total_amount: number | null;
@@ -96,9 +98,26 @@ function getCheckinBadge(checkedIn: boolean | null) {
   return <Badge variant="outline" className="text-muted-foreground">Nije prijavljen</Badge>;
 }
 
-function getPaymentMethodLabel(method: string | null) {
-  if (method === 'stripe') return 'Kreditna kartica';
-  if (method === 'invoice') return 'Bankovna transakcija';
+function getPaymentMethodLabel(
+  method: string | null,
+  cardBrand: string | null,
+  cardWallet: string | null
+) {
+  if (method === 'stripe') {
+    if (cardWallet === 'link') return 'Stripe Link';
+    if (cardWallet === 'apple_pay') return 'Apple Pay';
+    if (cardWallet === 'google_pay') return 'Google Pay';
+    const brandMap: Record<string, string> = {
+      visa:       'Visa',
+      mastercard: 'Mastercard',
+      amex:       'Amex',
+      diners:     'Diners',
+      maestro:    'Maestro',
+    };
+    const brand = cardBrand ? (brandMap[cardBrand.toLowerCase()] ?? cardBrand) : null;
+    return brand ? `Card (${brand})` : 'Credit card';
+  }
+  if (method === 'invoice') return 'Bank transfer';
   return '—';
 }
 
@@ -312,7 +331,7 @@ export function EventAttendeesTable({
           a.bc_quote_number || '—',
           formatDate(a.paid_at),
           a.fiscal_invoice_number || '—',
-          getPaymentMethodLabel(a.payment_method),
+          getPaymentMethodLabel(a.payment_method, a.card_brand, a.card_wallet),
           a.payment_status || '—',
           a.checked_in ? 'Prijavljen' : 'Nije prijavljen',
         ];
@@ -451,7 +470,7 @@ export function EventAttendeesTable({
                           {attendee.fiscal_invoice_number || '—'}
                         </TableCell>
                         <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
-                          {getPaymentMethodLabel(attendee.payment_method)}
+                          {getPaymentMethodLabel(attendee.payment_method, attendee.card_brand, attendee.card_wallet)}
                         </TableCell>
                         <TableCell className="py-2 px-3 text-xs">
                           {getPaymentBadge(attendee.payment_status)}
