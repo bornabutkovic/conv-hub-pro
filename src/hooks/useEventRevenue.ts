@@ -26,7 +26,7 @@ export function useEventRevenue() {
         const amount = Number(row.price_paid) || 0;
         if (row.payment_status === 'paid') {
           current.paid += amount;
-        } else {
+        } else if (row.payment_status === 'pending' || row.payment_status === 'issued' || row.payment_status === 'overdue') {
           current.pending += amount;
         }
         map.set(row.event_id, current);
