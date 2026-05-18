@@ -115,6 +115,13 @@ export type Database = {
             referencedRelation: "institutions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "admin_users_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       attendees: {
@@ -525,6 +532,13 @@ export type Database = {
             referencedRelation: "institutions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "event_organizers_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       event_services: {
@@ -800,10 +814,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "events_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "events_institution_uuid_fkey"
             columns: ["institution_uuid"]
             isOneToOne: false
             referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_institution_uuid_fkey"
+            columns: ["institution_uuid"]
+            isOneToOne: false
+            referencedRelation: "institutions_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1047,6 +1075,7 @@ export type Database = {
           bc_invoice_id: string | null
           bc_quote_number: string | null
           billing_email: string | null
+          company_name: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
@@ -1070,6 +1099,7 @@ export type Database = {
           payment_method: string | null
           pdf_url: string | null
           po_number: string | null
+          source: string | null
           status: Database["public"]["Enums"]["payment_status"] | null
           stripe_session_expires_at: string | null
           stripe_session_id: string | null
@@ -1085,6 +1115,7 @@ export type Database = {
           bc_invoice_id?: string | null
           bc_quote_number?: string | null
           billing_email?: string | null
+          company_name?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -1108,6 +1139,7 @@ export type Database = {
           payment_method?: string | null
           pdf_url?: string | null
           po_number?: string | null
+          source?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           stripe_session_expires_at?: string | null
           stripe_session_id?: string | null
@@ -1123,6 +1155,7 @@ export type Database = {
           bc_invoice_id?: string | null
           bc_quote_number?: string | null
           billing_email?: string | null
+          company_name?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -1146,6 +1179,7 @@ export type Database = {
           payment_method?: string | null
           pdf_url?: string | null
           po_number?: string | null
+          source?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           stripe_session_expires_at?: string | null
           stripe_session_id?: string | null
@@ -1351,6 +1385,13 @@ export type Database = {
             referencedRelation: "institutions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_institution_uuid_fkey"
+            columns: ["institution_uuid"]
+            isOneToOne: false
+            referencedRelation: "institutions_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       salespersons: {
@@ -1512,6 +1553,7 @@ export type Database = {
           billing_email: string | null
           cart_services: Json | null
           company_name: string | null
+          company_oib: string | null
           created_at: string | null
           email: string | null
           event_id: string | null
@@ -1519,12 +1561,14 @@ export type Database = {
           event_slug: string | null
           first_name: string | null
           id: string
+          lang: string | null
           last_name: string | null
           oib: string | null
           order_id: string | null
           payer_type: string | null
           payment_method: string | null
           payment_url: string | null
+          profile_id: string | null
           retell_call_id: string | null
           status: string | null
           ticket_tier_id: string | null
@@ -1535,6 +1579,7 @@ export type Database = {
           billing_email?: string | null
           cart_services?: Json | null
           company_name?: string | null
+          company_oib?: string | null
           created_at?: string | null
           email?: string | null
           event_id?: string | null
@@ -1542,12 +1587,14 @@ export type Database = {
           event_slug?: string | null
           first_name?: string | null
           id?: string
+          lang?: string | null
           last_name?: string | null
           oib?: string | null
           order_id?: string | null
           payer_type?: string | null
           payment_method?: string | null
           payment_url?: string | null
+          profile_id?: string | null
           retell_call_id?: string | null
           status?: string | null
           ticket_tier_id?: string | null
@@ -1558,6 +1605,7 @@ export type Database = {
           billing_email?: string | null
           cart_services?: Json | null
           company_name?: string | null
+          company_oib?: string | null
           created_at?: string | null
           email?: string | null
           event_id?: string | null
@@ -1565,12 +1613,14 @@ export type Database = {
           event_slug?: string | null
           first_name?: string | null
           id?: string
+          lang?: string | null
           last_name?: string | null
           oib?: string | null
           order_id?: string | null
           payer_type?: string | null
           payment_method?: string | null
           payment_url?: string | null
+          profile_id?: string | null
           retell_call_id?: string | null
           status?: string | null
           ticket_tier_id?: string | null
@@ -1597,6 +1647,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_session_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1815,129 +1872,6 @@ export type Database = {
         }
         Relationships: []
       }
-      whatsapp_sessions: {
-        Row: {
-          attendees_json: string | null
-          billing_email: string | null
-          company_address: string | null
-          company_name: string | null
-          company_oib: string | null
-          contact_email: string | null
-          contact_name: string | null
-          contact_phone: string | null
-          conversation_mode: string | null
-          draft_order_id: string | null
-          email: string | null
-          event_id: string | null
-          event_name: string | null
-          event_slug: string | null
-          first_name: string | null
-          last_intent: string | null
-          last_name: string | null
-          last_user_message: string | null
-          participants_count: number | null
-          payer_city: string | null
-          payer_country_code: string | null
-          payer_country_name: string | null
-          payer_postal_code: string | null
-          payer_type: string | null
-          payment_method: string | null
-          po_number: string | null
-          registration_type: string | null
-          selected_service_ids: string | null
-          selected_ticket_id: string | null
-          selected_ticket_label: string | null
-          step: string | null
-          updated_at: string | null
-          wa_id: string
-        }
-        Insert: {
-          attendees_json?: string | null
-          billing_email?: string | null
-          company_address?: string | null
-          company_name?: string | null
-          company_oib?: string | null
-          contact_email?: string | null
-          contact_name?: string | null
-          contact_phone?: string | null
-          conversation_mode?: string | null
-          draft_order_id?: string | null
-          email?: string | null
-          event_id?: string | null
-          event_name?: string | null
-          event_slug?: string | null
-          first_name?: string | null
-          last_intent?: string | null
-          last_name?: string | null
-          last_user_message?: string | null
-          participants_count?: number | null
-          payer_city?: string | null
-          payer_country_code?: string | null
-          payer_country_name?: string | null
-          payer_postal_code?: string | null
-          payer_type?: string | null
-          payment_method?: string | null
-          po_number?: string | null
-          registration_type?: string | null
-          selected_service_ids?: string | null
-          selected_ticket_id?: string | null
-          selected_ticket_label?: string | null
-          step?: string | null
-          updated_at?: string | null
-          wa_id: string
-        }
-        Update: {
-          attendees_json?: string | null
-          billing_email?: string | null
-          company_address?: string | null
-          company_name?: string | null
-          company_oib?: string | null
-          contact_email?: string | null
-          contact_name?: string | null
-          contact_phone?: string | null
-          conversation_mode?: string | null
-          draft_order_id?: string | null
-          email?: string | null
-          event_id?: string | null
-          event_name?: string | null
-          event_slug?: string | null
-          first_name?: string | null
-          last_intent?: string | null
-          last_name?: string | null
-          last_user_message?: string | null
-          participants_count?: number | null
-          payer_city?: string | null
-          payer_country_code?: string | null
-          payer_country_name?: string | null
-          payer_postal_code?: string | null
-          payer_type?: string | null
-          payment_method?: string | null
-          po_number?: string | null
-          registration_type?: string | null
-          selected_service_ids?: string | null
-          selected_ticket_id?: string | null
-          selected_ticket_label?: string | null
-          step?: string | null
-          updated_at?: string | null
-          wa_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "whatsapp_sessions_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "whatsapp_sessions_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "view_events_full"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       admin_chat_full_view: {
@@ -1989,6 +1923,13 @@ export type Database = {
             columns: ["institution_id"]
             isOneToOne: false
             referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_users_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2045,6 +1986,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      institutions_public: {
+        Row: {
+          city: string | null
+          facebook_url: string | null
+          id: string | null
+          instagram_url: string | null
+          linkedin_url: string | null
+          name: string | null
+          phone: string | null
+          website: string | null
+        }
+        Insert: {
+          city?: string | null
+          facebook_url?: string | null
+          id?: string | null
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          name?: string | null
+          phone?: string | null
+          website?: string | null
+        }
+        Update: {
+          city?: string | null
+          facebook_url?: string | null
+          id?: string | null
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          name?: string | null
+          phone?: string | null
+          website?: string | null
+        }
+        Relationships: []
       }
       view_events_full: {
         Row: {
@@ -2244,6 +2218,20 @@ export type Database = {
             columns: ["institution_uuid"]
             isOneToOne: false
             referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_institution_uuid_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_institution_uuid_fkey"
+            columns: ["institution_uuid"]
+            isOneToOne: false
+            referencedRelation: "institutions_public"
             referencedColumns: ["id"]
           },
         ]
