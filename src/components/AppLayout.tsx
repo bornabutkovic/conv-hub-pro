@@ -17,7 +17,7 @@ interface AppLayoutProps {
 
 function LanguageSwitcher() {
   const { lang, setLang } = useAdminLanguage();
-  const display = lang === 'hr' ? '🇭🇷 HR' : '🇬🇧 EN';
+  const display = lang === 'hr' ? '🇭🇷 HR' : '🇺🇸 EN';
 
   return (
     <DropdownMenu>
@@ -26,7 +26,6 @@ function LanguageSwitcher() {
           className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm text-foreground/80 hover:text-foreground hover:bg-accent/50 transition-colors"
           aria-label="Change language"
         >
-          <Globe className="h-4 w-4 opacity-70" />
           <span className="font-medium">{display}</span>
         </button>
       </DropdownMenuTrigger>
