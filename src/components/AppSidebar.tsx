@@ -7,6 +7,7 @@ import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { isAdmin } from '@/lib/roles';
 import { supabase } from '@/integrations/supabase/client';
 import conwayoLogoDark from '@/assets/conwayo-logo-dark.png';
+import conwayoLogoMark from '@/assets/conwayo-logo-white.png';
 import {
   Sidebar,
   SidebarContent,
@@ -85,7 +86,7 @@ export function AppSidebar() {
       <Link to="/" className="block p-4 border-b border-sidebar-border hover:opacity-90 transition-opacity">
         {collapsed ? (
           <div className="flex items-center justify-center">
-            <span className="text-2xl font-bold text-white font-['Poppins']">C</span>
+            <img src={conwayoLogoMark} alt="CONWAYO" style={{ height: '32px', width: 'auto' }} />
           </div>
         ) : (
           <div className="flex items-center gap-3">
