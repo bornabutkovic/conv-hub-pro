@@ -1569,6 +1569,7 @@ export type Database = {
       voice_session: {
         Row: {
           billing_email: string | null
+          cart_attendees: Json | null
           cart_services: Json | null
           company_name: string | null
           company_oib: string | null
@@ -1595,6 +1596,7 @@ export type Database = {
         }
         Insert: {
           billing_email?: string | null
+          cart_attendees?: Json | null
           cart_services?: Json | null
           company_name?: string | null
           company_oib?: string | null
@@ -1621,6 +1623,7 @@ export type Database = {
         }
         Update: {
           billing_email?: string | null
+          cart_attendees?: Json | null
           cart_services?: Json | null
           company_name?: string | null
           company_oib?: string | null
