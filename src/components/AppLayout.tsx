@@ -34,7 +34,7 @@ function LanguageSwitcher() {
           🇭🇷 Hrvatski
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setLang('en')} className="cursor-pointer">
-          🇬🇧 English
+          🇺🇸 English
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
