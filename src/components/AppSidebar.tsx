@@ -100,7 +100,6 @@ export function AppSidebar() {
                             {item.title}
                           </span>
                         )}
-                        }
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
