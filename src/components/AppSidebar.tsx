@@ -45,25 +45,6 @@ export function AppSidebar() {
     { title: t('nav.whatsappInspector'), url: '/admin/chats', icon: MessageCircle },
   ];
 
-  const showPendingBadge = isAdmin(profile?.role);
-  const [pendingCount, setPendingCount] = useState(0);
-
-  useEffect(() => {
-    if (!showPendingBadge) return;
-    let cancelled = false;
-    const fetchCount = async () => {
-      const { count } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .is('institution_uuid', null)
-        .not('role', 'in', '("admin","super_admin","event_organizer","organizer_admin")');
-      if (!cancelled) setPendingCount(count ?? 0);
-    };
-    fetchCount();
-    const id = setInterval(fetchCount, 60000);
-    return () => { cancelled = true; clearInterval(id); };
-  }, [showPendingBadge]);
-
   const handleSignOut = async () => {
     await signOut();
   };
@@ -117,16 +98,6 @@ export function AppSidebar() {
                         {!collapsed && (
                           <span className={active ? 'text-brand-gradient font-semibold' : ''}>
                             {item.title}
-                          </span>
-                        )}
-                        {showPendingBadge && pendingCount > 0 && (item.url === '/admin/users' || item.url === '/admin') && (
-                          <span
-                            className={`ml-auto inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs font-semibold ${
-                              collapsed ? 'h-2 w-2 p-0' : 'min-w-[1.25rem] h-5 px-1.5'
-                            }`}
-                            aria-label={`${pendingCount} pending users`}
-                          >
-                            {!collapsed && pendingCount}
                           </span>
                         )}
                       </NavLink>
