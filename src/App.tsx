@@ -23,6 +23,7 @@ import UpdatePassword from "./pages/UpdatePassword";
 import ResetPassword from "./pages/ResetPassword";
 import PendingApproval from "./pages/PendingApproval";
 import Notifications from "./pages/Notifications";
+import DataRetention from "./pages/admin/DataRetention";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -136,6 +137,16 @@ const App = () => (
                 <AdminRoute>
                   <AppLayout>
                     <AdminChats />
+                  </AppLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/data-retention"
+              element={
+                <AdminRoute>
+                  <AppLayout>
+                    <DataRetention />
                   </AppLayout>
                 </AdminRoute>
               }
