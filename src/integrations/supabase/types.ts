@@ -1092,6 +1092,7 @@ export type Database = {
           gen_bus_posting_group: string | null
           id: string
           is_group_order: boolean | null
+          lang: string
           order_number: number
           paid_at: string | null
           payer_address: string | null
@@ -1138,6 +1139,7 @@ export type Database = {
           gen_bus_posting_group?: string | null
           id?: string
           is_group_order?: boolean | null
+          lang?: string
           order_number?: number
           paid_at?: string | null
           payer_address?: string | null
@@ -1184,6 +1186,7 @@ export type Database = {
           gen_bus_posting_group?: string | null
           id?: string
           is_group_order?: boolean | null
+          lang?: string
           order_number?: number
           paid_at?: string | null
           payer_address?: string | null
@@ -1412,6 +1415,36 @@ export type Database = {
           },
         ]
       }
+      retention_audit_log: {
+        Row: {
+          attendees_anonymized: number
+          chat_deleted: number
+          executed_at: string
+          id: string
+          profiles_anonymized: number
+          voice_sessions_deleted: number
+          wa_sessions_deleted: number
+        }
+        Insert: {
+          attendees_anonymized?: number
+          chat_deleted?: number
+          executed_at?: string
+          id?: string
+          profiles_anonymized?: number
+          voice_sessions_deleted?: number
+          wa_sessions_deleted?: number
+        }
+        Update: {
+          attendees_anonymized?: number
+          chat_deleted?: number
+          executed_at?: string
+          id?: string
+          profiles_anonymized?: number
+          voice_sessions_deleted?: number
+          wa_sessions_deleted?: number
+        }
+        Relationships: []
+      }
       salespersons: {
         Row: {
           bc_code: string
@@ -1579,6 +1612,9 @@ export type Database = {
           event_name: string | null
           event_slug: string | null
           first_name: string | null
+          gdpr_consent_at: string | null
+          gdpr_consent_given: boolean | null
+          gdpr_disclosure_version: string | null
           id: string
           lang: string | null
           last_name: string | null
@@ -1606,6 +1642,9 @@ export type Database = {
           event_name?: string | null
           event_slug?: string | null
           first_name?: string | null
+          gdpr_consent_at?: string | null
+          gdpr_consent_given?: boolean | null
+          gdpr_disclosure_version?: string | null
           id?: string
           lang?: string | null
           last_name?: string | null
@@ -1633,6 +1672,9 @@ export type Database = {
           event_name?: string | null
           event_slug?: string | null
           first_name?: string | null
+          gdpr_consent_at?: string | null
+          gdpr_consent_given?: boolean | null
+          gdpr_disclosure_version?: string | null
           id?: string
           lang?: string | null
           last_name?: string | null
@@ -2361,6 +2403,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      run_data_retention_cleanup: { Args: { dry_run?: boolean }; Returns: Json }
       unaccent: { Args: { "": string }; Returns: string }
       update_completed_events: { Args: never; Returns: undefined }
       upsert_wa_session: {
