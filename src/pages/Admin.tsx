@@ -31,6 +31,12 @@ export default function Admin() {
           <h1 className="text-3xl font-bold text-foreground">{t('admin.title')}</h1>
           <p className="text-muted-foreground mt-1">{t('admin.subtitle')}</p>
         </div>
+        {isSuperAdmin(profile?.role) && (
+          <Button variant="ghost" size="sm" onClick={() => navigate('/admin/data-retention')} className="flex items-center gap-1.5">
+            <Shield className="h-4 w-4" />
+            Čišćenje podataka
+          </Button>
+        )}
       </div>
 
       <PendingApprovalsSection />
@@ -45,12 +51,6 @@ export default function Admin() {
             <Users className="h-4 w-4" />
             {t('admin.users')}
           </TabsTrigger>
-          {isSuperAdmin(profile?.role) && (
-            <TabsTrigger value="data-retention" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Data Retention
-            </TabsTrigger>
-          )}
         </TabsList>
 
         <TabsContent value="institutions" className="space-y-4">
@@ -67,15 +67,6 @@ export default function Admin() {
           <AdminUsersTab />
         </TabsContent>
 
-        <TabsContent value="data-retention" className="space-y-4">
-          <Button variant="outline" onClick={() => navigate('/admin/data-retention')} className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Upravljanje podacima (GDPR)
-          </Button>
-          <p className="text-muted-foreground text-sm">
-            Pregled i pokretanje GDPR čišćenja podataka kojima je istekao rok čuvanja.
-          </p>
-        </TabsContent>
       </Tabs>
     </div>
   );
