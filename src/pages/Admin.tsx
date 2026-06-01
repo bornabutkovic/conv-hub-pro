@@ -1,12 +1,12 @@
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin } from '@/lib/roles';
+import { isAdmin, isSuperAdmin } from '@/lib/roles';
 import { InstitutionsTable } from '@/components/admin/InstitutionsTable';
 import { AdminUsersTab } from '@/components/admin/AdminUsersTab';
 import { PendingApprovalsSection } from '@/components/admin/PendingApprovalsSection';
 import { Button } from '@/components/ui/button';
-import { Plus, Building2, Users } from 'lucide-react';
+import { Plus, Building2, Users, Shield } from 'lucide-react';
 import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 export default function Admin() {
@@ -45,6 +45,12 @@ export default function Admin() {
             <Users className="h-4 w-4" />
             {t('admin.users')}
           </TabsTrigger>
+          {isSuperAdmin(profile?.role) && (
+            <TabsTrigger value="data-retention" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Data Retention
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="institutions" className="space-y-4">
@@ -59,6 +65,16 @@ export default function Admin() {
 
         <TabsContent value="users">
           <AdminUsersTab />
+        </TabsContent>
+
+        <TabsContent value="data-retention" className="space-y-4">
+          <Button variant="outline" onClick={() => navigate('/admin/data-retention')} className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Upravljanje podacima (GDPR)
+          </Button>
+          <p className="text-muted-foreground text-sm">
+            Pregled i pokretanje GDPR čišćenja podataka kojima je istekao rok čuvanja.
+          </p>
         </TabsContent>
       </Tabs>
     </div>
