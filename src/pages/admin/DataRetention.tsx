@@ -57,15 +57,25 @@ export default function DataRetention() {
 
   const fetchPreview = async () => {
     setLoadingPreview(true);
-    const { data, error } = await (supabase.rpc as any)('run_data_retention_cleanup', {
-      dry_run: true,
-    });
+    const { data, error } = await supabase.rpc('run_data_retention_cleanup', { dry_run: true });
     setLoadingPreview(false);
     if (error) {
       toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
       return;
     }
-    setPreview((data as RetentionResult) ?? {});
+    const preview = data?.preview;
+    const chatToDelete = preview?.chat_messages_to_delete ?? 0;
+    const waSessionsToDelete = preview?.wa_sessions_to_delete ?? 0;
+    const voiceSessionsToDelete = preview?.voice_sessions_to_delete ?? 0;
+    const attendeesToAnonymize = preview?.attendees_to_anonymize ?? 0;
+    const profilesToAnonymize = preview?.profiles_to_anonymize ?? 0;
+    setPreview({
+      chat_deleted: chatToDelete,
+      wa_sessions_deleted: waSessionsToDelete,
+      voice_sessions_deleted: voiceSessionsToDelete,
+      attendees_anonymized: attendeesToAnonymize,
+      profiles_anonymized: profilesToAnonymize,
+    });
   };
 
   const fetchHistory = async () => {
