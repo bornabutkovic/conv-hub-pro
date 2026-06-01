@@ -51,12 +51,6 @@ export default function Admin() {
             <Users className="h-4 w-4" />
             {t('admin.users')}
           </TabsTrigger>
-          {isSuperAdmin(profile?.role) && (
-            <TabsTrigger value="data-retention" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Data Retention
-            </TabsTrigger>
-          )}
         </TabsList>
 
         <TabsContent value="institutions" className="space-y-4">
