@@ -67,15 +67,6 @@ export default function Admin() {
           <AdminUsersTab />
         </TabsContent>
 
-        <TabsContent value="data-retention" className="space-y-4">
-          <Button variant="outline" onClick={() => navigate('/admin/data-retention')} className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Upravljanje podacima (GDPR)
-          </Button>
-          <p className="text-muted-foreground text-sm">
-            Pregled i pokretanje GDPR čišćenja podataka kojima je istekao rok čuvanja.
-          </p>
-        </TabsContent>
       </Tabs>
     </div>
   );
