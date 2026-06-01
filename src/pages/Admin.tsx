@@ -1,12 +1,12 @@
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin } from '@/lib/roles';
+import { isAdmin, isSuperAdmin } from '@/lib/roles';
 import { InstitutionsTable } from '@/components/admin/InstitutionsTable';
 import { AdminUsersTab } from '@/components/admin/AdminUsersTab';
 import { PendingApprovalsSection } from '@/components/admin/PendingApprovalsSection';
 import { Button } from '@/components/ui/button';
-import { Plus, Building2, Users } from 'lucide-react';
+import { Plus, Building2, Users, Shield } from 'lucide-react';
 import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 export default function Admin() {
