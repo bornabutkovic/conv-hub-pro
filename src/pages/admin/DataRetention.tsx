@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { isSuperAdmin } from '@/lib/roles';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,6 +48,7 @@ interface AuditRow {
 
 export default function DataRetention() {
   const { profile, profileLoading } = useAuth();
+  const { t } = useAdminLanguage();
   const [preview, setPreview] = useState<RetentionResult | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [running, setRunning] = useState(false);
@@ -60,7 +62,7 @@ export default function DataRetention() {
     });
     setLoadingPreview(false);
     if (error) {
-      toast({ title: 'Greška', description: error.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
       return;
     }
     setPreview((data as RetentionResult) ?? {});
@@ -74,7 +76,7 @@ export default function DataRetention() {
       .order('executed_at', { ascending: false });
     setLoadingHistory(false);
     if (error) {
-      toast({ title: 'Greška', description: error.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
       return;
     }
     setHistory((data as AuditRow[]) ?? []);
@@ -87,19 +89,19 @@ export default function DataRetention() {
     });
     setRunning(false);
     if (error) {
-      toast({ title: 'Greška', description: error.message, variant: 'destructive' });
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
       return;
     }
     const r = (data as RetentionResult) ?? {};
+    const count =
+      (r.chat_deleted ?? 0) +
+      (r.wa_sessions_deleted ?? 0) +
+      (r.voice_sessions_deleted ?? 0) +
+      (r.attendees_anonymized ?? 0) +
+      (r.profiles_anonymized ?? 0);
     toast({
-      title: 'Čišćenje izvršeno',
-      description: `Obrisano/anonimizirano: ${
-        (r.chat_deleted ?? 0) +
-        (r.wa_sessions_deleted ?? 0) +
-        (r.voice_sessions_deleted ?? 0) +
-        (r.attendees_anonymized ?? 0) +
-        (r.profiles_anonymized ?? 0)
-      } zapisa.`,
+      title: t('dataRetention.cleanupCompleted'),
+      description: `${t('dataRetention.recordsDeleted')} ${count} ${t('dataRetention.recordsSuffix')}`,
     });
     fetchPreview();
     fetchHistory();
@@ -130,30 +132,30 @@ export default function DataRetention() {
     (preview?.profiles_anonymized ?? 0);
 
   const rows: Array<{ label: string; value: number }> = [
-    { label: 'Poruke za brisanje (chat_messages)', value: preview?.chat_deleted ?? 0 },
-    { label: 'WhatsApp sesije za brisanje', value: preview?.wa_sessions_deleted ?? 0 },
-    { label: 'Voice sesije za brisanje', value: preview?.voice_sessions_deleted ?? 0 },
-    { label: 'Sudionici za anonimizaciju', value: preview?.attendees_anonymized ?? 0 },
-    { label: 'Profili za anonimizaciju', value: preview?.profiles_anonymized ?? 0 },
+    { label: `${t('dataRetention.messagesToDelete')} (chat_messages)`, value: preview?.chat_deleted ?? 0 },
+    { label: t('dataRetention.whatsappSessionsToDelete'), value: preview?.wa_sessions_deleted ?? 0 },
+    { label: t('dataRetention.voiceSessionsToDelete'), value: preview?.voice_sessions_deleted ?? 0 },
+    { label: t('dataRetention.attendeesToAnonymize'), value: preview?.attendees_anonymized ?? 0 },
+    { label: t('dataRetention.profilesToAnonymize'), value: preview?.profiles_anonymized ?? 0 },
   ];
 
   return (
     <div className="space-y-6 p-6 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Upravljanje podacima (GDPR)</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('dataRetention.title')}</h1>
         <p className="text-muted-foreground mt-1">
-          Pregled i izvođenje politike zadržavanja podataka.
+          {t('dataRetention.subtitle')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Pregled (dry run)</CardTitle>
+          <CardTitle>{t('dataRetention.dryRunPreview')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {loadingPreview ? (
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Učitavanje...
+              <Loader2 className="h-4 w-4 animate-spin" /> {t('common.loading')}
             </div>
           ) : (
             <ul className="space-y-2">
@@ -169,7 +171,7 @@ export default function DataRetention() {
           <div className="flex flex-wrap gap-3 pt-2">
             <Button variant="outline" onClick={fetchPreview} disabled={loadingPreview}>
               <RefreshCw className="h-4 w-4 mr-2" />
-              Osvježi pregled
+              {t('dataRetention.refreshPreview')}
             </Button>
 
             <AlertDialog>
@@ -180,24 +182,23 @@ export default function DataRetention() {
                   ) : (
                     <Trash2 className="h-4 w-4 mr-2" />
                   )}
-                  Pokreni čišćenje
+                  {t('dataRetention.runCleanup')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Potvrda čišćenja</AlertDialogTitle>
+                  <AlertDialogTitle>{t('dataRetention.confirmationTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Jeste li sigurni? Ova radnja je nepovratna. Bit će obrisano/anonimizirano{' '}
-                    {totalAffected} zapisa.
+                    {t('dataRetention.confirmationDesc')} {totalAffected} {t('dataRetention.recordsSuffix')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Odustani</AlertDialogCancel>
+                  <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={runCleanup}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
-                    Potvrdi i pokreni
+                    {t('dataRetention.confirmAndRun')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -208,25 +209,25 @@ export default function DataRetention() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Povijest izvođenja</CardTitle>
+          <CardTitle>{t('dataRetention.executionHistory')}</CardTitle>
         </CardHeader>
         <CardContent>
           {loadingHistory ? (
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Učitavanje...
+              <Loader2 className="h-4 w-4 animate-spin" /> {t('common.loading')}
             </div>
           ) : history.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nema zabilježenih izvođenja.</p>
+            <p className="text-sm text-muted-foreground">{t('dataRetention.noExecutions')}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Datum izvođenja</TableHead>
-                  <TableHead className="text-right">Chat poruke</TableHead>
-                  <TableHead className="text-right">WA sesije</TableHead>
-                  <TableHead className="text-right">Voice sesije</TableHead>
-                  <TableHead className="text-right">Sudionici</TableHead>
-                  <TableHead className="text-right">Profili</TableHead>
+                  <TableHead>{t('dataRetention.executedAt')}</TableHead>
+                  <TableHead className="text-right">{t('dataRetention.chatMessages')}</TableHead>
+                  <TableHead className="text-right">{t('dataRetention.waSessions')}</TableHead>
+                  <TableHead className="text-right">{t('dataRetention.voiceSessions')}</TableHead>
+                  <TableHead className="text-right">{t('dataRetention.attendees')}</TableHead>
+                  <TableHead className="text-right">{t('dataRetention.profiles')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
