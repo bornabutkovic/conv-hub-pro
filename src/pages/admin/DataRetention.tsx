@@ -63,7 +63,7 @@ export default function DataRetention() {
       toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
       return;
     }
-    const preview = data?.preview;
+    const preview = (data as any)?.preview;
     const chatToDelete = preview?.chat_messages_to_delete ?? 0;
     const waSessionsToDelete = preview?.wa_sessions_to_delete ?? 0;
     const voiceSessionsToDelete = preview?.voice_sessions_to_delete ?? 0;
@@ -94,15 +94,14 @@ export default function DataRetention() {
 
   const runCleanup = async () => {
     setRunning(true);
-    const { data, error } = await (supabase.rpc as any)('run_data_retention_cleanup', {
-      dry_run: false,
-    });
+    const { data, error } = await supabase.rpc('run_data_retention_cleanup', { dry_run: false });
     setRunning(false);
     if (error) {
       toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
       return;
     }
-    const r = (data as RetentionResult) ?? {};
+    const results = (data as any)?.results;
+    const r = (results as RetentionResult) ?? {};
     const count =
       (r.chat_deleted ?? 0) +
       (r.wa_sessions_deleted ?? 0) +
