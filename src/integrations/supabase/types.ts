@@ -1472,6 +1472,51 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_log: {
+        Row: {
+          actor_email: string | null
+          actor_uid: string | null
+          created_at: string | null
+          details: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          new_value: Json | null
+          old_value: Json | null
+          severity: string
+          target_id: string | null
+          target_table: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_uid?: string | null
+          created_at?: string | null
+          details?: string | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          new_value?: Json | null
+          old_value?: Json | null
+          severity?: string
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_uid?: string | null
+          created_at?: string | null
+          details?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          new_value?: Json | null
+          old_value?: Json | null
+          severity?: string
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           end_time: string | null
