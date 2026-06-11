@@ -170,7 +170,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
             paid_at: form.paid_at ? new Date(form.paid_at).toISOString() : null,
             fiscal_invoice_number: form.fiscal_invoice_number || null,
             payment_method: form.payment_method || null,
-            status: form.payment_status,
+            status: form.payment_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded',
           })
           .eq('id', attendee.order_id);
 
