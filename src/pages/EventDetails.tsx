@@ -65,6 +65,16 @@ export default function EventDetails() {
   const { data: pendingItems } = usePendingApprovalItems(id || '');
   const pendingCount = (pendingItems?.tiers.length || 0) + (pendingItems?.services.length || 0);
 
+  const { data: revenueStats } = useQuery({
+    queryKey: ['event-revenue-stats', id],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_event_revenue_stats' as any, { p_event_id: id! });
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!id,
+  });
+
   const handleStatusChange = async (newStatus: string) => {
     if (!event) return;
     setIsUpdatingStatus(true);
@@ -261,14 +271,20 @@ export default function EventDetails() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
-              {formatCurrency(totalRevenue)}
+              {formatCurrency(Number(revenueStats?.total_revenue || 0))}
             </div>
             <div className="mt-2 space-y-1">
               <p className="text-sm text-emerald-600">
-                ✅ {t('eventDetails.paid')}: {paidAttendees.length} {t('eventDetails.registrations')} — {formatCurrency(totalRevenue)}
+                ✅ {t('eventDetails.paid')}: {revenueStats?.paid?.attendees ?? 0} {t('eventDetails.registrations')} — {formatCurrency(Number(revenueStats?.paid?.amount || 0))}
               </p>
               <p className="text-sm text-amber-600">
-                ⏳ {t('eventDetails.pending')}: {pendingAttendees.length} {t('eventDetails.registrations')} — {formatCurrency(pendingRevenue)}
+                ⏳ {t('eventDetails.pending')}: {revenueStats?.pending?.attendees ?? 0} {t('eventDetails.registrations')} — {formatCurrency(Number(revenueStats?.pending?.amount || 0))}
+                {revenueStats?.overdue?.orders > 0 && (
+                  <span className="ml-1 text-destructive">({revenueStats.overdue.orders} overdue)</span>
+                )}
+              </p>
+              <p className="text-xs text-muted-foreground pt-1">
+                Expected total: {formatCurrency(Number(revenueStats?.expected_revenue || 0))} · {revenueStats?.total_registrations ?? 0} registered
               </p>
             </div>
           </CardContent>
