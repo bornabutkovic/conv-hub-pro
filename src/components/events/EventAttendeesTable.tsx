@@ -151,13 +151,12 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     if (!attendee.attendee_id) return;
     setIsSaving(true);
     try {
-      // Update attendees table
+      // Update attendees table (name fields only — payment_status is synced from orders by a DB trigger)
       const { error: attError } = await supabase
         .from('attendees')
         .update({
           first_name: form.first_name,
           last_name: form.last_name,
-          payment_status: form.payment_status,
         })
         .eq('id', attendee.attendee_id);
 
@@ -171,11 +170,13 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
             paid_at: form.paid_at ? new Date(form.paid_at).toISOString() : null,
             fiscal_invoice_number: form.fiscal_invoice_number || null,
             payment_method: form.payment_method || null,
+            status: form.payment_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded',
           })
           .eq('id', attendee.order_id);
 
         if (orderError) throw orderError;
       }
+
 
       toast.success('Promjene su spremljene');
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
