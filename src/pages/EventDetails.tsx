@@ -65,6 +65,16 @@ export default function EventDetails() {
   const { data: pendingItems } = usePendingApprovalItems(id || '');
   const pendingCount = (pendingItems?.tiers.length || 0) + (pendingItems?.services.length || 0);
 
+  const { data: revenueStats } = useQuery({
+    queryKey: ['event-revenue-stats', id],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_event_revenue_stats' as any, { p_event_id: id! });
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!id,
+  });
+
   const handleStatusChange = async (newStatus: string) => {
     if (!event) return;
     setIsUpdatingStatus(true);
