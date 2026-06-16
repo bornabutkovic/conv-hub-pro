@@ -622,6 +622,7 @@ const translations = {
   'bankStatement.amountCheck': { hr: 'Iznos', en: 'Amount check' },
   'bankStatement.exact': { hr: 'Točno', en: 'Exact' },
   'bankStatement.differs': { hr: 'Razlika', en: 'Differs' },
+  'bankStatement.uploadStatement': { hr: 'Učitaj izvod', en: 'Upload Statement' },
 
   // Common
   'common.save': { hr: 'Spremi', en: 'Save' },
