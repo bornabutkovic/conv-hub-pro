@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
-import { Upload, Loader2, FileText, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Upload, Loader2, FileText, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MatchedOrder {
   date: string;
