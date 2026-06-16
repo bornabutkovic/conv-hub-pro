@@ -1,4 +1,4 @@
-import { LayoutDashboard, Calendar, Settings, LogOut, Shield, MessageCircle, ChevronUp } from 'lucide-react';
+import { LayoutDashboard, Calendar, Settings, LogOut, Shield, MessageCircle, ChevronUp, FileText } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { NavLink } from '@/components/NavLink';
