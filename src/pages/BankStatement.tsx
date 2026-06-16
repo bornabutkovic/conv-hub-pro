@@ -278,11 +278,40 @@ export default function BankStatement() {
                     ))}
                   </TableBody>
                 </Table>
-                {!result.dry_run && (
-                  <p className="text-sm text-muted-foreground mt-4">
-                    An email has been sent to racunovodstvo@penta-zagreb.hr with these transactions.
-                  </p>
-                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {result.already_paid.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                  <Info className="h-5 w-5" /> Already Paid
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Debtor</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Quote Number</TableHead>
+                      <TableHead>Order #</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {result.already_paid.map((ap, i) => (
+                      <TableRow key={i}>
+                        <TableCell>{ap.date}</TableCell>
+                        <TableCell>{ap.debtor}</TableCell>
+                        <TableCell>{fmt(ap.amount)}</TableCell>
+                        <TableCell className="font-mono text-xs">{ap.bc_quote_number || '—'}</TableCell>
+                        <TableCell className="font-mono text-xs">{ap.order_number || '—'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           )}
