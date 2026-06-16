@@ -20,6 +20,7 @@ interface EventCardProps {
     currency: string | null;
     status: string | null;
     institution_name?: string | null;
+    bc_position?: string | null;
   };
 }
 
