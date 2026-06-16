@@ -121,7 +121,7 @@ export default function BankStatement() {
       {!result ? (
         <Card>
           <CardHeader>
-            <CardTitle>Upload statement</CardTitle>
+            <CardTitle>{t('bankStatement.uploadStatement')}</CardTitle>
             <CardDescription>XML format</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
