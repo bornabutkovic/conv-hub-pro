@@ -192,7 +192,7 @@ export default function BankStatement() {
             <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
               <CardContent className="p-4">
                 <p className="text-xs text-blue-700 dark:text-blue-400">Already paid</p>
-                <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{result.already_paid}</p>
+                <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{result.already_paid.length}</p>
               </CardContent>
             </Card>
           </div>
