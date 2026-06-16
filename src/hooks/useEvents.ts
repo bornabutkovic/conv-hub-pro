@@ -81,7 +81,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
         if (statusFilter === 'all' || statusFilter === 'pending_approval') {
           const { data, error } = await supabase
             .from('events')
-            .select(`*, institutions:institution_uuid (name)`)
+            .select(`*, bc_position, institutions:institution_uuid (name)`)
             .eq('status', 'pending_approval')
             .order('start_date', { ascending: false });
 
@@ -110,7 +110,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
 
       let query = supabase
         .from('events')
-        .select(`*, institutions:institution_uuid (name)`)
+        .select(`*, bc_position, institutions:institution_uuid (name)`)
         .eq('institution_uuid', institutionUuid)
         .neq('status', 'archived')
         .order('start_date', { ascending: false });
@@ -137,7 +137,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
       if (coOrgEventIds.length > 0) {
         let q2 = supabase
           .from('events')
-          .select(`*, institutions:institution_uuid (name)`)
+          .select(`*, bc_position, institutions:institution_uuid (name)`)
           .in('id', coOrgEventIds)
           .neq('status', 'archived')
           .order('start_date', { ascending: false });
