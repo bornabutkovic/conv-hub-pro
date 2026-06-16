@@ -62,6 +62,7 @@ export default function BankStatement() {
   };
 
   const handleSubmit = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
     if (!file || !session?.access_token) return;
     setProcessing(true);
     setError(null);
