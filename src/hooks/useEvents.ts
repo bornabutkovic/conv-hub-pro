@@ -34,7 +34,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
       if (isSuperAdmin(role)) {
         let query = supabase
           .from('events')
-          .select(`*, institutions:institution_uuid (name)`)
+          .select(`*, bc_position, institutions:institution_uuid (name)`)
           .order('start_date', { ascending: false });
 
         if (statusFilter !== 'all') {
@@ -62,7 +62,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
         if (institutionUuid) {
           let q = supabase
             .from('events')
-            .select(`*, institutions:institution_uuid (name)`)
+            .select(`*, bc_position, institutions:institution_uuid (name)`)
             .eq('institution_uuid', institutionUuid)
             .neq('status', 'archived')
             .order('start_date', { ascending: false });
