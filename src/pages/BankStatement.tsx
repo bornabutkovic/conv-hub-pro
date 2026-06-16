@@ -25,12 +25,20 @@ interface UnmatchedTx {
   description?: string;
 }
 
+interface AlreadyPaid {
+  date: string;
+  debtor: string;
+  amount: number;
+  bc_quote_number?: string;
+  order_number?: string;
+}
+
 interface ProcessResult {
   dry_run: boolean;
   total: number;
   matched: MatchedOrder[];
   unmatched: UnmatchedTx[];
-  already_paid: number;
+  already_paid: AlreadyPaid[];
 }
 
 export default function BankStatement() {
