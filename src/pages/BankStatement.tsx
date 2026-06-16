@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
-import { Upload, Loader2, FileText, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Upload, Loader2, FileText, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MatchedOrder {
   date: string;
@@ -25,16 +25,24 @@ interface UnmatchedTx {
   description?: string;
 }
 
+interface AlreadyPaid {
+  date: string;
+  debtor: string;
+  amount: number;
+  bc_quote_number?: string;
+  order_number?: string;
+}
+
 interface ProcessResult {
   dry_run: boolean;
   total: number;
   matched: MatchedOrder[];
   unmatched: UnmatchedTx[];
-  already_paid: number;
+  already_paid: AlreadyPaid[];
 }
 
 export default function BankStatement() {
-  const { session } = useAuth();
+  
   const [file, setFile] = useState<File | null>(null);
   const [dryRun, setDryRun] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -54,6 +62,7 @@ export default function BankStatement() {
   };
 
   const handleSubmit = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
     if (!file || !session?.access_token) return;
     setProcessing(true);
     setError(null);
@@ -183,7 +192,7 @@ export default function BankStatement() {
             <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
               <CardContent className="p-4">
                 <p className="text-xs text-blue-700 dark:text-blue-400">Already paid</p>
-                <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{result.already_paid}</p>
+                <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{result.already_paid.length}</p>
               </CardContent>
             </Card>
           </div>
@@ -269,11 +278,40 @@ export default function BankStatement() {
                     ))}
                   </TableBody>
                 </Table>
-                {!result.dry_run && (
-                  <p className="text-sm text-muted-foreground mt-4">
-                    An email has been sent to racunovodstvo@penta-zagreb.hr with these transactions.
-                  </p>
-                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {result.already_paid.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                  <Info className="h-5 w-5" /> Already Paid
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Debtor</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Quote Number</TableHead>
+                      <TableHead>Order #</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {result.already_paid.map((ap, i) => (
+                      <TableRow key={i}>
+                        <TableCell>{ap.date}</TableCell>
+                        <TableCell>{ap.debtor}</TableCell>
+                        <TableCell>{fmt(ap.amount)}</TableCell>
+                        <TableCell className="font-mono text-xs">{ap.bc_quote_number || '—'}</TableCell>
+                        <TableCell className="font-mono text-xs">{ap.order_number || '—'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           )}
