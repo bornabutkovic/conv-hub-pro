@@ -24,6 +24,7 @@ import ResetPassword from "./pages/ResetPassword";
 import PendingApproval from "./pages/PendingApproval";
 import Notifications from "./pages/Notifications";
 import DataRetention from "./pages/admin/DataRetention";
+import BankStatement from "./pages/BankStatement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
