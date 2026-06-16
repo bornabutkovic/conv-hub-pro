@@ -38,6 +38,7 @@ export function AppSidebar() {
   const navItems = [
     { title: t('nav.dashboard'), url: '/', icon: LayoutDashboard },
     { title: t('nav.events'), url: '/events', icon: Calendar },
+    ...(isAdmin(profile?.role) ? [{ title: 'Bank Statement', url: '/bank-statement', icon: FileText }] : []),
   ];
 
   const adminItems = [
