@@ -19,6 +19,7 @@ export interface Event {
   created_at: string | null;
   institution_uuid: string | null;
   institution_name?: string | null;
+  bc_position?: string | null;
 }
 
 export function useEvents(statusFilter: EventStatus = 'all') {
