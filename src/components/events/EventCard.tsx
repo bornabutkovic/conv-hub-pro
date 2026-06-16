@@ -1,4 +1,4 @@
-import { Calendar, Tag, Building2 } from 'lucide-react';
+import { Calendar, Tag, Building2, Hash } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
