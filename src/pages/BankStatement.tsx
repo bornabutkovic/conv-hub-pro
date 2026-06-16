@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 
 interface MatchedOrder {
   date: string;
@@ -42,7 +43,8 @@ interface ProcessResult {
 }
 
 export default function BankStatement() {
-  
+  const { t } = useAdminLanguage();
+
   const [file, setFile] = useState<File | null>(null);
   const [dryRun, setDryRun] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -104,9 +106,9 @@ export default function BankStatement() {
   return (
     <div className="container mx-auto max-w-5xl p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Bank Statement Reconciliation</h1>
+        <h1 className="text-3xl font-bold">{t('bankStatement.title')}</h1>
         <p className="text-muted-foreground mt-1">
-          Upload a CAMT.053 XML bank statement to automatically match payments to orders.
+          {t('bankStatement.subtitle')}
         </p>
       </div>
 
@@ -120,7 +122,7 @@ export default function BankStatement() {
         <Card>
           <CardHeader>
             <CardTitle>Upload statement</CardTitle>
-            <CardDescription>CAMT.053 XML format</CardDescription>
+            <CardDescription>XML format</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div
@@ -141,7 +143,7 @@ export default function BankStatement() {
             >
               <Upload className="h-10 w-10 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                {file ? file.name : 'Drop CAMT.053 XML file here or click to browse'}
+                {file ? file.name : t('bankStatement.dropZone')}
               </p>
               <input
                 ref={inputRef}
@@ -154,16 +156,16 @@ export default function BankStatement() {
 
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox checked={dryRun} onCheckedChange={(v) => setDryRun(!!v)} />
-              <span className="text-sm">Dry run (preview only — do not mark orders as paid)</span>
+              <span className="text-sm">{t('bankStatement.dryRun')}</span>
             </label>
 
             <Button onClick={handleSubmit} disabled={!file || processing} className="w-full">
               {processing ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Processing...
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t('bankStatement.processing')}
                 </>
               ) : (
-                'Process Statement'
+                t('bankStatement.process')
               )}
             </Button>
           </CardContent>
@@ -173,25 +175,25 @@ export default function BankStatement() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">Total entries</p>
+                <p className="text-xs text-muted-foreground">{t('bankStatement.totalEntries')}</p>
                 <p className="text-2xl font-bold">{result.total}</p>
               </CardContent>
             </Card>
             <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900">
               <CardContent className="p-4">
-                <p className="text-xs text-green-700 dark:text-green-400">Matched & paid</p>
+                <p className="text-xs text-green-700 dark:text-green-400">{t('bankStatement.matched')}</p>
                 <p className="text-2xl font-bold text-green-700 dark:text-green-400">{result.matched.length}</p>
               </CardContent>
             </Card>
             <Card className="bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900">
               <CardContent className="p-4">
-                <p className="text-xs text-red-700 dark:text-red-400">Unmatched</p>
+                <p className="text-xs text-red-700 dark:text-red-400">{t('bankStatement.unmatched')}</p>
                 <p className="text-2xl font-bold text-red-700 dark:text-red-400">{result.unmatched.length}</p>
               </CardContent>
             </Card>
             <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
               <CardContent className="p-4">
-                <p className="text-xs text-blue-700 dark:text-blue-400">Already paid</p>
+                <p className="text-xs text-blue-700 dark:text-blue-400">{t('bankStatement.alreadyPaid')}</p>
                 <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{result.already_paid.length}</p>
               </CardContent>
             </Card>
@@ -201,7 +203,7 @@ export default function BankStatement() {
             <Alert className="bg-yellow-50 dark:bg-yellow-950/30 border-yellow-300 dark:border-yellow-900 text-yellow-900 dark:text-yellow-200">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Dry run — no orders were updated. Uncheck dry run and re-upload to apply changes.
+                {t('bankStatement.dryRunBanner')}
               </AlertDescription>
             </Alert>
           )}
@@ -210,19 +212,19 @@ export default function BankStatement() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-green-700 dark:text-green-400 flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5" /> Matched Orders
+                  <CheckCircle2 className="h-5 w-5" /> {t('bankStatement.matchedTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Debtor</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Quote Number</TableHead>
-                      <TableHead>Order #</TableHead>
-                      <TableHead>Amount Match</TableHead>
+                      <TableHead>{t('bankStatement.date')}</TableHead>
+                      <TableHead>{t('bankStatement.debtor')}</TableHead>
+                      <TableHead>{t('bankStatement.amount')}</TableHead>
+                      <TableHead>{t('bankStatement.quoteNumber')}</TableHead>
+                      <TableHead>{t('bankStatement.orderNumber')}</TableHead>
+                      <TableHead>{t('bankStatement.amountCheck')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -235,9 +237,9 @@ export default function BankStatement() {
                         <TableCell className="font-mono text-xs">{m.order_id || '—'}</TableCell>
                         <TableCell>
                           {m.amount_match ? (
-                            <Badge className="bg-green-600 hover:bg-green-700">✓ Exact</Badge>
+                            <Badge className="bg-green-600 hover:bg-green-700">{t('bankStatement.exact')}</Badge>
                           ) : (
-                            <Badge className="bg-yellow-500 hover:bg-yellow-600">≈ Diff</Badge>
+                            <Badge className="bg-yellow-500 hover:bg-yellow-600">{t('bankStatement.differs')}</Badge>
                           )}
                         </TableCell>
                       </TableRow>
@@ -252,18 +254,18 @@ export default function BankStatement() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-red-700 dark:text-red-400 flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5" /> Unmatched Transactions
+                  <AlertTriangle className="h-5 w-5" /> {t('bankStatement.unmatchedTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Debtor</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Reference</TableHead>
-                      <TableHead>Description</TableHead>
+                      <TableHead>{t('bankStatement.date')}</TableHead>
+                      <TableHead>{t('bankStatement.debtor')}</TableHead>
+                      <TableHead>{t('bankStatement.amount')}</TableHead>
+                      <TableHead>{t('bankStatement.reference')}</TableHead>
+                      <TableHead>{t('bankStatement.description')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -286,18 +288,18 @@ export default function BankStatement() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
-                  <Info className="h-5 w-5" /> Already Paid
+                  <Info className="h-5 w-5" /> {t('bankStatement.alreadyPaidTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Debtor</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Quote Number</TableHead>
-                      <TableHead>Order #</TableHead>
+                      <TableHead>{t('bankStatement.date')}</TableHead>
+                      <TableHead>{t('bankStatement.debtor')}</TableHead>
+                      <TableHead>{t('bankStatement.amount')}</TableHead>
+                      <TableHead>{t('bankStatement.quoteNumber')}</TableHead>
+                      <TableHead>{t('bankStatement.orderNumber')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -317,7 +319,7 @@ export default function BankStatement() {
           )}
 
           <Button variant="outline" onClick={reset}>
-            Upload another file
+            {t('bankStatement.uploadAnother')}
           </Button>
         </div>
       )}
