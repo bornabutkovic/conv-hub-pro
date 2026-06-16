@@ -19,6 +19,7 @@ export interface Event {
   created_at: string | null;
   institution_uuid: string | null;
   institution_name?: string | null;
+  bc_position?: string | null;
 }
 
 export function useEvents(statusFilter: EventStatus = 'all') {
@@ -33,7 +34,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
       if (isSuperAdmin(role)) {
         let query = supabase
           .from('events')
-          .select(`*, institutions:institution_uuid (name)`)
+          .select(`*, bc_position, institutions:institution_uuid (name)`)
           .order('start_date', { ascending: false });
 
         if (statusFilter !== 'all') {
@@ -61,7 +62,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
         if (institutionUuid) {
           let q = supabase
             .from('events')
-            .select(`*, institutions:institution_uuid (name)`)
+            .select(`*, bc_position, institutions:institution_uuid (name)`)
             .eq('institution_uuid', institutionUuid)
             .neq('status', 'archived')
             .order('start_date', { ascending: false });
@@ -80,7 +81,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
         if (statusFilter === 'all' || statusFilter === 'pending_approval') {
           const { data, error } = await supabase
             .from('events')
-            .select(`*, institutions:institution_uuid (name)`)
+            .select(`*, bc_position, institutions:institution_uuid (name)`)
             .eq('status', 'pending_approval')
             .order('start_date', { ascending: false });
 
@@ -109,7 +110,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
 
       let query = supabase
         .from('events')
-        .select(`*, institutions:institution_uuid (name)`)
+        .select(`*, bc_position, institutions:institution_uuid (name)`)
         .eq('institution_uuid', institutionUuid)
         .neq('status', 'archived')
         .order('start_date', { ascending: false });
@@ -136,7 +137,7 @@ export function useEvents(statusFilter: EventStatus = 'all') {
       if (coOrgEventIds.length > 0) {
         let q2 = supabase
           .from('events')
-          .select(`*, institutions:institution_uuid (name)`)
+          .select(`*, bc_position, institutions:institution_uuid (name)`)
           .in('id', coOrgEventIds)
           .neq('status', 'archived')
           .order('start_date', { ascending: false });

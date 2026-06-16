@@ -1,4 +1,4 @@
-import { Calendar, Tag, Building2 } from 'lucide-react';
+import { Calendar, Tag, Building2, Hash } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -20,6 +20,7 @@ interface EventCardProps {
     currency: string | null;
     status: string | null;
     institution_name?: string | null;
+    bc_position?: string | null;
   };
 }
 
@@ -164,6 +165,13 @@ export function EventCard({ event }: EventCardProps) {
             })()}
           </span>
         </div>
+        {event.bc_position && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Hash className="h-4 w-4" />
+            <span className="text-sm text-muted-foreground">Pos.</span>
+            <span className="text-sm font-mono">{event.bc_position}</span>
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-3 pt-3 border-t">
           <div className="space-y-0.5">
             <p className="text-xs text-muted-foreground">{t('eventCard.revenue')}</p>
