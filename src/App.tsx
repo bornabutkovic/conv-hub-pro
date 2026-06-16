@@ -153,6 +153,17 @@ const App = () => (
               }
             />
             <Route
+              path="/bank-statement"
+              element={
+                <AdminRoute>
+                  <AppLayout>
+                    <BankStatement />
+                  </AppLayout>
+                </AdminRoute>
+              }
+            />
+
+            <Route
               path="/notifications"
               element={
                 <AdminRoute>
