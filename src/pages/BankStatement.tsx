@@ -42,7 +42,7 @@ interface ProcessResult {
 }
 
 export default function BankStatement() {
-  const { session } = useAuth();
+  
   const [file, setFile] = useState<File | null>(null);
   const [dryRun, setDryRun] = useState(false);
   const [processing, setProcessing] = useState(false);
