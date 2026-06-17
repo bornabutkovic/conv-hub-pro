@@ -2455,6 +2455,15 @@ export type Database = {
         Returns: string
       }
       cancel_expired_pending_orders: { Args: never; Returns: undefined }
+      check_tier_capacity: {
+        Args: { p_tier_requests: Json }
+        Returns: {
+          remaining: number
+          requested: number
+          tier_id: string
+          tier_name: string
+        }[]
+      }
       create_registration_items: {
         Args: {
           p_attendees: Json
