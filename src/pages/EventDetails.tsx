@@ -54,7 +54,8 @@ export default function EventDetails() {
       const { data, error } = await supabase
         .from('attendee_invoice_summary')
         .select('*')
-        .eq('event_id', id!);
+        .eq('event_id', id!)
+        .not('order_status', 'eq', 'cancelled');
       
       if (error) throw error;
       return data;

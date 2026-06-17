@@ -218,7 +218,7 @@ export function useDashboardStats(selectedEventId?: string | null) {
 
       return {
         revenue: { ticketRevenue, ticketPending, addonRevenue, addonPending, totalRevenue, totalPending },
-        totalAttendees: (attendees || []).length,
+        totalAttendees: (attendees || []).filter(a => a.payment_status !== 'cancelled').length,
         pendingIncome: totalPending,
         ticketDistribution,
         registrationTimeline,
