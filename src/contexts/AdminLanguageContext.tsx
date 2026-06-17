@@ -6,10 +6,11 @@ const STORAGE_KEY = 'conwayo_admin_lang';
 
 const translations = {
   // Sidebar nav
-  'nav.dashboard': { hr: 'Dashboard', en: 'Dashboard' },
+  'nav.dashboard': { hr: 'Nadzorna ploča', en: 'Dashboard' },
   'nav.events': { hr: 'Događaji', en: 'Events' },
-  'nav.adminPanel': { hr: 'Admin Panel', en: 'Admin Panel' },
-  'nav.whatsappInspector': { hr: 'WhatsApp Inspector', en: 'WhatsApp Inspector' },
+  'nav.bankStatement': { hr: 'Bankovni izvod', en: 'Bank Statement' },
+  'nav.adminPanel': { hr: 'Admin panel', en: 'Admin Panel' },
+  'nav.whatsappInspector': { hr: 'WhatsApp inspektor', en: 'WhatsApp Inspector' },
   'nav.signOut': { hr: 'Odjava', en: 'Sign Out' },
   'nav.settings': { hr: 'Postavke', en: 'Profile & Settings' },
 
