@@ -425,6 +425,7 @@ export function EventAttendeesTable({
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-20">Narudžba #</TableHead>
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Ime i prezime</TableHead>
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tvrtka/Org.</TableHead>
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Datum reg.</TableHead>
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Rok plaćanja</TableHead>
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. ponude</TableHead>
@@ -456,6 +457,12 @@ export function EventAttendeesTable({
                         </TableCell>
                         <TableCell className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">
                           {attendee.email || '—'}
+                        </TableCell>
+                        <TableCell
+                          className="py-2 px-3 text-sm text-muted-foreground max-w-[140px] truncate"
+                          title={attendee.payer_type === 'company' ? (attendee.payer_name || '') : ''}
+                        >
+                          {attendee.payer_type === 'company' ? (attendee.payer_name || '—') : '—'}
                         </TableCell>
                         <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {formatDate(attendee.registered_at)}
