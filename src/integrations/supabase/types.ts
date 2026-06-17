@@ -1091,6 +1091,7 @@ export type Database = {
           attendee_id: string | null
           bc_customer_no: string | null
           bc_invoice_id: string | null
+          bc_invoice_number: string | null
           bc_quote_number: string | null
           billing_email: string | null
           card_brand: string | null
@@ -1138,6 +1139,7 @@ export type Database = {
           attendee_id?: string | null
           bc_customer_no?: string | null
           bc_invoice_id?: string | null
+          bc_invoice_number?: string | null
           bc_quote_number?: string | null
           billing_email?: string | null
           card_brand?: string | null
@@ -1185,6 +1187,7 @@ export type Database = {
           attendee_id?: string | null
           bc_customer_no?: string | null
           bc_invoice_id?: string | null
+          bc_invoice_number?: string | null
           bc_quote_number?: string | null
           billing_email?: string | null
           card_brand?: string | null

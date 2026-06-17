@@ -131,6 +131,7 @@ export default function Attendees() {
       'Ime',
       'Prezime', 
       'Email',
+      'Tvrtka/Organizacija',
       'Ustanova',
       'Uloga',
       'Kotizacija',
@@ -144,6 +145,7 @@ export default function Attendees() {
       formatCsvCell(attendee.first_name || ''),
       formatCsvCell(attendee.last_name || ''),
       formatCsvCell(attendee.email || ''),
+      formatCsvCell(attendee.institution || ''),
       formatCsvCell(attendee.event_institution_name || ''),
       formatCsvCell(attendee.event_name || ''),
       formatCsvCell(attendee.event_name || ''), // Ticket type placeholder - uses event name
@@ -273,6 +275,7 @@ export default function Attendees() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Contact</TableHead>
+                  <TableHead>Tvrtka/Org.</TableHead>
                   <TableHead>Event</TableHead>
                   {isSuperAdmin && <TableHead>Institution</TableHead>}
                   <TableHead>Status</TableHead>
@@ -292,6 +295,12 @@ export default function Attendees() {
                         {attendee.email && <div>{attendee.email}</div>}
                         {attendee.phone && <div className="text-muted-foreground">{attendee.phone}</div>}
                       </div>
+                    </TableCell>
+                    <TableCell
+                      className="text-sm text-muted-foreground truncate max-w-[140px]"
+                      title={attendee.institution || ''}
+                    >
+                      {attendee.institution || '—'}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5 text-sm">
