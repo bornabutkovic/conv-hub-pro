@@ -278,6 +278,21 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                       </TableCell>
                       <TableCell>{formatPrice(Number(tier.price))}</TableCell>
                       <TableCell>{formatCapacity(tier.capacity)}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const avail = availability?.get(tier.id);
+                          if (avail === undefined) return <Loader2 className="h-3 w-3 animate-spin" />;
+                          if (tier.capacity === null || tier.capacity === undefined) return '—';
+                          return (
+                            <span className={avail.is_sold_out ? 'text-destructive' : ''}>
+                              {avail.sold} / {tier.capacity}
+                              {avail.remaining <= 10 && avail.remaining > 0 && (
+                                <span className="text-amber-500 ml-1">(još {avail.remaining})</span>
+                              )}
+                            </span>
+                          );
+                        })()}
+                      </TableCell>
                       <TableCell className="text-sm">
                         {formatSalesPeriod(tier.sales_start, tier.sales_end)}
                       </TableCell>
