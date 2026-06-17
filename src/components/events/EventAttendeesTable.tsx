@@ -328,6 +328,7 @@ export function EventAttendeesTable({
           a.order_number ? `#${a.order_number}` : '—',
           `${a.first_name || ''} ${a.last_name || ''}`.trim(),
           a.email || '—',
+          a.payer_type === 'company' ? (a.payer_name || '—') : '—',
           formatDate(a.registered_at),
           deadline,
           a.bc_quote_number || '—',
