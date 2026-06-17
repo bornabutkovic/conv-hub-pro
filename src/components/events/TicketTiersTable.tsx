@@ -87,6 +87,17 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
     enabled: !!eventId,
   });
 
+  const { data: availability } = useQuery({
+    queryKey: ['ticket-tier-availability', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_ticket_tier_availability', { p_event_id: eventId });
+      if (error) throw error;
+      return new Map((data || []).map((r: any) => [r.tier_id, r]));
+    },
+    enabled: !!eventId,
+    refetchInterval: 30000,
+  });
+
   // ERP code inline update
   const erpMutation = useMutation({
     mutationFn: async ({ tierId, erpCode }: { tierId: string; erpCode: string }) => {
