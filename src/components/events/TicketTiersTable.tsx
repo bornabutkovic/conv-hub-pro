@@ -245,6 +245,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                   <TableHead>{t('ticketTiers.name')}</TableHead>
                   <TableHead>{t('ticketTiers.price')}</TableHead>
                   <TableHead>{t('ticketTiers.capacity')}</TableHead>
+                  <TableHead>{t('ticketTiers.sold')}</TableHead>
                   <TableHead>{t('ticketTiers.salesPeriod')}</TableHead>
                   <TableHead>{t('ticketTiers.status')}</TableHead>
                   {userIsAdmin && <TableHead>{t('ticketTiers.erpCode')}</TableHead>}
