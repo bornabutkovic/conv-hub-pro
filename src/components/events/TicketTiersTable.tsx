@@ -87,6 +87,17 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
     enabled: !!eventId,
   });
 
+  const { data: availability } = useQuery({
+    queryKey: ['ticket-tier-availability', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_ticket_tier_availability', { p_event_id: eventId });
+      if (error) throw error;
+      return new Map((data || []).map((r: any) => [r.tier_id, r]));
+    },
+    enabled: !!eventId,
+    refetchInterval: 30000,
+  });
+
   // ERP code inline update
   const erpMutation = useMutation({
     mutationFn: async ({ tierId, erpCode }: { tierId: string; erpCode: string }) => {
@@ -234,6 +245,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                   <TableHead>{t('ticketTiers.name')}</TableHead>
                   <TableHead>{t('ticketTiers.price')}</TableHead>
                   <TableHead>{t('ticketTiers.capacity')}</TableHead>
+                  <TableHead>{t('ticketTiers.sold')}</TableHead>
                   <TableHead>{t('ticketTiers.salesPeriod')}</TableHead>
                   <TableHead>{t('ticketTiers.status')}</TableHead>
                   {userIsAdmin && <TableHead>{t('ticketTiers.erpCode')}</TableHead>}
@@ -266,6 +278,21 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                       </TableCell>
                       <TableCell>{formatPrice(Number(tier.price))}</TableCell>
                       <TableCell>{formatCapacity(tier.capacity)}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const avail = availability?.get(tier.id);
+                          if (avail === undefined) return <Loader2 className="h-3 w-3 animate-spin" />;
+                          if (tier.capacity === null || tier.capacity === undefined) return '—';
+                          return (
+                            <span className={avail.is_sold_out ? 'text-destructive' : ''}>
+                              {avail.sold} / {tier.capacity}
+                              {avail.remaining <= 10 && avail.remaining > 0 && (
+                                <span className="text-amber-500 ml-1">(još {avail.remaining})</span>
+                              )}
+                            </span>
+                          );
+                        })()}
+                      </TableCell>
                       <TableCell className="text-sm">
                         {formatSalesPeriod(tier.sales_start, tier.sales_end)}
                       </TableCell>
