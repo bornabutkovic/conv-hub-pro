@@ -309,6 +309,7 @@ export function EventAttendeesTable({
         'Narudžba #',
         'Ime i prezime',
         'Email',
+        'Tvrtka/Organizacija',
         'Datum registracije',
         'Rok plaćanja',
         'Broj ponude',
