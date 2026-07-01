@@ -35,10 +35,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Track the latest fetch to avoid stale/duplicate results
   const fetchIdRef = useRef(0);
   const initialised = useRef(false);
+  // Prati čiji je profil trenutno učitan — razlikuje pravi login/logout
+  // od Supabase auto-refresh eventa za ISTOG usera (npr. tab dobije fokus).
+  const currentUserIdRef = useRef<string | null>(null);
 
-  const fetchProfile = useCallback(async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string, opts?: { silent?: boolean }) => {
     const id = ++fetchIdRef.current;
-    setProfileLoading(true);
+    if (!opts?.silent) setProfileLoading(true);
 
     const { data, error } = await supabase
       .from('profiles')
@@ -51,23 +54,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error) {
       console.error('Error fetching profile:', error);
-      setProfile(null);
+      if (!opts?.silent) setProfile(null);
     } else {
       setProfile(data);
     }
-    setProfileLoading(false);
+    if (!opts?.silent) setProfileLoading(false);
   }, []);
 
   const handleSession = useCallback((s: Session | null) => {
+    const newUserId = s?.user?.id ?? null;
+    const isSameUser = newUserId !== null && newUserId === currentUserIdRef.current;
+
     setSession(s);
     setUser(s?.user ?? null);
 
     if (s?.user) {
-      // Always clear stale profile first so guards never act on old data
+      currentUserIdRef.current = newUserId;
+
+      if (isSameUser) {
+        // Isti korisnik, event je gotovo sigurno token refresh (tab focus).
+        // Profil se refresha tiho, BEZ diranja profileLoading — inače
+        // ProtectedRoute/AdminRoute unmountaju djecu i brišu forme.
+        fetchProfile(s.user.id, { silent: true });
+        return;
+      }
+
+      // Stvarni novi login za drugog korisnika — očisti stari profil prvo
+      // da guardovi nikad ne djeluju na stare podatke.
       setProfile(null);
       setProfileLoading(true);
       fetchProfile(s.user.id);
     } else {
+      currentUserIdRef.current = null;
       setProfile(null);
       setProfileLoading(false);
     }
@@ -113,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     fetchIdRef.current++; // Invalidate any in-flight fetches
+    currentUserIdRef.current = null;
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
