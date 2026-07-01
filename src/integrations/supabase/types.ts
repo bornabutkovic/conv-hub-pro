@@ -1743,12 +1743,14 @@ export type Database = {
       voice_session: {
         Row: {
           billing_email: string | null
+          call_duration_seconds: number | null
           cart_attendees: Json | null
           cart_services: Json | null
           company_name: string | null
           company_oib: string | null
           created_at: string | null
           email: string | null
+          ended_at: string | null
           event_id: string | null
           event_name: string | null
           event_slug: string | null
@@ -1761,24 +1763,28 @@ export type Database = {
           last_name: string | null
           oib: string | null
           order_id: string | null
+          outcome: string | null
           payer_type: string | null
           payment_method: string | null
           payment_url: string | null
           profile_id: string | null
           retell_call_id: string | null
           status: string | null
+          submit_error: string | null
           ticket_tier_id: string | null
           ticket_tier_name: string | null
           updated_at: string | null
         }
         Insert: {
           billing_email?: string | null
+          call_duration_seconds?: number | null
           cart_attendees?: Json | null
           cart_services?: Json | null
           company_name?: string | null
           company_oib?: string | null
           created_at?: string | null
           email?: string | null
+          ended_at?: string | null
           event_id?: string | null
           event_name?: string | null
           event_slug?: string | null
@@ -1791,24 +1797,28 @@ export type Database = {
           last_name?: string | null
           oib?: string | null
           order_id?: string | null
+          outcome?: string | null
           payer_type?: string | null
           payment_method?: string | null
           payment_url?: string | null
           profile_id?: string | null
           retell_call_id?: string | null
           status?: string | null
+          submit_error?: string | null
           ticket_tier_id?: string | null
           ticket_tier_name?: string | null
           updated_at?: string | null
         }
         Update: {
           billing_email?: string | null
+          call_duration_seconds?: number | null
           cart_attendees?: Json | null
           cart_services?: Json | null
           company_name?: string | null
           company_oib?: string | null
           created_at?: string | null
           email?: string | null
+          ended_at?: string | null
           event_id?: string | null
           event_name?: string | null
           event_slug?: string | null
@@ -1821,12 +1831,14 @@ export type Database = {
           last_name?: string | null
           oib?: string | null
           order_id?: string | null
+          outcome?: string | null
           payer_type?: string | null
           payment_method?: string | null
           payment_url?: string | null
           profile_id?: string | null
           retell_call_id?: string | null
           status?: string | null
+          submit_error?: string | null
           ticket_tier_id?: string | null
           ticket_tier_name?: string | null
           updated_at?: string | null
@@ -2145,6 +2157,7 @@ export type Database = {
           bc_invoice_id: string | null
           bc_quote_number: string | null
           card_brand: string | null
+          card_last4: string | null
           card_wallet: string | null
           checked_in: boolean | null
           email: string | null
@@ -2415,13 +2428,6 @@ export type Database = {
           },
           {
             foreignKeyName: "events_institution_uuid_fkey"
-            columns: ["institution_id"]
-            isOneToOne: false
-            referencedRelation: "institutions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "events_institution_uuid_fkey"
             columns: ["institution_uuid"]
             isOneToOne: false
             referencedRelation: "institutions"
@@ -2431,7 +2437,7 @@ export type Database = {
             foreignKeyName: "events_institution_uuid_fkey"
             columns: ["institution_id"]
             isOneToOne: false
-            referencedRelation: "institutions_public"
+            referencedRelation: "institutions"
             referencedColumns: ["id"]
           },
           {
@@ -2439,6 +2445,54 @@ export type Database = {
             columns: ["institution_uuid"]
             isOneToOne: false
             referencedRelation: "institutions_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_institution_uuid_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_registration_log: {
+        Row: {
+          bc_quote_number: string | null
+          call_duration_seconds: number | null
+          cart_services: Json | null
+          company_name: string | null
+          duration_minutes: number | null
+          email: string | null
+          ended_at: string | null
+          event_name: string | null
+          event_slug: string | null
+          fields_collected: number | null
+          first_name: string | null
+          gdpr_consent_given: boolean | null
+          lang: string | null
+          last_name: string | null
+          oib: string | null
+          order_amount: number | null
+          order_id: string | null
+          order_status: Database["public"]["Enums"]["payment_status"] | null
+          outcome: string | null
+          paid_at: string | null
+          payer_type: string | null
+          payment_method: string | null
+          retell_call_id: string | null
+          session_id: string | null
+          started_at: string | null
+          stripe_session_id: string | null
+          submit_error: string | null
+          ticket_tier_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_session_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -2464,6 +2518,7 @@ export type Database = {
           tier_name: string
         }[]
       }
+      close_abandoned_voice_sessions: { Args: never; Returns: number }
       create_registration_items: {
         Args: {
           p_attendees: Json
