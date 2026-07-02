@@ -378,6 +378,7 @@ export default function EditEvent() {
           event_type: (data as any).event_type,
           description: data.description || null,
           cancellation_policy: (data as any).cancellation_policy || null,
+          ticket_notes: (data as any).ticket_notes || null,
           website_url: data.website_url || null,
           venue_name: data.venue_name,
           location_address: (data as any).location_address || null,
