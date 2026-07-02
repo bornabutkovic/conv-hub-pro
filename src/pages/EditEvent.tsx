@@ -62,6 +62,7 @@ const editEventSchema = z.object({
   event_type: z.enum(['face2face', 'virtual', 'hybrid'], { required_error: 'Event type is required' }),
   description: z.string().optional(),
   cancellation_policy: z.string().optional(),
+  ticket_notes: z.string().optional(),
   website_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   venue_name: z.string().min(1, 'Venue is required').max(200),
   location_address: z.string().max(300).optional(),
