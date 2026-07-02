@@ -695,6 +695,7 @@ export type Database = {
           supported_languages: string[] | null
           tax_location: string | null
           terms_url: string | null
+          ticket_notes: string | null
           translations: Json | null
           vat_rate: number | null
           venue_name: string | null
@@ -747,6 +748,7 @@ export type Database = {
           supported_languages?: string[] | null
           tax_location?: string | null
           terms_url?: string | null
+          ticket_notes?: string | null
           translations?: Json | null
           vat_rate?: number | null
           venue_name?: string | null
@@ -799,6 +801,7 @@ export type Database = {
           supported_languages?: string[] | null
           tax_location?: string | null
           terms_url?: string | null
+          ticket_notes?: string | null
           translations?: Json | null
           vat_rate?: number | null
           venue_name?: string | null
@@ -1675,6 +1678,7 @@ export type Database = {
           capacity: number | null
           created_at: string | null
           description: string | null
+          display_order: number
           erp_code: string | null
           event_id: string | null
           id: string
@@ -1694,6 +1698,7 @@ export type Database = {
           capacity?: number | null
           created_at?: string | null
           description?: string | null
+          display_order?: number
           erp_code?: string | null
           event_id?: string | null
           id?: string
@@ -1713,6 +1718,7 @@ export type Database = {
           capacity?: number | null
           created_at?: string | null
           description?: string | null
+          display_order?: number
           erp_code?: string | null
           event_id?: string | null
           id?: string
