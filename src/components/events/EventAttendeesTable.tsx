@@ -640,6 +640,9 @@ export function EventAttendeesTable({
                         <TableCell className="py-2 px-3 text-xs font-mono">
                           {attendee.fiscal_invoice_number || '—'}
                         </TableCell>
+                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap text-right font-mono">
+                          {formatAmount(attendee.price_paid)}
+                        </TableCell>
                         <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {getPaymentMethodLabel(attendee.payment_method, attendee.card_brand, attendee.card_wallet)}
                         </TableCell>
