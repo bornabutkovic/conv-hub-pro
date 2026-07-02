@@ -521,8 +521,8 @@ export function EventAttendeesTable({
             </div>
           </div>
 
-          {/* Payment status filter */}
-          <div className="mt-3">
+          {/* Filters */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Select
               value={paymentFilter}
               onValueChange={v => setPaymentFilter(v as PaymentStatusFilter)}
@@ -539,7 +539,33 @@ export function EventAttendeesTable({
                 <SelectItem value="cancelled">Otkazano ({attendees.filter(a => a.payment_status === 'cancelled').length})</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select
+              value={methodFilter}
+              onValueChange={v => setMethodFilter(v as 'all' | 'stripe' | 'invoice')}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Svi načini</SelectItem>
+                <SelectItem value="stripe">Kartica</SelectItem>
+                <SelectItem value="invoice">Virman</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Input
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Pretraži ime, email, tvrtku..."
+              className="w-64"
+            />
           </div>
+
+          <div className="mt-2 text-xs text-muted-foreground">
+            Prikazano: {filtered.length} · Ukupno uplaćeno: {filteredPaidSum.toFixed(2)} EUR
+          </div>
+
         </CardHeader>
 
         <CardContent className="px-0">
