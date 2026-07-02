@@ -46,6 +46,7 @@ const ticketTierSchema = z.object({
   price: z.coerce.number().min(0, 'Price must be 0 or greater'),
   description: z.string().optional(),
   capacity: z.coerce.number().int().positive().optional().nullable(),
+  display_order: z.coerce.number().int().min(0).default(0),
   sales_start: z.date().optional().nullable(),
   sales_end: z.date().optional().nullable(),
 }).refine((data) => {
@@ -84,6 +85,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
       price: 0,
       description: '',
       capacity: null,
+      display_order: 0,
       sales_start: null,
       sales_end: null,
     },
@@ -99,6 +101,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         price: Number(tier.price),
         description: tier.description || '',
         capacity: tier.capacity || null,
+        display_order: (tier as any).display_order ?? 0,
         sales_start: tier.sales_start ? new Date(tier.sales_start) : null,
         sales_end: tier.sales_end ? new Date(tier.sales_end) : null,
       });
@@ -111,6 +114,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         price: 0,
         description: '',
         capacity: null,
+        display_order: 0,
         sales_start: null,
         sales_end: null,
       });
@@ -137,6 +141,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         price: data.price,
         description: data.description || null,
         capacity: data.capacity || null,
+        display_order: data.display_order ?? 0,
         sales_start: data.sales_start?.toISOString() || null,
         sales_end: data.sales_end?.toISOString() || null,
         event_id: eventId,
@@ -324,6 +329,33 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
                   </FormControl>
                   <FormDescription>
                     Leave empty for unlimited tickets
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="display_order"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Redni broj prikaza</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      {...field}
+                      value={field.value ?? 0}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        field.onChange(v === '' ? 0 : parseInt(v, 10));
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Niži broj = viši prikaz u listi (0 = prvi)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

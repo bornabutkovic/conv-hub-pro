@@ -123,7 +123,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
             last_name: lastName,
             phone: phone,
             email: email,
-            role: 'attendee',
+            role: 'user',
           })
           .select('id')
           .single();

@@ -62,6 +62,7 @@ const editEventSchema = z.object({
   event_type: z.enum(['face2face', 'virtual', 'hybrid'], { required_error: 'Event type is required' }),
   description: z.string().optional(),
   cancellation_policy: z.string().optional(),
+  ticket_notes: z.string().optional(),
   website_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   venue_name: z.string().min(1, 'Venue is required').max(200),
   location_address: z.string().max(300).optional(),
@@ -128,6 +129,7 @@ export default function EditEvent() {
     name: '',
     description: '',
     cancellation_policy: '',
+    ticket_notes: '',
     auto_translated: false,
   });
 
@@ -153,6 +155,7 @@ export default function EditEvent() {
       event_type: 'face2face',
       description: '',
       cancellation_policy: '',
+      ticket_notes: '',
       website_url: '',
       venue_name: '',
       location_address: '',
@@ -199,6 +202,7 @@ export default function EditEvent() {
         event_type: ((event as any).event_type as 'face2face' | 'virtual' | 'hybrid') || 'face2face',
         description: event.description || '',
         cancellation_policy: event.cancellation_policy || '',
+        ticket_notes: (event as any).ticket_notes || '',
         website_url: event.website_url || '',
         venue_name: event.venue_name || '',
         location_address: (event as any).location_address || '',
@@ -236,6 +240,7 @@ export default function EditEvent() {
         name: trans.name || '',
         description: trans.description || '',
         cancellation_policy: trans.cancellation_policy || '',
+        ticket_notes: trans.ticket_notes || '',
         auto_translated: !!trans.auto_translated,
       });
     }
@@ -373,6 +378,7 @@ export default function EditEvent() {
           event_type: (data as any).event_type,
           description: data.description || null,
           cancellation_policy: (data as any).cancellation_policy || null,
+          ticket_notes: (data as any).ticket_notes || null,
           website_url: data.website_url || null,
           venue_name: data.venue_name,
           location_address: (data as any).location_address || null,
@@ -399,6 +405,7 @@ export default function EditEvent() {
               name: enTranslations.name || undefined,
               description: enTranslations.description || undefined,
               cancellation_policy: enTranslations.cancellation_policy || undefined,
+              ticket_notes: enTranslations.ticket_notes || undefined,
               auto_translated: enTranslations.auto_translated,
             },
           },
@@ -614,6 +621,24 @@ export default function EditEvent() {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={form.control}
+                          name="ticket_notes"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Napomene za ulaznice</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  value={field.value || ''}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                  placeholder="Napomene koje se prikazuju na ulaznicama..."
+                                  className="min-h-[120px]"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </>
                     ) : lang === 'en' ? (
                       <>
@@ -659,6 +684,23 @@ export default function EditEvent() {
                                 setEnTranslations((prev) => ({
                                   ...prev,
                                   cancellation_policy: e.target.value,
+                                  auto_translated: false,
+                                }))
+                              }
+                              placeholder={t('editEvent.leaveEmptyPolicy')}
+                              className="min-h-[120px]"
+                            />
+                          </FormControl>
+                        </FormItem>
+                        <FormItem>
+                          <FormLabel>Napomene za ulaznice (EN)</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              value={enTranslations.ticket_notes}
+                              onChange={(e) =>
+                                setEnTranslations((prev) => ({
+                                  ...prev,
+                                  ticket_notes: e.target.value,
                                   auto_translated: false,
                                 }))
                               }
