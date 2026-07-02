@@ -243,6 +243,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-16">#</TableHead>
                   <TableHead>{t('ticketTiers.name')}</TableHead>
                   <TableHead>{t('ticketTiers.price')}</TableHead>
                   <TableHead>{t('ticketTiers.capacity')}</TableHead>
