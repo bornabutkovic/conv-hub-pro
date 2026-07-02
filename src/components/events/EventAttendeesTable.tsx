@@ -509,7 +509,7 @@ export function EventAttendeesTable({
                 variant="outline"
                 size="sm"
                 onClick={handleExportCsv}
-                disabled={isExporting || !attendees.length}
+                disabled={isExporting || !filtered.length}
               >
                 <Download className="h-4 w-4 mr-1.5" />
                 Export CSV
