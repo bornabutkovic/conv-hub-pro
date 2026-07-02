@@ -202,6 +202,7 @@ export default function EditEvent() {
         event_type: ((event as any).event_type as 'face2face' | 'virtual' | 'hybrid') || 'face2face',
         description: event.description || '',
         cancellation_policy: event.cancellation_policy || '',
+        ticket_notes: (event as any).ticket_notes || '',
         website_url: event.website_url || '',
         venue_name: event.venue_name || '',
         location_address: (event as any).location_address || '',
