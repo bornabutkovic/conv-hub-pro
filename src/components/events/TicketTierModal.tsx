@@ -46,6 +46,7 @@ const ticketTierSchema = z.object({
   price: z.coerce.number().min(0, 'Price must be 0 or greater'),
   description: z.string().optional(),
   capacity: z.coerce.number().int().positive().optional().nullable(),
+  display_order: z.coerce.number().int().min(0).default(0),
   sales_start: z.date().optional().nullable(),
   sales_end: z.date().optional().nullable(),
 }).refine((data) => {
