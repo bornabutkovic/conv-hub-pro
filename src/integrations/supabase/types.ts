@@ -164,6 +164,9 @@ export type Database = {
           requires_invoice: boolean | null
           scanned_at: string | null
           status: Database["public"]["Enums"]["registration_status"] | null
+          ticket_send_claimed_at: string | null
+          ticket_send_fail_reason: string | null
+          ticket_send_failed_at: string | null
           ticket_sent_at: string | null
           ticket_tier_id: string | null
           whatsapp_id: string | null
@@ -189,6 +192,9 @@ export type Database = {
           requires_invoice?: boolean | null
           scanned_at?: string | null
           status?: Database["public"]["Enums"]["registration_status"] | null
+          ticket_send_claimed_at?: string | null
+          ticket_send_fail_reason?: string | null
+          ticket_send_failed_at?: string | null
           ticket_sent_at?: string | null
           ticket_tier_id?: string | null
           whatsapp_id?: string | null
@@ -214,6 +220,9 @@ export type Database = {
           requires_invoice?: boolean | null
           scanned_at?: string | null
           status?: Database["public"]["Enums"]["registration_status"] | null
+          ticket_send_claimed_at?: string | null
+          ticket_send_fail_reason?: string | null
+          ticket_send_failed_at?: string | null
           ticket_sent_at?: string | null
           ticket_tier_id?: string | null
           whatsapp_id?: string | null
@@ -2499,6 +2508,7 @@ export type Database = {
       }
     }
     Functions: {
+      admin_resend_ticket: { Args: { p_attendee_id: string }; Returns: Json }
       auto_complete_past_events: { Args: never; Returns: undefined }
       calculate_event_status: {
         Args: {
