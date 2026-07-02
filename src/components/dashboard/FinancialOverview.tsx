@@ -27,7 +27,13 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
   const navigate = useNavigate();
   const { t } = useAdminLanguage();
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('total');
-  const filterParam = selectedEventId && selectedEventId !== 'all' ? `&event=${selectedEventId}` : '';
+  const goToAttendees = () => {
+    if (selectedEventId && selectedEventId !== 'all') {
+      navigate(`/events/${selectedEventId}?tab=attendees`);
+    } else {
+      navigate('/events');
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('de-DE', {
