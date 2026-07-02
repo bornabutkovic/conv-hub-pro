@@ -85,6 +85,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
       price: 0,
       description: '',
       capacity: null,
+      display_order: 0,
       sales_start: null,
       sales_end: null,
     },
