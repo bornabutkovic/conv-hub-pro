@@ -141,6 +141,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         price: data.price,
         description: data.description || null,
         capacity: data.capacity || null,
+        display_order: data.display_order ?? 0,
         sales_start: data.sales_start?.toISOString() || null,
         sales_end: data.sales_end?.toISOString() || null,
         event_id: eventId,
