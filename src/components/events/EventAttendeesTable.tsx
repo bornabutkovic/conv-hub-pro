@@ -399,16 +399,34 @@ export function EventAttendeesTable({
   const [selectedAttendee, setSelectedAttendee] = useState<InvoiceAttendee | null>(null);
   const [editAttendee, setEditAttendee] = useState<InvoiceAttendee | null>(null);
   const [paymentFilter, setPaymentFilter] = useState<PaymentStatusFilter>('all');
+  const [methodFilter, setMethodFilter] = useState<'all' | 'stripe' | 'invoice'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [isExporting, setIsExporting] = useState(false);
   const { t } = useAdminLanguage();
 
+  const formatAmount = (n: number | null | undefined) =>
+    n == null ? '—' : `${n.toFixed(2).replace('.', ',')} ${currency}`;
+
   const filtered = attendees.filter(a => {
-    if (paymentFilter === 'all') return true;
-    return a.payment_status === paymentFilter;
+    if (paymentFilter !== 'all' && a.payment_status !== paymentFilter) return false;
+    if (methodFilter !== 'all' && a.payment_method !== methodFilter) return false;
+    const term = searchTerm.trim().toLowerCase();
+    if (term) {
+      const fullName = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase();
+      const email = (a.email || '').toLowerCase();
+      const payer = (a.payer_name || '').toLowerCase();
+      if (!fullName.includes(term) && !email.includes(term) && !payer.includes(term)) return false;
+    }
+    return true;
   });
 
+  const filteredPaidSum = filtered.reduce(
+    (acc, a) => acc + (a.payment_status === 'paid' ? Number(a.price_paid ?? 0) : 0),
+    0,
+  );
+
   const handleExportCsv = async () => {
-    if (!attendees.length) return;
+    if (!filtered.length) return;
     setIsExporting(true);
     try {
       const headers = [
@@ -421,12 +439,13 @@ export function EventAttendeesTable({
         'Broj ponude',
         'Datum plaćanja',
         'Broj računa',
+        'Iznos',
         'Način plaćanja',
         'Status plaćanja',
         'Check-in',
       ];
 
-      const rows = attendees.map(a => {
+      const rows = filtered.map(a => {
         const deadline = a.registered_at && a.payment_due_days != null
           ? format(addDays(new Date(a.registered_at), a.payment_due_days), 'dd MMM yyyy')
           : '—';
@@ -440,13 +459,21 @@ export function EventAttendeesTable({
           a.bc_quote_number || '—',
           formatDate(a.paid_at),
           a.fiscal_invoice_number || '—',
+          a.price_paid != null ? Number(a.price_paid).toFixed(2) : '',
           getPaymentMethodLabel(a.payment_method, a.card_brand, a.card_wallet),
           a.payment_status || '—',
           a.checked_in ? 'Prijavljen' : 'Nije prijavljen',
         ];
       });
 
-      const csvContent = '\uFEFF' + [headers, ...rows]
+      const emptyRow = headers.map(() => '');
+      const totalRow = [
+        'UKUPNO UPLAĆENO', '', '', '', '', '', '', '', '',
+        filteredPaidSum.toFixed(2),
+        '', '', '',
+      ];
+
+      const csvContent = '\uFEFF' + [headers, ...rows, emptyRow, totalRow]
         .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
         .join('\n');
 
@@ -464,6 +491,7 @@ export function EventAttendeesTable({
       setIsExporting(false);
     }
   };
+
 
   return (
     <>
