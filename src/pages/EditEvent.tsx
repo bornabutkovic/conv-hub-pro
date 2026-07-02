@@ -240,6 +240,7 @@ export default function EditEvent() {
         name: trans.name || '',
         description: trans.description || '',
         cancellation_policy: trans.cancellation_policy || '',
+        ticket_notes: trans.ticket_notes || '',
         auto_translated: !!trans.auto_translated,
       });
     }
