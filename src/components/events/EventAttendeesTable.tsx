@@ -62,6 +62,7 @@ export interface InvoiceAttendee {
   is_group_order: boolean | null;
   paid_at: string | null;
   payment_due_days: number | null;
+  price_paid: number | null;
 }
 
 interface EventAttendeesTableProps {
