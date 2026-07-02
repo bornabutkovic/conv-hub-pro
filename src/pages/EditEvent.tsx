@@ -405,6 +405,7 @@ export default function EditEvent() {
               name: enTranslations.name || undefined,
               description: enTranslations.description || undefined,
               cancellation_policy: enTranslations.cancellation_policy || undefined,
+              ticket_notes: enTranslations.ticket_notes || undefined,
               auto_translated: enTranslations.auto_translated,
             },
           },
