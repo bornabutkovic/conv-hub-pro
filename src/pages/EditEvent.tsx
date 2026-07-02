@@ -129,6 +129,7 @@ export default function EditEvent() {
     name: '',
     description: '',
     cancellation_policy: '',
+    ticket_notes: '',
     auto_translated: false,
   });
 
