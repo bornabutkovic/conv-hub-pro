@@ -259,6 +259,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
                   const locked = isTierLocked(tier.id);
                   return (
                     <TableRow key={tier.id} className={tier.status === 'rejected' ? 'bg-destructive/5' : ''}>
+                      <TableCell className="text-muted-foreground tabular-nums">{(tier as any).display_order ?? 0}</TableCell>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
