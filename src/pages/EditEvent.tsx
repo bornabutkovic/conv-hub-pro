@@ -692,6 +692,23 @@ export default function EditEvent() {
                             />
                           </FormControl>
                         </FormItem>
+                        <FormItem>
+                          <FormLabel>Napomene za ulaznice (EN)</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              value={enTranslations.ticket_notes}
+                              onChange={(e) =>
+                                setEnTranslations((prev) => ({
+                                  ...prev,
+                                  ticket_notes: e.target.value,
+                                  auto_translated: false,
+                                }))
+                              }
+                              placeholder={t('editEvent.leaveEmptyPolicy')}
+                              className="min-h-[120px]"
+                            />
+                          </FormControl>
+                        </FormItem>
                       </>
                     ) : null
                   }
