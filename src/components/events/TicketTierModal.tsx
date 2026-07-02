@@ -101,6 +101,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         price: Number(tier.price),
         description: tier.description || '',
         capacity: tier.capacity || null,
+        display_order: (tier as any).display_order ?? 0,
         sales_start: tier.sales_start ? new Date(tier.sales_start) : null,
         sales_end: tier.sales_end ? new Date(tier.sales_end) : null,
       });
@@ -113,6 +114,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         price: 0,
         description: '',
         capacity: null,
+        display_order: 0,
         sales_start: null,
         sales_end: null,
       });
