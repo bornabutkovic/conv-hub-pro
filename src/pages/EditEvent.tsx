@@ -621,6 +621,24 @@ export default function EditEvent() {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={form.control}
+                          name="ticket_notes"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Napomene za ulaznice</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  value={field.value || ''}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                  placeholder="Napomene koje se prikazuju na ulaznicama..."
+                                  className="min-h-[120px]"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </>
                     ) : lang === 'en' ? (
                       <>
