@@ -61,6 +61,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
         .from('ticket_tiers')
         .select('*')
         .eq('event_id', eventId)
+        .order('display_order', { ascending: true })
         .order('price', { ascending: true });
 
       if (error) throw error;
