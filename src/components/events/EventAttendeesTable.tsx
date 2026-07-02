@@ -62,6 +62,7 @@ export interface InvoiceAttendee {
   is_group_order: boolean | null;
   paid_at: string | null;
   payment_due_days: number | null;
+  price_paid: number | null;
 }
 
 interface EventAttendeesTableProps {
@@ -398,16 +399,34 @@ export function EventAttendeesTable({
   const [selectedAttendee, setSelectedAttendee] = useState<InvoiceAttendee | null>(null);
   const [editAttendee, setEditAttendee] = useState<InvoiceAttendee | null>(null);
   const [paymentFilter, setPaymentFilter] = useState<PaymentStatusFilter>('all');
+  const [methodFilter, setMethodFilter] = useState<'all' | 'stripe' | 'invoice'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [isExporting, setIsExporting] = useState(false);
   const { t } = useAdminLanguage();
 
+  const formatAmount = (n: number | null | undefined) =>
+    n == null ? '—' : `${n.toFixed(2).replace('.', ',')} ${currency}`;
+
   const filtered = attendees.filter(a => {
-    if (paymentFilter === 'all') return true;
-    return a.payment_status === paymentFilter;
+    if (paymentFilter !== 'all' && a.payment_status !== paymentFilter) return false;
+    if (methodFilter !== 'all' && a.payment_method !== methodFilter) return false;
+    const term = searchTerm.trim().toLowerCase();
+    if (term) {
+      const fullName = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase();
+      const email = (a.email || '').toLowerCase();
+      const payer = (a.payer_name || '').toLowerCase();
+      if (!fullName.includes(term) && !email.includes(term) && !payer.includes(term)) return false;
+    }
+    return true;
   });
 
+  const filteredPaidSum = filtered.reduce(
+    (acc, a) => acc + (a.payment_status === 'paid' ? Number(a.price_paid ?? 0) : 0),
+    0,
+  );
+
   const handleExportCsv = async () => {
-    if (!attendees.length) return;
+    if (!filtered.length) return;
     setIsExporting(true);
     try {
       const headers = [
@@ -420,12 +439,13 @@ export function EventAttendeesTable({
         'Broj ponude',
         'Datum plaćanja',
         'Broj računa',
+        'Iznos',
         'Način plaćanja',
         'Status plaćanja',
         'Check-in',
       ];
 
-      const rows = attendees.map(a => {
+      const rows = filtered.map(a => {
         const deadline = a.registered_at && a.payment_due_days != null
           ? format(addDays(new Date(a.registered_at), a.payment_due_days), 'dd MMM yyyy')
           : '—';
@@ -439,13 +459,21 @@ export function EventAttendeesTable({
           a.bc_quote_number || '—',
           formatDate(a.paid_at),
           a.fiscal_invoice_number || '—',
+          a.price_paid != null ? Number(a.price_paid).toFixed(2) : '',
           getPaymentMethodLabel(a.payment_method, a.card_brand, a.card_wallet),
           a.payment_status || '—',
           a.checked_in ? 'Prijavljen' : 'Nije prijavljen',
         ];
       });
 
-      const csvContent = '\uFEFF' + [headers, ...rows]
+      const emptyRow = headers.map(() => '');
+      const totalRow = [
+        'UKUPNO UPLAĆENO', '', '', '', '', '', '', '', '',
+        filteredPaidSum.toFixed(2),
+        '', '', '',
+      ];
+
+      const csvContent = '\uFEFF' + [headers, ...rows, emptyRow, totalRow]
         .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
         .join('\n');
 
@@ -464,6 +492,7 @@ export function EventAttendeesTable({
     }
   };
 
+
   return (
     <>
       <Card>
@@ -480,7 +509,7 @@ export function EventAttendeesTable({
                 variant="outline"
                 size="sm"
                 onClick={handleExportCsv}
-                disabled={isExporting || !attendees.length}
+                disabled={isExporting || !filtered.length}
               >
                 <Download className="h-4 w-4 mr-1.5" />
                 Export CSV
@@ -492,8 +521,8 @@ export function EventAttendeesTable({
             </div>
           </div>
 
-          {/* Payment status filter */}
-          <div className="mt-3">
+          {/* Filters */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Select
               value={paymentFilter}
               onValueChange={v => setPaymentFilter(v as PaymentStatusFilter)}
@@ -510,7 +539,33 @@ export function EventAttendeesTable({
                 <SelectItem value="cancelled">Otkazano ({attendees.filter(a => a.payment_status === 'cancelled').length})</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select
+              value={methodFilter}
+              onValueChange={v => setMethodFilter(v as 'all' | 'stripe' | 'invoice')}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Svi načini</SelectItem>
+                <SelectItem value="stripe">Kartica</SelectItem>
+                <SelectItem value="invoice">Virman</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Input
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Pretraži ime, email, tvrtku..."
+              className="w-64"
+            />
           </div>
+
+          <div className="mt-2 text-xs text-muted-foreground">
+            Prikazano: {filtered.length} · Ukupno uplaćeno: {filteredPaidSum.toFixed(2)} EUR
+          </div>
+
         </CardHeader>
 
         <CardContent className="px-0">
@@ -536,6 +591,7 @@ export function EventAttendeesTable({
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. ponude</TableHead>
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Datum uplate</TableHead>
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. računa</TableHead>
+                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap text-right">Iznos</TableHead>
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Plaćanje</TableHead>
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Status</TableHead>
                     <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Check-in</TableHead>
@@ -583,6 +639,9 @@ export function EventAttendeesTable({
                         </TableCell>
                         <TableCell className="py-2 px-3 text-xs font-mono">
                           {attendee.fiscal_invoice_number || '—'}
+                        </TableCell>
+                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap text-right font-mono">
+                          {formatAmount(attendee.price_paid)}
                         </TableCell>
                         <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
                           {getPaymentMethodLabel(attendee.payment_method, attendee.card_brand, attendee.card_wallet)}

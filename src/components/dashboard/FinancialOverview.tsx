@@ -27,7 +27,13 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
   const navigate = useNavigate();
   const { t } = useAdminLanguage();
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('total');
-  const filterParam = selectedEventId && selectedEventId !== 'all' ? `&event=${selectedEventId}` : '';
+  const goToAttendees = () => {
+    if (selectedEventId && selectedEventId !== 'all') {
+      navigate(`/events/${selectedEventId}?tab=attendees`);
+    } else {
+      navigate('/events');
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('de-DE', {
@@ -149,7 +155,7 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
             {/* Ticket Revenue */}
             <div 
               className="p-4 rounded-xl border border-border/50 bg-card shadow-sm transition-all cursor-pointer hover:scale-[1.02] hover:shadow-brand active:scale-[0.98]"
-              onClick={() => navigate(`/attendees?status=approved${filterParam}`)}
+              onClick={goToAttendees}
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-brand-gradient text-white">
@@ -170,7 +176,7 @@ export function FinancialOverview({ revenue, loading, isSuperAdmin, selectedEven
             {/* Add-on Revenue */}
             <div 
               className="p-4 rounded-xl border border-border/50 bg-card shadow-sm transition-all cursor-pointer hover:scale-[1.02] hover:shadow-brand active:scale-[0.98]"
-              onClick={() => navigate(`/attendees?status=approved${filterParam}`)}
+              onClick={goToAttendees}
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-brand-gradient text-white">
