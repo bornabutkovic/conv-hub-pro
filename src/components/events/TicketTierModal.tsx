@@ -335,6 +335,33 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="display_order"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Redni broj prikaza</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      {...field}
+                      value={field.value ?? 0}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        field.onChange(v === '' ? 0 : parseInt(v, 10));
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Niži broj = viši prikaz u listi (0 = prvi)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <DateRangePickers form={form} startName="sales_start" endName="sales_end" startLabel="Sales Start" endLabel="Sales End" />
 
             <div className="flex justify-end gap-2 pt-4">
