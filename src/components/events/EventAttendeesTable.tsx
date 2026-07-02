@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format, addDays } from 'date-fns';
-import { Pencil, UserPlus, Download } from 'lucide-react';
+import { Pencil, UserPlus, Download, Send, Loader2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -135,17 +135,54 @@ interface EditModalProps {
   eventId: string;
 }
 
+interface TicketStatus {
+  ticket_sent_at: string | null;
+  ticket_send_failed_at: string | null;
+  ticket_send_fail_reason: string | null;
+}
+
 function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalProps) {
   const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [ticketStatus, setTicketStatus] = useState<TicketStatus | null>(null);
   const [form, setForm] = useState({
     first_name: attendee.first_name || '',
     last_name: attendee.last_name || '',
     paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
     fiscal_invoice_number: attendee.fiscal_invoice_number || '',
     payment_method: attendee.payment_method || '',
-    payment_status: attendee.payment_status || 'pending',
+    order_status: (attendee.order_status as string) || 'draft',
   });
+
+  const fetchTicketStatus = async () => {
+    if (!attendee.attendee_id) return;
+    const { data } = await supabase
+      .from('attendees')
+      .select('ticket_sent_at, ticket_send_failed_at, ticket_send_fail_reason')
+      .eq('id', attendee.attendee_id)
+      .maybeSingle();
+    if (data) setTicketStatus(data as TicketStatus);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+
+    // Refresh current order status so the dropdown reflects DB truth (avoids stale enum)
+    (async () => {
+      if (attendee.order_id) {
+        const { data } = await supabase
+          .from('orders')
+          .select('status')
+          .eq('id', attendee.order_id)
+          .maybeSingle();
+        setForm(f => ({ ...f, order_status: (data?.status as string) || 'draft' }));
+      }
+    })();
+
+    fetchTicketStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, attendee.attendee_id, attendee.order_id]);
 
   const handleSave = async () => {
     if (!attendee.attendee_id) return;
@@ -170,7 +207,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
             paid_at: form.paid_at ? new Date(form.paid_at).toISOString() : null,
             fiscal_invoice_number: form.fiscal_invoice_number || null,
             payment_method: form.payment_method || null,
-            status: form.payment_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded',
+            status: form.order_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded',
           })
           .eq('id', attendee.order_id);
 
@@ -187,6 +224,31 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
       setIsSaving(false);
     }
   };
+
+  const handleResendTicket = async () => {
+    if (!attendee.attendee_id) return;
+    setIsResending(true);
+    try {
+      const { data, error } = await supabase.rpc('admin_resend_ticket' as any, {
+        p_attendee_id: attendee.attendee_id,
+      });
+      const result = data as { success?: boolean; email?: string } | null;
+      if (error || !result?.success) {
+        toast.error('Slanje nije uspjelo: ' + (error?.message ?? 'nepoznata greška'));
+      } else {
+        toast.success('Ulaznica se šalje na ' + (result.email ?? 'email polaznika'));
+        setTimeout(() => { fetchTicketStatus(); }, 3000);
+      }
+    } catch (err: any) {
+      toast.error('Slanje nije uspjelo: ' + (err?.message ?? 'nepoznata greška'));
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const ticketSentAt = ticketStatus?.ticket_sent_at ?? null;
+  const ticketFailedAt = ticketStatus?.ticket_send_failed_at ?? null;
+  const ticketFailReason = ticketStatus?.ticket_send_fail_reason ?? null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -250,20 +312,63 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           <div className="space-y-1.5">
             <Label>Status plaćanja</Label>
             <Select
-              value={form.payment_status}
-              onValueChange={v => setForm(f => ({ ...f, payment_status: v }))}
+              value={form.order_status}
+              onValueChange={v => setForm(f => ({ ...f, order_status: v }))}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Nije plaćeno</SelectItem>
+                <SelectItem value="draft">Skica</SelectItem>
+                <SelectItem value="issued">Izdano (čeka uplatu)</SelectItem>
                 <SelectItem value="paid">Plaćeno</SelectItem>
                 <SelectItem value="overdue">Kasni</SelectItem>
                 <SelectItem value="refunded">Refundirano</SelectItem>
                 <SelectItem value="cancelled">Otkazano</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Ticket status + resend */}
+          <div className="space-y-2 pt-2 border-t">
+            <div className="text-sm">
+              {ticketSentAt ? (
+                <span className="text-emerald-600">
+                  Ulaznica poslana {(() => {
+                    try { return format(new Date(ticketSentAt), 'dd.MM.yyyy. HH:mm'); }
+                    catch { return ticketSentAt; }
+                  })()}
+                </span>
+              ) : ticketFailedAt ? (
+                <div>
+                  <div className="text-red-600">Slanje nije uspjelo</div>
+                  {ticketFailReason && (
+                    <div className="text-xs text-muted-foreground mt-0.5">{ticketFailReason}</div>
+                  )}
+                </div>
+              ) : (
+                <span className="text-muted-foreground">Ulaznica nije poslana</span>
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleResendTicket}
+              disabled={isResending || !attendee.attendee_id}
+            >
+              {isResending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                  Slanje...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-1.5" />
+                  {ticketSentAt ? 'Ponovno pošalji ulaznicu' : 'Pošalji ulaznicu'}
+                </>
+              )}
+            </Button>
           </div>
         </div>
 
