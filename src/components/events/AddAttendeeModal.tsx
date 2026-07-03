@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -20,10 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import type { Database } from '@/integrations/supabase/types';
 import { useStateDraft } from '@/hooks/useFormDraft';
-
-type RegistrationStatus = Database['public']['Enums']['registration_status'];
 
 interface TicketTier {
   id: string;
@@ -38,6 +36,10 @@ interface AddAttendeeModalProps {
   eventId: string;
 }
 
+type PayerType = 'individual' | 'company';
+type PaymentMethod = 'invoice' | 'stripe';
+type Lang = 'hr' | 'en';
+
 export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeModalProps) {
   const queryClient = useQueryClient();
   const initialData = {
@@ -45,9 +47,14 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     lastName: '',
     phone: '',
     email: '',
-    status: 'pending' as RegistrationStatus,
     ticketTierId: '',
     pricePaid: 0,
+    payerType: 'individual' as PayerType,
+    payerName: '',
+    billingEmail: '',
+    paymentMethod: 'invoice' as PaymentMethod,
+    lang: 'hr' as Lang,
+    markPaid: false,
   };
   const { restoredData, saveDraft, clearDraft } = useStateDraft(`add_attendee_${eventId}`, initialData, { enabled: open });
   const [formData, setFormData] = useState(restoredData);
@@ -57,7 +64,18 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     saveDraft(newData);
   };
 
-  // Fetch ticket tiers for this event
+  // Auto-fill payer name for individuals
+  useEffect(() => {
+    if (formData.payerType === 'individual') {
+      const auto = `${formData.firstName} ${formData.lastName}`.trim();
+      if (formData.payerName !== auto) {
+        updateFormData({ ...formData, payerName: auto });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.firstName, formData.lastName, formData.payerType]);
+
+  // Fetch ticket tiers
   const { data: ticketTiers } = useQuery({
     queryKey: ['ticket-tiers', eventId],
     queryFn: async () => {
@@ -66,7 +84,6 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
         .select('id, name, price, erp_code')
         .eq('event_id', eventId)
         .order('price', { ascending: true });
-      
       if (error) throw error;
       return data as TicketTier[];
     },
@@ -89,7 +106,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
       const lastName = formData.lastName.trim();
       const email = formData.email.trim() || null;
 
-      // Step 1: Check if profile with this phone exists
+      // Step 1: profile lookup / create
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('id')
@@ -99,109 +116,169 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
       let profileId: string;
 
       if (existingProfile) {
-        // Profile exists - use their ID and optionally update name/email
         profileId = existingProfile.id;
-        
-        // Update profile with new data if provided
         const updateData: Record<string, string> = {};
         if (firstName) updateData.first_name = firstName;
         if (lastName) updateData.last_name = lastName;
         if (email) updateData.email = email;
-
         if (Object.keys(updateData).length > 0) {
-          await supabase
-            .from('profiles')
-            .update(updateData)
-            .eq('id', profileId);
+          await supabase.from('profiles').update(updateData).eq('id', profileId);
         }
       } else {
-        // Create new profile with role 'attendee'
         const { data: newProfile, error: profileError } = await supabase
           .from('profiles')
           .insert({
             first_name: firstName,
             last_name: lastName,
-            phone: phone,
-            email: email,
+            phone,
+            email,
             role: 'user',
           })
           .select('id')
           .single();
-
         if (profileError) throw profileError;
         profileId = newProfile.id;
       }
 
-      // Step 2: Check if attendee already exists for this event
+      // Step 2: duplicate check
       const { data: existingAttendee } = await supabase
         .from('attendees')
         .select('id')
         .eq('event_id', eventId)
         .eq('profile_id', profileId)
         .maybeSingle();
-
       if (existingAttendee) {
         throw new Error('User is already registered for this event.');
       }
 
-      // Step 3: Resolve erp_sku from selected ticket tier
-      const selectedTier = formData.ticketTierId
-        ? ticketTiers?.find(t => t.id === formData.ticketTierId)
-        : null;
+      // Step 3: selected tier
+      const selectedTier = ticketTiers?.find(t => t.id === formData.ticketTierId) || null;
+      const pricePaid = formData.pricePaid;
 
-      // Step 4: Insert new attendee record
-      const { error: attendeeError } = await supabase
+      // Step 4: attendee insert (always approved)
+      const { data: newAttendee, error: attendeeError } = await supabase
         .from('attendees')
         .insert({
           event_id: eventId,
           profile_id: profileId,
           first_name: firstName,
           last_name: lastName,
-          phone: phone,
-          email: email,
-          status: formData.status,
-          ticket_tier_id: formData.ticketTierId || null,
-          price_paid: formData.pricePaid,
+          phone,
+          email,
+          status: 'approved',
+          ticket_tier_id: formData.ticketTierId,
+          price_paid: pricePaid,
           erp_sku: selectedTier?.erp_code || null,
-        });
+        })
+        .select('id')
+        .single();
 
       if (attendeeError) throw attendeeError;
+      const attendeeId = newAttendee.id;
+
+      try {
+        // Step 5: fetch VAT rate
+        const { data: eventRow } = await supabase
+          .from('events')
+          .select('vat_rate')
+          .eq('id', eventId)
+          .single();
+        const vatRate = Number(eventRow?.vat_rate ?? 25);
+
+        // Step 6: insert order (issued — never 'paid' on insert)
+        const { data: newOrder, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            event_id: eventId,
+            attendee_id: attendeeId,
+            status: 'issued',
+            source: 'manual',
+            payment_method: formData.paymentMethod,
+            lang: formData.lang,
+            payer_type: formData.payerType,
+            payer_name: formData.payerName.trim() || `${firstName} ${lastName}`.trim(),
+            billing_email: formData.billingEmail.trim() || null,
+            contact_name: `${firstName} ${lastName}`.trim(),
+            contact_email: email,
+            contact_phone: phone,
+            total_amount: pricePaid,
+            is_group_order: false,
+          })
+          .select('id, order_number')
+          .single();
+        if (orderError) throw orderError;
+
+        const vatAmount = Number((pricePaid * vatRate / (100 + vatRate)).toFixed(2));
+
+        // Step 7: order_items
+        const { error: itemError } = await supabase.from('order_items').insert({
+          order_id: newOrder.id,
+          attendee_id: attendeeId,
+          ticket_type_id: formData.ticketTierId,
+          description: selectedTier?.name || 'Ticket',
+          quantity: 1,
+          unit_price: pricePaid,
+          total_price: pricePaid,
+          price_at_purchase: pricePaid,
+          vat_amount: vatAmount,
+          erp_code: selectedTier?.erp_code || null,
+          item_type: 'ticket',
+        });
+        if (itemError) throw itemError;
+
+        // Step 8: optional mark paid (triggers ticket email)
+        if (formData.markPaid) {
+          const { error: paidError } = await supabase
+            .from('orders')
+            .update({ status: 'paid' })
+            .eq('id', newOrder.id);
+          if (paidError) throw paidError;
+        }
+
+        return { orderNumber: newOrder.order_number, markedPaid: formData.markPaid };
+      } catch (err) {
+        // Best-effort cleanup
+        try {
+          await supabase.from('attendees').delete().eq('id', attendeeId);
+        } catch {
+          // swallow
+        }
+        throw err;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       clearDraft();
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
       queryClient.invalidateQueries({ queryKey: ['event-memberships', eventId] });
-      toast.success('Attendee added successfully');
+      queryClient.invalidateQueries({ queryKey: ['event-revenue-stats', eventId] });
+      if (result?.markedPaid) {
+        toast.success('Polaznik dodan — ulaznica se šalje na email');
+      } else {
+        toast.success(`Polaznik dodan (narudžba #${result?.orderNumber ?? ''}, čeka uplatu)`);
+      }
       onOpenChange(false);
       setFormData(initialData);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(error.message || 'Failed to add attendee');
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.firstName.trim()) {
-      toast.error('First name is required');
-      return;
+    if (!formData.firstName.trim()) return toast.error('First name is required');
+    if (!formData.lastName.trim()) return toast.error('Last name is required');
+    if (!formData.phone.trim()) return toast.error('Phone number is required');
+    if (!formData.ticketTierId) return toast.error('Odaberite kotizaciju');
+    if (formData.payerType === 'company' && !formData.payerName.trim()) {
+      return toast.error('Naziv platitelja je obavezan za tvrtku');
     }
-    if (!formData.lastName.trim()) {
-      toast.error('Last name is required');
-      return;
-    }
-    if (!formData.phone.trim()) {
-      toast.error('Phone number is required');
-      return;
-    }
-    
     addAttendeeMutation.mutate();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Attendee Manually</DialogTitle>
           <DialogDescription>
@@ -230,6 +307,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                 />
               </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number *</Label>
               <Input
@@ -239,10 +317,9 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                 value={formData.phone}
                 onChange={(e) => updateFormData({ ...formData, phone: e.target.value })}
               />
-              <p className="text-xs text-muted-foreground">
-                Primary identifier for WhatsApp integration
-              </p>
+              <p className="text-xs text-muted-foreground">Primary identifier for WhatsApp integration</p>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email (Optional)</Label>
               <Input
@@ -250,29 +327,28 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                 type="email"
                 placeholder="john@example.com"
                 value={formData.email}
-                onChange={(e) => updateFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => updateFormData({ ...formData, email: e.target.value, billingEmail: formData.billingEmail || e.target.value })}
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="ticketTier">Ticket Tier</Label>
-              <Select
-                value={formData.ticketTierId}
-                onValueChange={handleTicketTierChange}
-              >
+              <Label htmlFor="ticketTier">Kotizacija *</Label>
+              <Select value={formData.ticketTierId} onValueChange={handleTicketTierChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select ticket tier" />
+                  <SelectValue placeholder="Odaberi kotizaciju" />
                 </SelectTrigger>
                 <SelectContent>
                   {ticketTiers?.map((tier) => (
                     <SelectItem key={tier.id} value={tier.id}>
-                      {tier.name} - €{tier.price.toFixed(2)}
+                      {tier.name} — €{tier.price.toFixed(2)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="pricePaid">Price Paid (€)</Label>
+              <Label htmlFor="pricePaid">Cijena (€)</Label>
               <Input
                 id="pricePaid"
                 type="number"
@@ -281,25 +357,88 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                 value={formData.pricePaid}
                 onChange={(e) => updateFormData({ ...formData, pricePaid: parseFloat(e.target.value) || 0 })}
               />
-              <p className="text-xs text-muted-foreground">
-                Auto-filled from tier, can be adjusted if needed
-              </p>
+              <p className="text-xs text-muted-foreground">Auto-filled from tier, can be adjusted if needed</p>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label>Tko plaća</Label>
               <Select
-                value={formData.status}
-                onValueChange={(value: RegistrationStatus) => updateFormData({ ...formData, status: value })}
+                value={formData.payerType}
+                onValueChange={(v: PayerType) => updateFormData({ ...formData, payerType: v })}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="approved">Registered</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="individual">Fizička osoba</SelectItem>
+                  <SelectItem value="company">Tvrtka</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="payerName">
+                Naziv platitelja {formData.payerType === 'company' && '*'}
+              </Label>
+              <Input
+                id="payerName"
+                value={formData.payerName}
+                onChange={(e) => updateFormData({ ...formData, payerName: e.target.value })}
+                placeholder={formData.payerType === 'company' ? 'Naziv tvrtke d.o.o.' : ''}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="billingEmail">Email za račun</Label>
+              <Input
+                id="billingEmail"
+                type="email"
+                value={formData.billingEmail}
+                onChange={(e) => updateFormData({ ...formData, billingEmail: e.target.value })}
+                placeholder={formData.email || 'racuni@primjer.hr'}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Način plaćanja</Label>
+              <Select
+                value={formData.paymentMethod}
+                onValueChange={(v: PaymentMethod) => updateFormData({ ...formData, paymentMethod: v })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="invoice">Virman</SelectItem>
+                  <SelectItem value="stripe">Kartica</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Jezik komunikacije</Label>
+              <Select
+                value={formData.lang}
+                onValueChange={(v: Lang) => updateFormData({ ...formData, lang: v })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hr">Hrvatski</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-start gap-2 rounded-md border p-3">
+              <Checkbox
+                id="markPaid"
+                checked={formData.markPaid}
+                onCheckedChange={(v) => updateFormData({ ...formData, markPaid: v === true })}
+              />
+              <div className="grid gap-1 leading-none">
+                <Label htmlFor="markPaid" className="cursor-pointer">
+                  Uplata zaprimljena — označi kao plaćeno
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Ako je označeno, polazniku se automatski šalje ulaznica na email.
+                </p>
+              </div>
             </div>
           </div>
           <DialogFooter>

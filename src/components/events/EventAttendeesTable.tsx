@@ -276,11 +276,18 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
             </div>
           </div>
 
+          {!attendee.order_id && (
+            <p className="text-xs text-muted-foreground">
+              Polaznik nema narudžbu — financijske podatke nije moguće uređivati.
+            </p>
+          )}
+
           <div className="space-y-1.5">
             <Label>Datum plaćanja</Label>
             <Input
               type="date"
               value={form.paid_at}
+              disabled={!attendee.order_id}
               onChange={e => setForm(f => ({ ...f, paid_at: e.target.value }))}
             />
           </div>
@@ -290,6 +297,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
             <Input
               placeholder="npr. 2026-01-0001"
               value={form.fiscal_invoice_number}
+              disabled={!attendee.order_id}
               onChange={e => setForm(f => ({ ...f, fiscal_invoice_number: e.target.value }))}
             />
           </div>
@@ -299,6 +307,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
             <Select
               value={form.payment_method}
               onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}
+              disabled={!attendee.order_id}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Odaberi" />
@@ -315,6 +324,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
             <Select
               value={form.order_status}
               onValueChange={v => setForm(f => ({ ...f, order_status: v }))}
+              disabled={!attendee.order_id}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -329,6 +339,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
               </SelectContent>
             </Select>
           </div>
+
 
           {/* Ticket status + resend */}
           <div className="space-y-2 pt-2 border-t">
