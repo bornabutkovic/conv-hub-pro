@@ -208,6 +208,8 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
               translateId={editService?.id}
               canAutoTranslate={!!editService}
               onTranslated={() => queryClient.invalidateQueries({ queryKey: ['event-services', eventId] })}
+              nameMaxLength={50}
+              nameHelperText="Maks. 50 znakova — ovako se naziv ispisuje na BC ponudi."
             />
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
