@@ -39,6 +39,8 @@ interface TranslatableFieldsProps {
   useRichDescription?: boolean;
   /** Disabled state */
   disabled?: boolean;
+  nameMaxLength?: number;
+  nameHelperText?: string;
 }
 
 export function TranslatableFields({
@@ -55,6 +57,8 @@ export function TranslatableFields({
   onTranslated,
   canAutoTranslate = true,
   disabled,
+  nameMaxLength,
+  nameHelperText,
 }: TranslatableFieldsProps) {
   const [activeLang, setActiveLang] = useState<'hr' | 'en'>('hr');
   const [isTranslating, setIsTranslating] = useState(false);
@@ -164,7 +168,18 @@ export function TranslatableFields({
               onChange={(e) => onEnNameChange(e.target.value)}
               placeholder="English name..."
               disabled={disabled}
+              maxLength={nameMaxLength}
             />
+            {nameMaxLength && (
+              <div className="flex items-center justify-between gap-2 pt-0.5">
+                {nameHelperText && (
+                  <p className="text-xs text-muted-foreground">{nameHelperText}</p>
+                )}
+                <p className={cn("text-xs text-muted-foreground ml-auto", enName.length === nameMaxLength && "text-amber-600")}>
+                  {enName.length}/{nameMaxLength}
+                </p>
+              </div>
+            )}
           </div>
           {fields === 'name+description' && (
             <div className="space-y-1.5">
