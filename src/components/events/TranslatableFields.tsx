@@ -39,6 +39,8 @@ interface TranslatableFieldsProps {
   useRichDescription?: boolean;
   /** Disabled state */
   disabled?: boolean;
+  nameMaxLength?: number;
+  nameHelperText?: string;
 }
 
 export function TranslatableFields({
