@@ -177,7 +177,14 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
                 placeholder="e.g., Gala Dinner, Workshop Access"
                 value={formData.name}
                 onChange={(e) => updateFormData({ ...formData, name: e.target.value })}
+                maxLength={50}
               />
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">Maks. 50 znakova — ovako se naziv ispisuje na BC ponudi.</p>
+                <p className={cn("text-xs text-muted-foreground", formData.name.length === 50 && "text-amber-600")}>
+                  {formData.name.length}/50
+                </p>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
