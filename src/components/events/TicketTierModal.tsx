@@ -250,8 +250,14 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
                 <FormItem>
                   <FormLabel>Name *</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Early Bird, Regular, VIP" {...field} disabled={isLocked && isEditing} />
+                    <Input placeholder="e.g., Early Bird, Regular, VIP" {...field} disabled={isLocked && isEditing} maxLength={50} />
                   </FormControl>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-muted-foreground">Maks. 50 znakova — ovako se naziv ispisuje na BC ponudi.</p>
+                    <p className={cn("text-xs text-muted-foreground", field.value?.length === 50 && "text-amber-600")}>
+                      {(field.value || '').length}/50
+                    </p>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
