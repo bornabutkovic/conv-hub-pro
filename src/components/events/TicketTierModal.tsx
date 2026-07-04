@@ -273,6 +273,8 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
               translateId={tier?.id}
               canAutoTranslate={isEditing}
               onTranslated={() => queryClient.invalidateQueries({ queryKey: ['ticket-tiers', eventId] })}
+              nameMaxLength={50}
+              nameHelperText="Maks. 50 znakova — ovako se naziv ispisuje na BC ponudi."
             />
 
             <FormField
