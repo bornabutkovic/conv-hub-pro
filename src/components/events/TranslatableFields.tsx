@@ -57,6 +57,8 @@ export function TranslatableFields({
   onTranslated,
   canAutoTranslate = true,
   disabled,
+  nameMaxLength,
+  nameHelperText,
 }: TranslatableFieldsProps) {
   const [activeLang, setActiveLang] = useState<'hr' | 'en'>('hr');
   const [isTranslating, setIsTranslating] = useState(false);
