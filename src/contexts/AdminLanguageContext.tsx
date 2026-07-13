@@ -522,7 +522,7 @@ const translations = {
   'editEvent.sectionERP': { hr: 'ERP integracija', en: 'ERP Integration' },
   'editEvent.bcPosition': { hr: 'BC pozicija', en: 'BC Position' },
   'editEvent.bcPositionPlaceholder': { hr: 'Referenca pozicije', en: 'Position reference' },
-  'editEvent.bcReference': { hr: 'BC referenca', en: 'BC Reference' },
+  'editEvent.bcReference': { hr: 'BC Referent', en: 'BC Referent' },
   'editEvent.senderName': { hr: 'Ime pošiljatelja', en: 'Sender Name' },
   'editEvent.senderNamePlaceholder': { hr: 'npr. Ivan Horvat', en: 'e.g. Ivan Horvat' },
   'editEvent.senderEmail': { hr: 'Email pošiljatelja', en: 'Sender Email' },
