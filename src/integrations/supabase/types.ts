@@ -655,6 +655,7 @@ export type Database = {
           bc_payment_terms_code: string | null
           bc_position: string | null
           bc_reference: string | null
+          bc_referent_email: string | null
           bc_vat_bus_posting_group: string | null
           branding_banner_height: number | null
           branding_banner_url: string | null
@@ -708,6 +709,7 @@ export type Database = {
           bc_payment_terms_code?: string | null
           bc_position?: string | null
           bc_reference?: string | null
+          bc_referent_email?: string | null
           bc_vat_bus_posting_group?: string | null
           branding_banner_height?: number | null
           branding_banner_url?: string | null
@@ -761,6 +763,7 @@ export type Database = {
           bc_payment_terms_code?: string | null
           bc_position?: string | null
           bc_reference?: string | null
+          bc_referent_email?: string | null
           bc_vat_bus_posting_group?: string | null
           branding_banner_height?: number | null
           branding_banner_url?: string | null
@@ -1120,6 +1123,8 @@ export type Database = {
           due_date: string | null
           event_id: string | null
           fiscal_invoice_number: string | null
+          gdpr_consent_at: string | null
+          gdpr_consent_given: boolean | null
           gen_bus_posting_group: string | null
           id: string
           is_group_order: boolean | null
@@ -1168,6 +1173,8 @@ export type Database = {
           due_date?: string | null
           event_id?: string | null
           fiscal_invoice_number?: string | null
+          gdpr_consent_at?: string | null
+          gdpr_consent_given?: boolean | null
           gen_bus_posting_group?: string | null
           id?: string
           is_group_order?: boolean | null
@@ -1216,6 +1223,8 @@ export type Database = {
           due_date?: string | null
           event_id?: string | null
           fiscal_invoice_number?: string | null
+          gdpr_consent_at?: string | null
+          gdpr_consent_given?: boolean | null
           gen_bus_posting_group?: string | null
           id?: string
           is_group_order?: boolean | null
@@ -2579,6 +2588,10 @@ export type Database = {
       get_bc_posting_groups: {
         Args: { p_country_code: string; p_payer_type: string }
         Returns: Json
+      }
+      get_event_gdpr_contact_email: {
+        Args: { p_event_id: string }
+        Returns: string
       }
       get_event_organizers_info: { Args: { p_event_id: string }; Returns: Json }
       get_event_revenue_stats: { Args: { p_event_id: string }; Returns: Json }
