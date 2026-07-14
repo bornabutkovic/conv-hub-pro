@@ -73,7 +73,7 @@ interface EventAttendeesTableProps {
   eventName?: string;
 }
 
-type PaymentStatusFilter = 'all' | 'paid' | 'pending' | 'overdue' | 'refunded' | 'cancelled';
+type PaymentStatusFilter = 'all' | 'paid' | 'pending' | 'overdue' | 'refunded' | 'cancelled' | 'deferred';
 
 function getPaymentBadge(status: string | null) {
   switch (status) {
@@ -81,6 +81,8 @@ function getPaymentBadge(status: string | null) {
       return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15">Plaćeno</Badge>;
     case 'pending':
       return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15">Nije plaćeno</Badge>;
+    case 'deferred':
+      return <Badge className="bg-indigo-500/15 text-indigo-700 border-indigo-500/20 hover:bg-indigo-500/15">Plaćanje po ugovoru</Badge>;
     case 'overdue':
       return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15">Kasni</Badge>;
     case 'refunded':
@@ -208,7 +210,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
             paid_at: form.paid_at ? new Date(form.paid_at).toISOString() : null,
             fiscal_invoice_number: form.fiscal_invoice_number || null,
             payment_method: form.payment_method || null,
-            status: form.order_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded',
+            status: form.order_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded' | 'deferred',
           })
           .eq('id', attendee.order_id);
 
@@ -332,6 +334,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
               <SelectContent>
                 <SelectItem value="draft">Skica</SelectItem>
                 <SelectItem value="issued">Izdano (čeka uplatu)</SelectItem>
+                <SelectItem value="deferred">Plaćanje po ugovoru</SelectItem>
                 <SelectItem value="paid">Plaćeno</SelectItem>
                 <SelectItem value="overdue">Kasni</SelectItem>
                 <SelectItem value="refunded">Refundirano</SelectItem>
@@ -545,6 +548,7 @@ export function EventAttendeesTable({
                 <SelectItem value="all">Svi ({attendees.length})</SelectItem>
                 <SelectItem value="paid">Plaćeno ({attendees.filter(a => a.payment_status === 'paid').length})</SelectItem>
                 <SelectItem value="pending">Nije plaćeno ({attendees.filter(a => a.payment_status === 'pending').length})</SelectItem>
+                <SelectItem value="deferred">Plaćanje po ugovoru ({attendees.filter(a => a.payment_status === 'deferred').length})</SelectItem>
                 <SelectItem value="overdue">Kasni ({attendees.filter(a => a.payment_status === 'overdue').length})</SelectItem>
                 <SelectItem value="refunded">Refundirano ({attendees.filter(a => a.payment_status === 'refunded').length})</SelectItem>
                 <SelectItem value="cancelled">Otkazano ({attendees.filter(a => a.payment_status === 'cancelled').length})</SelectItem>

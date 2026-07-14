@@ -655,7 +655,6 @@ export type Database = {
           bc_payment_terms_code: string | null
           bc_position: string | null
           bc_reference: string | null
-          bc_referent_email: string | null
           bc_vat_bus_posting_group: string | null
           branding_banner_height: number | null
           branding_banner_url: string | null
@@ -709,7 +708,6 @@ export type Database = {
           bc_payment_terms_code?: string | null
           bc_position?: string | null
           bc_reference?: string | null
-          bc_referent_email?: string | null
           bc_vat_bus_posting_group?: string | null
           branding_banner_height?: number | null
           branding_banner_url?: string | null
@@ -763,7 +761,6 @@ export type Database = {
           bc_payment_terms_code?: string | null
           bc_position?: string | null
           bc_reference?: string | null
-          bc_referent_email?: string | null
           bc_vat_bus_posting_group?: string | null
           branding_banner_height?: number | null
           branding_banner_url?: string | null
@@ -2688,6 +2685,7 @@ export type Database = {
         | "overdue"
         | "refunded"
         | "cancelled"
+        | "deferred"
       registration_status: "pending" | "approved" | "cancelled"
     }
     CompositeTypes: {
@@ -2824,6 +2822,7 @@ export const Constants = {
         "overdue",
         "refunded",
         "cancelled",
+        "deferred",
       ],
       registration_status: ["pending", "approved", "cancelled"],
     },

@@ -92,6 +92,8 @@ export function AttendeeDetailModal({ open, onOpenChange, attendee, currency }: 
         return <Badge className="bg-green-500/15 text-green-700 border-green-500/20 hover:bg-green-500/15">Plaćeno</Badge>;
       case 'pending':
         return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15">Nije plaćeno</Badge>;
+      case 'deferred':
+        return <Badge className="bg-indigo-500/15 text-indigo-700 border-indigo-500/20 hover:bg-indigo-500/15">Plaćanje po ugovoru</Badge>;
       case 'overdue':
         return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15">Kasni</Badge>;
       case 'refunded':
