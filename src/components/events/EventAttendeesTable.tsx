@@ -73,7 +73,7 @@ interface EventAttendeesTableProps {
   eventName?: string;
 }
 
-type PaymentStatusFilter = 'all' | 'paid' | 'pending' | 'overdue' | 'refunded' | 'cancelled';
+type PaymentStatusFilter = 'all' | 'paid' | 'pending' | 'overdue' | 'refunded' | 'cancelled' | 'deferred';
 
 function getPaymentBadge(status: string | null) {
   switch (status) {
