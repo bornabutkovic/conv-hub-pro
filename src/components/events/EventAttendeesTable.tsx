@@ -242,7 +242,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     );
   };
 
-  const selectAllRefundItems = () => setRefundItems.map(i => i.id);
+  const selectAllRefundItems = () => setSelectedRefundItemIds(refundItems.map(i => i.id));
 
   const handleConfirmRefund = async () => {
     if (!attendee.order_id || selectedRefundItemIds.length === 0) {
