@@ -334,6 +334,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
               <SelectContent>
                 <SelectItem value="draft">Skica</SelectItem>
                 <SelectItem value="issued">Izdano (čeka uplatu)</SelectItem>
+                <SelectItem value="deferred">Plaćanje po ugovoru</SelectItem>
                 <SelectItem value="paid">Plaćeno</SelectItem>
                 <SelectItem value="overdue">Kasni</SelectItem>
                 <SelectItem value="refunded">Refundirano</SelectItem>
