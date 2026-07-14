@@ -28,6 +28,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import { AddAttendeeModal } from './AddAttendeeModal';
 import { AttendeeDetailModal } from './AttendeeDetailModal';
 import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
@@ -149,6 +151,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   const [isSaving, setIsSaving] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [ticketStatus, setTicketStatus] = useState<TicketStatus | null>(null);
+  const [originalOrderStatus, setOriginalOrderStatus] = useState<string>(attendee.order_status || 'draft');
   const [form, setForm] = useState({
     first_name: attendee.first_name || '',
     last_name: attendee.last_name || '',
@@ -157,6 +160,19 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     payment_method: attendee.payment_method || '',
     order_status: (attendee.order_status as string) || 'draft',
   });
+
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [refundItems, setRefundItems] = useState<{
+    id: string;
+    attendee_id: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    total_price: number | null;
+  }[]>([]);
+  const [selectedRefundItemIds, setSelectedRefundItemIds] = useState<string[]>([]);
+  const [refundReason, setRefundReason] = useState('');
+  const [refundStripeId, setRefundStripeId] = useState('');
+  const [isProcessingRefund, setIsProcessingRefund] = useState(false);
 
   const fetchTicketStatus = async () => {
     if (!attendee.attendee_id) return;
@@ -171,7 +187,6 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   useEffect(() => {
     if (!open) return;
 
-    // Refresh current order status so the dropdown reflects DB truth (avoids stale enum)
     (async () => {
       if (attendee.order_id) {
         const { data } = await supabase
@@ -179,7 +194,9 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           .select('status')
           .eq('id', attendee.order_id)
           .maybeSingle();
-        setForm(f => ({ ...f, order_status: (data?.status as string) || 'draft' }));
+        const st = (data?.status as string) || 'draft';
+        setForm(f => ({ ...f, order_status: st }));
+        setOriginalOrderStatus(st);
       }
     })();
 
@@ -187,11 +204,85 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, attendee.attendee_id, attendee.order_id]);
 
+  const handleOrderStatusChange = async (v: string) => {
+    if (v === 'refunded' && originalOrderStatus !== 'refunded') {
+      if (!attendee.order_id) return;
+      const { data, error } = await supabase
+        .from('order_items')
+        .select('id, attendee_id, total_price, attendees(first_name, last_name)')
+        .eq('order_id', attendee.order_id);
+
+      if (error) {
+        toast.error('Greška pri dohvaćanju stavki narudžbe: ' + error.message);
+        return;
+      }
+
+      const items = (data || []).map((r: any) => ({
+        id: r.id,
+        attendee_id: r.attendee_id,
+        first_name: r.attendees?.first_name ?? null,
+        last_name: r.attendees?.last_name ?? null,
+        total_price: Number(r.total_price) || 0,
+      }));
+
+      setRefundItems(items);
+      const defaultSelected = items.filter(i => i.attendee_id === attendee.attendee_id).map(i => i.id);
+      setSelectedRefundItemIds(defaultSelected.length ? defaultSelected : items.map(i => i.id));
+      setRefundReason('');
+      setRefundStripeId('');
+      setRefundDialogOpen(true);
+      return;
+    }
+    setForm(f => ({ ...f, order_status: v }));
+  };
+
+  const toggleRefundItem = (id: string) => {
+    setSelectedRefundItemIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const selectAllRefundItems = () => setSelectedRefundItemIds(refundItems.map(i => i.id));
+
+  const handleConfirmRefund = async () => {
+    if (!attendee.order_id || selectedRefundItemIds.length === 0) {
+      toast.error('Odaberi barem jednu stavku za refund');
+      return;
+    }
+    setIsProcessingRefund(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const { data, error } = await supabase.rpc('process_order_refund', {
+        p_order_id: attendee.order_id,
+        p_order_item_ids: selectedRefundItemIds,
+        p_reason: refundReason || null,
+        p_stripe_refund_id: refundStripeId || null,
+        p_refunded_by: userData?.user?.email || null,
+      });
+
+      if (error) throw error;
+
+      const result = data as { order_fully_refunded?: boolean; refunded_attendee_ids?: string[] } | null;
+      toast.success(
+        result?.order_fully_refunded
+          ? 'Cijela narudžba je refundirana.'
+          : `Refundirano ${result?.refunded_attendee_ids?.length ?? 0} stavki/sudionika u ovoj narudžbi.`
+      );
+
+      setRefundDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
+      onOpenChange(false);
+    } catch (err: any) {
+      toast.error('Refund nije uspio: ' + (err?.message ?? 'nepoznata greška'));
+    } finally {
+      setIsProcessingRefund(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!attendee.attendee_id) return;
     setIsSaving(true);
     try {
-      // Update attendees table (name fields only — payment_status is synced from orders by a DB trigger)
       const { error: attError } = await supabase
         .from('attendees')
         .update({
@@ -202,7 +293,6 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
 
       if (attError) throw attError;
 
-      // Update orders table if order exists
       if (attendee.order_id) {
         const { error: orderError } = await supabase
           .from('orders')
@@ -216,7 +306,6 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
 
         if (orderError) throw orderError;
       }
-
 
       toast.success('Promjene su spremljene');
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
@@ -254,149 +343,225 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   const ticketFailReason = ticketStatus?.ticket_send_fail_reason ?? null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Uredi polaznika</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Uredi polaznika</DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Ime</Label>
+                <Input
+                  value={form.first_name}
+                  onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Prezime</Label>
+                <Input
+                  value={form.last_name}
+                  onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            {!attendee.order_id && (
+              <p className="text-xs text-muted-foreground">
+                Polaznik nema narudžbu — financijske podatke nije moguće uređivati.
+              </p>
+            )}
+
             <div className="space-y-1.5">
-              <Label>Ime</Label>
+              <Label>Datum plaćanja</Label>
               <Input
-                value={form.first_name}
-                onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+                type="date"
+                value={form.paid_at}
+                disabled={!attendee.order_id}
+                onChange={e => setForm(f => ({ ...f, paid_at: e.target.value }))}
               />
             </div>
+
             <div className="space-y-1.5">
-              <Label>Prezime</Label>
+              <Label>Broj računa</Label>
               <Input
-                value={form.last_name}
-                onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
+                placeholder="npr. 2026-01-0001"
+                value={form.fiscal_invoice_number}
+                disabled={!attendee.order_id}
+                onChange={e => setForm(f => ({ ...f, fiscal_invoice_number: e.target.value }))}
               />
             </div>
-          </div>
 
-          {!attendee.order_id && (
-            <p className="text-xs text-muted-foreground">
-              Polaznik nema narudžbu — financijske podatke nije moguće uređivati.
-            </p>
-          )}
+            <div className="space-y-1.5">
+              <Label>Način plaćanja</Label>
+              <Select
+                value={form.payment_method}
+                onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}
+                disabled={!attendee.order_id}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Odaberi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="stripe">Kreditna kartica</SelectItem>
+                  <SelectItem value="invoice">Bankovna transakcija</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-1.5">
-            <Label>Datum plaćanja</Label>
-            <Input
-              type="date"
-              value={form.paid_at}
-              disabled={!attendee.order_id}
-              onChange={e => setForm(f => ({ ...f, paid_at: e.target.value }))}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Broj računa</Label>
-            <Input
-              placeholder="npr. 2026-01-0001"
-              value={form.fiscal_invoice_number}
-              disabled={!attendee.order_id}
-              onChange={e => setForm(f => ({ ...f, fiscal_invoice_number: e.target.value }))}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Način plaćanja</Label>
-            <Select
-              value={form.payment_method}
-              onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}
-              disabled={!attendee.order_id}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Odaberi" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="stripe">Kreditna kartica</SelectItem>
-                <SelectItem value="invoice">Bankovna transakcija</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Status plaćanja</Label>
-            <Select
-              value={form.order_status}
-              onValueChange={v => setForm(f => ({ ...f, order_status: v }))}
-              disabled={!attendee.order_id}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">Skica</SelectItem>
-                <SelectItem value="issued">Izdano (čeka uplatu)</SelectItem>
-                <SelectItem value="deferred">Plaćanje po ugovoru</SelectItem>
-                <SelectItem value="paid">Plaćeno</SelectItem>
-                <SelectItem value="overdue">Kasni</SelectItem>
-                <SelectItem value="refunded">Refundirano</SelectItem>
-                <SelectItem value="cancelled">Otkazano</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-
-          {/* Ticket status + resend */}
-          <div className="space-y-2 pt-2 border-t">
-            <div className="text-sm">
-              {ticketSentAt ? (
-                <span className="text-emerald-600">
-                  Ulaznica poslana {(() => {
-                    try { return format(new Date(ticketSentAt), 'dd.MM.yyyy. HH:mm'); }
-                    catch { return ticketSentAt; }
-                  })()}
-                </span>
-              ) : ticketFailedAt ? (
-                <div>
-                  <div className="text-red-600">Slanje nije uspjelo</div>
-                  {ticketFailReason && (
-                    <div className="text-xs text-muted-foreground mt-0.5">{ticketFailReason}</div>
-                  )}
-                </div>
-              ) : (
-                <span className="text-muted-foreground">Ulaznica nije poslana</span>
+            <div className="space-y-1.5">
+              <Label>Status plaćanja</Label>
+              <Select
+                value={form.order_status}
+                onValueChange={handleOrderStatusChange}
+                disabled={!attendee.order_id}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Skica</SelectItem>
+                  <SelectItem value="issued">Izdano (čeka uplatu)</SelectItem>
+                  <SelectItem value="deferred">Plaćanje po ugovoru</SelectItem>
+                  <SelectItem value="paid">Plaćeno</SelectItem>
+                  <SelectItem value="overdue">Kasni</SelectItem>
+                  <SelectItem value="refunded">Refundirano</SelectItem>
+                  <SelectItem value="cancelled">Otkazano</SelectItem>
+                </SelectContent>
+              </Select>
+              {attendee.is_group_order && (
+                <p className="text-xs text-muted-foreground">
+                  Ovo je grupna narudžba. Odabir "Refundirano" otvara poseban dijalog gdje biraš koje sudionike/stavke refundiraš — ostali ostaju nepromijenjeni.
+                </p>
               )}
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleResendTicket}
-              disabled={isResending || !attendee.attendee_id}
-            >
-              {isResending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                  Slanje...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-1.5" />
-                  {ticketSentAt ? 'Ponovno pošalji ulaznicu' : 'Pošalji ulaznicu'}
-                </>
-              )}
+
+            <div className="space-y-2 pt-2 border-t">
+              <div className="text-sm">
+                {ticketSentAt ? (
+                  <span className="text-emerald-600">
+                    Ulaznica poslana {(() => {
+                      try { return format(new Date(ticketSentAt), 'dd.MM.yyyy. HH:mm'); }
+                      catch { return ticketSentAt; }
+                    })()}
+                  </span>
+                ) : ticketFailedAt ? (
+                  <div>
+                    <div className="text-red-600">Slanje nije uspjelo</div>
+                    {ticketFailReason && (
+                      <div className="text-xs text-muted-foreground mt-0.5">{ticketFailReason}</div>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground">Ulaznica nije poslana</span>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleResendTicket}
+                disabled={isResending || !attendee.attendee_id}
+              >
+                {isResending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    Slanje...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-1.5" />
+                    {ticketSentAt ? 'Ponovno pošalji ulaznicu' : 'Pošalji ulaznicu'}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
+              Odustani
             </Button>
-          </div>
-        </div>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? 'Spremanje...' : 'Spremi'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
-            Odustani
-          </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Spremanje...' : 'Spremi'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <Dialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Refund narudžbe {attendee.order_number ? `#${attendee.order_number}` : ''}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              Označi koje sudionike/stavke iz ove narudžbe refundiraš. Ostali sudionici u narudžbi ostaju netaknuti (status im se ne mijenja).
+            </p>
+
+            <div className="space-y-1">
+              {refundItems.map(item => (
+                <label
+                  key={item.id}
+                  className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer hover:bg-muted/40"
+                >
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={selectedRefundItemIds.includes(item.id)}
+                      onCheckedChange={() => toggleRefundItem(item.id)}
+                    />
+                    <span>{`${item.first_name || ''} ${item.last_name || ''}`.trim() || '—'}</span>
+                  </div>
+                  <span className="font-mono text-muted-foreground">
+                    {item.total_price != null ? `${item.total_price.toFixed(2)} EUR` : '—'}
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            {refundItems.length > 1 && (
+              <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={selectAllRefundItems}>
+                Označi sve (cijela narudžba)
+              </Button>
+            )}
+
+            <div className="space-y-1.5">
+              <Label>Razlog (opcionalno)</Label>
+              <Textarea
+                value={refundReason}
+                onChange={e => setRefundReason(e.target.value)}
+                placeholder="npr. na zahtjev korisnika"
+                rows={2}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Stripe refund ID (opcionalno)</Label>
+              <Input
+                value={refundStripeId}
+                onChange={e => setRefundStripeId(e.target.value)}
+                placeholder="re_..."
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRefundDialogOpen(false)} disabled={isProcessingRefund}>
+              Odustani
+            </Button>
+            <Button
+              onClick={handleConfirmRefund}
+              disabled={isProcessingRefund || selectedRefundItemIds.length === 0}
+            >
+              {isProcessingRefund ? 'Obrada...' : `Potvrdi refund (${selectedRefundItemIds.length})`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

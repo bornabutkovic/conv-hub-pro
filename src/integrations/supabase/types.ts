@@ -1454,6 +1454,74 @@ export type Database = {
           },
         ]
       }
+      refunds: {
+        Row: {
+          amount: number
+          attendee_id: string | null
+          created_at: string
+          id: string
+          institution_uuid: string
+          order_id: string
+          order_item_id: string
+          reason: string | null
+          refunded_by: string | null
+          stripe_refund_id: string | null
+        }
+        Insert: {
+          amount: number
+          attendee_id?: string | null
+          created_at?: string
+          id?: string
+          institution_uuid: string
+          order_id: string
+          order_item_id: string
+          reason?: string | null
+          refunded_by?: string | null
+          stripe_refund_id?: string | null
+        }
+        Update: {
+          amount?: number
+          attendee_id?: string | null
+          created_at?: string
+          id?: string
+          institution_uuid?: string
+          order_id?: string
+          order_item_id?: string
+          reason?: string | null
+          refunded_by?: string | null
+          stripe_refund_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refunds_attendee_id_fkey"
+            columns: ["attendee_id"]
+            isOneToOne: false
+            referencedRelation: "attendee_invoice_summary"
+            referencedColumns: ["attendee_id"]
+          },
+          {
+            foreignKeyName: "refunds_attendee_id_fkey"
+            columns: ["attendee_id"]
+            isOneToOne: false
+            referencedRelation: "attendees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: true
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       retention_audit_log: {
         Row: {
           attendees_anonymized: number
@@ -2635,6 +2703,16 @@ export type Database = {
       jwt_is_admin: { Args: never; Returns: boolean }
       jwt_role: { Args: never; Returns: string }
       normalize_phone_to_waid: { Args: { phone: string }; Returns: string }
+      process_order_refund: {
+        Args: {
+          p_order_id: string
+          p_order_item_ids?: string[]
+          p_reason?: string
+          p_refunded_by?: string
+          p_stripe_refund_id?: string
+        }
+        Returns: Json
+      }
       record_whatsapp_consent: {
         Args: {
           p_consent_message: string
