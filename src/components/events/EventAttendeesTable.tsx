@@ -547,6 +547,7 @@ export function EventAttendeesTable({
                 <SelectItem value="all">Svi ({attendees.length})</SelectItem>
                 <SelectItem value="paid">Plaćeno ({attendees.filter(a => a.payment_status === 'paid').length})</SelectItem>
                 <SelectItem value="pending">Nije plaćeno ({attendees.filter(a => a.payment_status === 'pending').length})</SelectItem>
+                <SelectItem value="deferred">Plaćanje po ugovoru ({attendees.filter(a => a.payment_status === 'deferred').length})</SelectItem>
                 <SelectItem value="overdue">Kasni ({attendees.filter(a => a.payment_status === 'overdue').length})</SelectItem>
                 <SelectItem value="refunded">Refundirano ({attendees.filter(a => a.payment_status === 'refunded').length})</SelectItem>
                 <SelectItem value="cancelled">Otkazano ({attendees.filter(a => a.payment_status === 'cancelled').length})</SelectItem>
