@@ -100,7 +100,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
         name: tier.name,
         price: Number(tier.price),
         description: tier.description || '',
-        capacity: tier.capacity || null,
+        capacity: tier.capacity ?? null,
         display_order: (tier as any).display_order ?? 0,
         sales_start: tier.sales_start ? new Date(tier.sales_start) : null,
         sales_end: tier.sales_end ? new Date(tier.sales_end) : null,
