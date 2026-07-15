@@ -136,7 +136,7 @@ export function TicketTiersTable({ eventId, currency = 'EUR', eventStatus }: Tic
   });
 
   const isTierLocked = (tierId: string) => {
-    return eventStatus === 'active' && tiersWithSales?.has(tierId);
+    return eventStatus === 'active' && tiersWithSales?.has(tierId) && !userIsAdmin;
   };
 
   const getStatusBadge = (tier: TicketTier) => {
