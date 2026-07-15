@@ -968,6 +968,69 @@ export type Database = {
         }
         Relationships: []
       }
+      known_companies: {
+        Row: {
+          address: string | null
+          billing_email: string | null
+          city: string | null
+          country_code: string | null
+          country_name: string | null
+          created_at: string
+          id: string
+          institution_uuid: string
+          name: string
+          oib: string
+          postal_code: string | null
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          billing_email?: string | null
+          city?: string | null
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string
+          id?: string
+          institution_uuid: string
+          name: string
+          oib: string
+          postal_code?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          billing_email?: string | null
+          city?: string | null
+          country_code?: string | null
+          country_name?: string | null
+          created_at?: string
+          id?: string
+          institution_uuid?: string
+          name?: string
+          oib?: string
+          postal_code?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "known_companies_institution_uuid_fkey"
+            columns: ["institution_uuid"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "known_companies_institution_uuid_fkey"
+            columns: ["institution_uuid"]
+            isOneToOne: false
+            referencedRelation: "institutions_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           attendee_id: string | null
@@ -1969,6 +2032,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wa_processed_messages: {
+        Row: {
+          event_slug: string | null
+          processed_at: string
+          wa_id: string | null
+          wa_message_id: string
+        }
+        Insert: {
+          event_slug?: string | null
+          processed_at?: string
+          wa_id?: string | null
+          wa_message_id: string
+        }
+        Update: {
+          event_slug?: string | null
+          processed_at?: string
+          wa_id?: string | null
+          wa_message_id?: string
+        }
+        Relationships: []
       }
       whatsapp_consents: {
         Row: {

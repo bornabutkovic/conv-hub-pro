@@ -72,7 +72,7 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
   });
 
   const isServiceLocked = (serviceId: string) => {
-    return eventStatus === 'active' && servicesWithSales?.has(serviceId);
+    return eventStatus === 'active' && servicesWithSales?.has(serviceId) && !userIsAdmin;
   };
 
   const erpMutation = useMutation({
