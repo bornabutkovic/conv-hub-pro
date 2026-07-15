@@ -45,7 +45,7 @@ const ticketTierSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   price: z.coerce.number().min(0, 'Price must be 0 or greater'),
   description: z.string().optional(),
-  capacity: z.coerce.number().int().positive().optional().nullable(),
+  capacity: z.coerce.number().int().nonnegative().optional().nullable(),
   display_order: z.coerce.number().int().min(0).default(0),
   sales_start: z.date().optional().nullable(),
   sales_end: z.date().optional().nullable(),
@@ -325,7 +325,7 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
                   <FormControl>
                     <Input
                       type="number"
-                      min="1"
+                      min="0"
                       placeholder="Enter capacity"
                       {...field}
                       value={field.value ?? ''}
