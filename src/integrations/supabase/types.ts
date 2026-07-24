@@ -2782,6 +2782,7 @@ export type Database = {
           ticket_tier_id: string
         }[]
       }
+      get_webhook_secret: { Args: { p_secret_name: string }; Returns: string }
       is_admin_user: { Args: { _user_id: string }; Returns: boolean }
       jwt_institution_uuid: { Args: never; Returns: string }
       jwt_is_admin: { Args: never; Returns: boolean }
