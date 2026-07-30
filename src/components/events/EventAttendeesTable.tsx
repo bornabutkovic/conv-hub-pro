@@ -745,6 +745,31 @@ export function EventAttendeesTable({
     }
   };
 
+  const SortableHead = ({
+    label,
+    sortKeyName,
+    className = '',
+    align = 'left',
+  }: {
+    label: string;
+    sortKeyName: SortKey;
+    className?: string;
+    align?: 'left' | 'right';
+  }) => (
+    <TableHead
+      className={`py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors ${className}`}
+      onClick={() => handleSort(sortKeyName)}
+    >
+      <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'justify-end w-full' : ''}`}>
+        {label}
+        {sortKey === sortKeyName ? (
+          sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-30" />
+        )}
+      </span>
+    </TableHead>
+  );
 
   return (
     <>
