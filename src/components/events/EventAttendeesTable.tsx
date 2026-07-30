@@ -77,6 +77,21 @@ interface EventAttendeesTableProps {
 
 type PaymentStatusFilter = 'all' | 'paid' | 'pending' | 'overdue' | 'refunded' | 'cancelled' | 'deferred';
 
+type SortKey =
+  | 'order_number'
+  | 'name'
+  | 'email'
+  | 'company'
+  | 'registered_at'
+  | 'deadline'
+  | 'quote_number'
+  | 'paid_at'
+  | 'invoice_number'
+  | 'amount'
+  | 'payment_method'
+  | 'payment_status'
+  | 'checked_in';
+
 function getPaymentBadge(status: string | null) {
   switch (status) {
     case 'paid':
