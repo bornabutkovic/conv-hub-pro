@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format, addDays } from 'date-fns';
-import { Pencil, UserPlus, Download, Send, Loader2 } from 'lucide-react';
+import { Pencil, UserPlus, Download, Send, Loader2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -77,6 +77,21 @@ interface EventAttendeesTableProps {
 
 type PaymentStatusFilter = 'all' | 'paid' | 'pending' | 'overdue' | 'refunded' | 'cancelled' | 'deferred';
 
+type SortKey =
+  | 'order_number'
+  | 'name'
+  | 'email'
+  | 'company'
+  | 'registered_at'
+  | 'deadline'
+  | 'quote_number'
+  | 'paid_at'
+  | 'invoice_number'
+  | 'amount'
+  | 'payment_method'
+  | 'payment_status'
+  | 'checked_in';
+
 function getPaymentBadge(status: string | null) {
   switch (status) {
     case 'paid':
@@ -126,9 +141,14 @@ function getPaymentMethodLabel(
   return '—';
 }
 
-function formatDate(d: string | null | undefined) {
+function formatDate(d: string | Date | null | undefined) {
   if (!d) return '—';
-  try { return format(new Date(d), 'dd MMM yyyy'); } catch { return '—'; }
+  try { return format(new Date(d), 'dd.MM.yyyy.'); } catch { return '—'; }
+}
+
+function getDeadlineDate(a: Pick<InvoiceAttendee, 'registered_at' | 'payment_due_days'>): Date | null {
+  if (!a.registered_at || a.payment_due_days == null) return null;
+  return addDays(new Date(a.registered_at), a.payment_due_days);
 }
 
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
@@ -581,10 +601,56 @@ export function EventAttendeesTable({
   const [methodFilter, setMethodFilter] = useState<'all' | 'stripe' | 'invoice'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>('paid_at');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const { t } = useAdminLanguage();
 
   const formatAmount = (n: number | null | undefined) =>
     n == null ? '—' : `${n.toFixed(2).replace('.', ',')} ${currency}`;
+
+  const handleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  const getSortValue = (a: InvoiceAttendee, key: SortKey): number | string => {
+    switch (key) {
+      case 'order_number':
+        return a.order_number ?? -Infinity;
+      case 'name':
+        return `${a.first_name || ''} ${a.last_name || ''}`.trim().toLowerCase();
+      case 'email':
+        return (a.email || '').toLowerCase();
+      case 'company':
+        return (a.payer_type === 'company' ? (a.payer_name || '') : '').toLowerCase();
+      case 'registered_at':
+        return a.registered_at ? new Date(a.registered_at).getTime() : -Infinity;
+      case 'deadline': {
+        const d = getDeadlineDate(a);
+        return d ? d.getTime() : -Infinity;
+      }
+      case 'quote_number':
+        return (a.bc_quote_number || '').toLowerCase();
+      case 'paid_at':
+        return a.paid_at ? new Date(a.paid_at).getTime() : -Infinity;
+      case 'invoice_number':
+        return (a.fiscal_invoice_number || '').toLowerCase();
+      case 'amount':
+        return a.price_paid ?? -Infinity;
+      case 'payment_method':
+        return (a.payment_method || '').toLowerCase();
+      case 'payment_status':
+        return (a.payment_status || '').toLowerCase();
+      case 'checked_in':
+        return a.checked_in ? 1 : 0;
+      default:
+        return '';
+    }
+  };
 
   const filtered = attendees.filter(a => {
     if (paymentFilter !== 'all' && a.payment_status !== paymentFilter) return false;
@@ -599,13 +665,23 @@ export function EventAttendeesTable({
     return true;
   });
 
+  const sorted = [...filtered].sort((x, y) => {
+    const vx = getSortValue(x, sortKey);
+    const vy = getSortValue(y, sortKey);
+    if (vx < vy) return sortDir === 'asc' ? -1 : 1;
+    if (vx > vy) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+
+
   const filteredPaidSum = filtered.reduce(
     (acc, a) => acc + (a.payment_status === 'paid' ? Number(a.price_paid ?? 0) : 0),
     0,
   );
 
   const handleExportCsv = async () => {
-    if (!filtered.length) return;
+    if (!sorted.length) return;
     setIsExporting(true);
     try {
       const headers = [
@@ -624,10 +700,8 @@ export function EventAttendeesTable({
         'Check-in',
       ];
 
-      const rows = filtered.map(a => {
-        const deadline = a.registered_at && a.payment_due_days != null
-          ? format(addDays(new Date(a.registered_at), a.payment_due_days), 'dd MMM yyyy')
-          : '—';
+      const rows = sorted.map(a => {
+        const deadline = formatDate(getDeadlineDate(a));
         return [
           a.order_number ? `#${a.order_number}` : '—',
           `${a.first_name || ''} ${a.last_name || ''}`.trim(),
@@ -671,6 +745,31 @@ export function EventAttendeesTable({
     }
   };
 
+  const SortableHead = ({
+    label,
+    sortKeyName,
+    className = '',
+    align = 'left',
+  }: {
+    label: string;
+    sortKeyName: SortKey;
+    className?: string;
+    align?: 'left' | 'right';
+  }) => (
+    <TableHead
+      className={`py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors ${className}`}
+      onClick={() => handleSort(sortKeyName)}
+    >
+      <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'justify-end w-full' : ''}`}>
+        {label}
+        {sortKey === sortKeyName ? (
+          sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-30" />
+        )}
+      </span>
+    </TableHead>
+  );
 
   return (
     <>
@@ -688,7 +787,7 @@ export function EventAttendeesTable({
                 variant="outline"
                 size="sm"
                 onClick={handleExportCsv}
-                disabled={isExporting || !filtered.length}
+                disabled={isExporting || !sorted.length}
               >
                 <Download className="h-4 w-4 mr-1.5" />
                 Export CSV
@@ -753,7 +852,7 @@ export function EventAttendeesTable({
             <div className="flex items-center justify-center py-12 text-muted-foreground">
               Učitavanje...
             </div>
-          ) : filtered.length === 0 ? (
+          ) : sorted.length === 0 ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
               Nema polaznika
             </div>
@@ -762,27 +861,25 @@ export function EventAttendeesTable({
               <Table>
                 <TableHeader>
                   <TableRow className="h-10">
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-20">Narudžba #</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Ime i prezime</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tvrtka/Org.</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Datum reg.</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Rok plaćanja</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. ponude</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Datum uplate</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. računa</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap text-right">Iznos</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Plaćanje</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Status</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Check-in</TableHead>
+                    <SortableHead label="Narudžba #" sortKeyName="order_number" className="w-20" />
+                    <SortableHead label="Ime i prezime" sortKeyName="name" />
+                    <SortableHead label="Email" sortKeyName="email" />
+                    <SortableHead label="Tvrtka/Org." sortKeyName="company" />
+                    <SortableHead label="Datum reg." sortKeyName="registered_at" />
+                    <SortableHead label="Rok plaćanja" sortKeyName="deadline" />
+                    <SortableHead label="Br. ponude" sortKeyName="quote_number" />
+                    <SortableHead label="Datum uplate" sortKeyName="paid_at" />
+                    <SortableHead label="Br. računa" sortKeyName="invoice_number" />
+                    <SortableHead label="Iznos" sortKeyName="amount" align="right" />
+                    <SortableHead label="Plaćanje" sortKeyName="payment_method" />
+                    <SortableHead label="Status" sortKeyName="payment_status" />
+                    <SortableHead label="Check-in" sortKeyName="checked_in" />
                     <TableHead className="py-2 px-3 w-10"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map(attendee => {
-                    const deadline = attendee.registered_at && attendee.payment_due_days != null
-                      ? format(addDays(new Date(attendee.registered_at), attendee.payment_due_days), 'dd MMM yyyy')
-                      : '—';
+                  {sorted.map(attendee => {
+                    const deadline = formatDate(getDeadlineDate(attendee));
 
                     return (
                       <TableRow
