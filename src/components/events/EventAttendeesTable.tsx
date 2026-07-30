@@ -787,7 +787,7 @@ export function EventAttendeesTable({
                 variant="outline"
                 size="sm"
                 onClick={handleExportCsv}
-                disabled={isExporting || !filtered.length}
+                disabled={isExporting || !sorted.length}
               >
                 <Download className="h-4 w-4 mr-1.5" />
                 Export CSV
@@ -852,7 +852,7 @@ export function EventAttendeesTable({
             <div className="flex items-center justify-center py-12 text-muted-foreground">
               Učitavanje...
             </div>
-          ) : filtered.length === 0 ? (
+          ) : sorted.length === 0 ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
               Nema polaznika
             </div>
@@ -861,27 +861,25 @@ export function EventAttendeesTable({
               <Table>
                 <TableHeader>
                   <TableRow className="h-10">
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-20">Narudžba #</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Ime i prezime</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tvrtka/Org.</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Datum reg.</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Rok plaćanja</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. ponude</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Datum uplate</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Br. računa</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap text-right">Iznos</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Plaćanje</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Status</TableHead>
-                    <TableHead className="py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Check-in</TableHead>
+                    <SortableHead label="Narudžba #" sortKeyName="order_number" className="w-20" />
+                    <SortableHead label="Ime i prezime" sortKeyName="name" />
+                    <SortableHead label="Email" sortKeyName="email" />
+                    <SortableHead label="Tvrtka/Org." sortKeyName="company" />
+                    <SortableHead label="Datum reg." sortKeyName="registered_at" />
+                    <SortableHead label="Rok plaćanja" sortKeyName="deadline" />
+                    <SortableHead label="Br. ponude" sortKeyName="quote_number" />
+                    <SortableHead label="Datum uplate" sortKeyName="paid_at" />
+                    <SortableHead label="Br. računa" sortKeyName="invoice_number" />
+                    <SortableHead label="Iznos" sortKeyName="amount" align="right" />
+                    <SortableHead label="Plaćanje" sortKeyName="payment_method" />
+                    <SortableHead label="Status" sortKeyName="payment_status" />
+                    <SortableHead label="Check-in" sortKeyName="checked_in" />
                     <TableHead className="py-2 px-3 w-10"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map(attendee => {
-                    const deadline = attendee.registered_at && attendee.payment_due_days != null
-                      ? format(addDays(new Date(attendee.registered_at), attendee.payment_due_days), 'dd MMM yyyy')
-                      : '—';
+                  {sorted.map(attendee => {
+                    const deadline = formatDate(getDeadlineDate(attendee));
 
                     return (
                       <TableRow
