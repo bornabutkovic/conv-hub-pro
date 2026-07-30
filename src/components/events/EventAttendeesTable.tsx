@@ -141,9 +141,14 @@ function getPaymentMethodLabel(
   return '—';
 }
 
-function formatDate(d: string | null | undefined) {
+function formatDate(d: string | Date | null | undefined) {
   if (!d) return '—';
-  try { return format(new Date(d), 'dd MMM yyyy'); } catch { return '—'; }
+  try { return format(new Date(d), 'dd.MM.yyyy.'); } catch { return '—'; }
+}
+
+function getDeadlineDate(a: Pick<InvoiceAttendee, 'registered_at' | 'payment_due_days'>): Date | null {
+  if (!a.registered_at || a.payment_due_days == null) return null;
+  return addDays(new Date(a.registered_at), a.payment_due_days);
 }
 
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
