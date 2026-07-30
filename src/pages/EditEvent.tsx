@@ -39,13 +39,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAdmin } from '@/lib/roles';
+import { isAdmin, isSuperAdmin } from '@/lib/roles';
 import { toast } from 'sonner';
 import { BrandingSection } from '@/components/events/BrandingSection';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { OrganizersSection } from '@/components/events/OrganizersSection';
+import { ArchiveEventDialog } from '@/components/events/ArchiveEventDialog';
 import { ContentSection } from '@/components/events/ContentSection';
 import { LanguagesField } from '@/components/events/LanguagesField';
 import { BCReferenceField } from '@/components/events/BCReferenceField';
@@ -114,6 +115,7 @@ export default function EditEvent() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
   const userIsAdmin = isAdmin(profile?.role);
+  const userIsSuperAdmin = isSuperAdmin(profile?.role);
   const { t } = useAdminLanguage();
 
   const [branding, setBranding] = useState({
@@ -1156,6 +1158,22 @@ export default function EditEvent() {
             </Form>
           </CardContent>
         </Card>
+
+        {userIsSuperAdmin && event.status !== 'archived' && (
+          <div className="border-t pt-6 mt-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Danger Zone</p>
+                <p className="text-xs text-muted-foreground">Archive this event to hide it from organizers and attendees.</p>
+              </div>
+              <ArchiveEventDialog
+                eventId={event.id}
+                eventName={event.name}
+                paidAttendeesCount={paidAttendeesCount}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
