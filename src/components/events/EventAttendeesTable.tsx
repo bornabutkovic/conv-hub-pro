@@ -601,10 +601,56 @@ export function EventAttendeesTable({
   const [methodFilter, setMethodFilter] = useState<'all' | 'stripe' | 'invoice'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>('paid_at');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const { t } = useAdminLanguage();
 
   const formatAmount = (n: number | null | undefined) =>
     n == null ? '—' : `${n.toFixed(2).replace('.', ',')} ${currency}`;
+
+  const handleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  const getSortValue = (a: InvoiceAttendee, key: SortKey): number | string => {
+    switch (key) {
+      case 'order_number':
+        return a.order_number ?? -Infinity;
+      case 'name':
+        return `${a.first_name || ''} ${a.last_name || ''}`.trim().toLowerCase();
+      case 'email':
+        return (a.email || '').toLowerCase();
+      case 'company':
+        return (a.payer_type === 'company' ? (a.payer_name || '') : '').toLowerCase();
+      case 'registered_at':
+        return a.registered_at ? new Date(a.registered_at).getTime() : -Infinity;
+      case 'deadline': {
+        const d = getDeadlineDate(a);
+        return d ? d.getTime() : -Infinity;
+      }
+      case 'quote_number':
+        return (a.bc_quote_number || '').toLowerCase();
+      case 'paid_at':
+        return a.paid_at ? new Date(a.paid_at).getTime() : -Infinity;
+      case 'invoice_number':
+        return (a.fiscal_invoice_number || '').toLowerCase();
+      case 'amount':
+        return a.price_paid ?? -Infinity;
+      case 'payment_method':
+        return (a.payment_method || '').toLowerCase();
+      case 'payment_status':
+        return (a.payment_status || '').toLowerCase();
+      case 'checked_in':
+        return a.checked_in ? 1 : 0;
+      default:
+        return '';
+    }
+  };
 
   const filtered = attendees.filter(a => {
     if (paymentFilter !== 'all' && a.payment_status !== paymentFilter) return false;
@@ -618,6 +664,16 @@ export function EventAttendeesTable({
     }
     return true;
   });
+
+  const sorted = [...filtered].sort((x, y) => {
+    const vx = getSortValue(x, sortKey);
+    const vy = getSortValue(y, sortKey);
+    if (vx < vy) return sortDir === 'asc' ? -1 : 1;
+    if (vx > vy) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+
 
   const filteredPaidSum = filtered.reduce(
     (acc, a) => acc + (a.payment_status === 'paid' ? Number(a.price_paid ?? 0) : 0),
