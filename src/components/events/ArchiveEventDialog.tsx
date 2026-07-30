@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2 } from 'lucide-react';
+import { Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -52,8 +52,8 @@ export function ArchiveEventDialog({ eventId, eventName, paidAttendeesCount }: A
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="destructive" className="gap-2">
-          <Trash2 className="h-4 w-4" />
-          Delete Event
+          <Archive className="h-4 w-4" />
+          Archive Event
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
