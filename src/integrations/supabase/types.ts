@@ -145,6 +145,8 @@ export type Database = {
       attendees: {
         Row: {
           badge_printed: boolean | null
+          cancellation_email_claimed_at: string | null
+          cancellation_email_sent_at: string | null
           checked_in: boolean | null
           created_at: string | null
           email: string | null
@@ -173,6 +175,8 @@ export type Database = {
         }
         Insert: {
           badge_printed?: boolean | null
+          cancellation_email_claimed_at?: string | null
+          cancellation_email_sent_at?: string | null
           checked_in?: boolean | null
           created_at?: string | null
           email?: string | null
@@ -201,6 +205,8 @@ export type Database = {
         }
         Update: {
           badge_printed?: boolean | null
+          cancellation_email_claimed_at?: string | null
+          cancellation_email_sent_at?: string | null
           checked_in?: boolean | null
           created_at?: string | null
           email?: string | null
