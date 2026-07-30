@@ -681,7 +681,7 @@ export function EventAttendeesTable({
   );
 
   const handleExportCsv = async () => {
-    if (!filtered.length) return;
+    if (!sorted.length) return;
     setIsExporting(true);
     try {
       const headers = [
@@ -700,10 +700,8 @@ export function EventAttendeesTable({
         'Check-in',
       ];
 
-      const rows = filtered.map(a => {
-        const deadline = a.registered_at && a.payment_due_days != null
-          ? format(addDays(new Date(a.registered_at), a.payment_due_days), 'dd MMM yyyy')
-          : '—';
+      const rows = sorted.map(a => {
+        const deadline = formatDate(getDeadlineDate(a));
         return [
           a.order_number ? `#${a.order_number}` : '—',
           `${a.first_name || ''} ${a.last_name || ''}`.trim(),
