@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ArrowLeft, Calendar, Tag, Users, DollarSign, Edit, Send, CheckCircle, ShieldCheck, Eye } from 'lucide-react';
 import { isSuperAdmin } from '@/lib/roles';
-import { ArchiveEventDialog } from '@/components/events/ArchiveEventDialog';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -354,23 +354,6 @@ export default function EventDetails() {
           </TabsContent>
         )}
       </Tabs>
-
-      {/* Archive button – super_admin only */}
-      {userIsSuperAdmin && event.status !== 'archived' && (
-        <div className="border-t pt-6 mt-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">{t('eventDetails.dangerZone')}</p>
-              <p className="text-xs text-muted-foreground">{t('eventDetails.archiveDescription')}</p>
-            </div>
-            <ArchiveEventDialog
-              eventId={event.id}
-              eventName={event.name}
-              paidAttendeesCount={paidAttendees.length}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
