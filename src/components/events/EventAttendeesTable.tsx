@@ -151,6 +151,15 @@ function getDeadlineDate(a: Pick<InvoiceAttendee, 'registered_at' | 'payment_due
   return addDays(new Date(a.registered_at), a.payment_due_days);
 }
 
+function csvText(v: string): string {
+  return `"${v.replace(/"/g, '""')}"`;
+}
+
+function csvNumber(n: number | null | undefined): string {
+  if (n == null) return '';
+  return n.toFixed(2).replace('.', ',');
+}
+
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
 
 interface EditModalProps {
@@ -698,36 +707,36 @@ export function EventAttendeesTable({
         'Način plaćanja',
         'Status plaćanja',
         'Check-in',
-      ];
+      ].map(csvText);
 
       const rows = sorted.map(a => {
         const deadline = formatDate(getDeadlineDate(a));
         return [
-          a.order_number ? `#${a.order_number}` : '—',
-          `${a.first_name || ''} ${a.last_name || ''}`.trim(),
-          a.email || '—',
-          a.payer_type === 'company' ? (a.payer_name || '—') : '—',
-          formatDate(a.registered_at),
-          deadline,
-          a.bc_quote_number || '—',
-          formatDate(a.paid_at),
-          a.fiscal_invoice_number || '—',
-          a.price_paid != null ? Number(a.price_paid).toFixed(2) : '',
-          getPaymentMethodLabel(a.payment_method, a.card_brand, a.card_wallet),
-          a.payment_status || '—',
-          a.checked_in ? 'Prijavljen' : 'Nije prijavljen',
+          csvText(a.order_number ? `#${a.order_number}` : '—'),
+          csvText(`${a.first_name || ''} ${a.last_name || ''}`.trim()),
+          csvText(a.email || '—'),
+          csvText(a.payer_type === 'company' ? (a.payer_name || '—') : '—'),
+          csvText(formatDate(a.registered_at)),
+          csvText(deadline),
+          csvText(a.bc_quote_number || '—'),
+          csvText(formatDate(a.paid_at)),
+          csvText(a.fiscal_invoice_number || '—'),
+          csvNumber(a.price_paid),
+          csvText(getPaymentMethodLabel(a.payment_method, a.card_brand, a.card_wallet)),
+          csvText(a.payment_status || '—'),
+          csvText(a.checked_in ? 'Prijavljen' : 'Nije prijavljen'),
         ];
       });
 
       const emptyRow = headers.map(() => '');
       const totalRow = [
-        'UKUPNO UPLAĆENO', '', '', '', '', '', '', '', '',
-        filteredPaidSum.toFixed(2),
+        csvText('UKUPNO UPLAĆENO'), '', '', '', '', '', '', '', '',
+        csvNumber(filteredPaidSum),
         '', '', '',
       ];
 
       const csvContent = '\uFEFF' + [headers, ...rows, emptyRow, totalRow]
-        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+        .map(row => row.join(';'))
         .join('\n');
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
