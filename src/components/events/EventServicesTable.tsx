@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
 import { Plus, Trash2, Package, Pencil, AlertTriangle, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +50,7 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
         .from('event_services')
         .select('*')
         .eq('event_id', eventId)
+        .order('display_order', { ascending: true })
         .order('created_at', { ascending: true });
       
       if (error) throw error;
@@ -116,6 +118,14 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
     }).format(amount);
   };
 
+  const formatSalesPeriod = (start: string | null, end: string | null) => {
+    if (!start && !end) return 'Not set';
+    const startStr = start ? format(new Date(start), 'MMM d, yyyy') : 'Open';
+    const endStr = end ? format(new Date(end), 'MMM d, yyyy') : 'Ongoing';
+    return `${startStr} - ${endStr}`;
+  };
+
+
   if (isLoading) {
     return (
       <Card>
@@ -157,10 +167,12 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-16">#</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Capacity</TableHead>
+                  <TableHead>Sales Period</TableHead>
                   <TableHead>Status</TableHead>
                   {userIsAdmin && <TableHead>ERP Code</TableHead>}
                   <TableHead className="w-[80px]"></TableHead>
@@ -171,6 +183,7 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
                   const locked = isServiceLocked(service.id);
                   return (
                     <TableRow key={service.id} className={service.status === 'rejected' ? 'bg-destructive/5' : ''}>
+                      <TableCell className="text-muted-foreground tabular-nums">{(service as any).display_order ?? 0}</TableCell>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
@@ -193,6 +206,9 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
                       </TableCell>
                       <TableCell className="text-right">
                         {service.capacity ?? 'Unlimited'}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {formatSalesPeriod((service as any).sales_start ?? null, (service as any).sales_end ?? null)}
                       </TableCell>
                       <TableCell>
                         {service.status === 'pending_approval' ? (
