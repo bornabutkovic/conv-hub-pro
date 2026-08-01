@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
 import { Plus, Trash2, Package, Pencil, AlertTriangle, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -116,6 +117,14 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
       currency: currency || 'EUR',
     }).format(amount);
   };
+
+  const formatSalesPeriod = (start: string | null, end: string | null) => {
+    if (!start && !end) return 'Not set';
+    const startStr = start ? format(new Date(start), 'MMM d, yyyy') : 'Open';
+    const endStr = end ? format(new Date(end), 'MMM d, yyyy') : 'Ongoing';
+    return `${startStr} - ${endStr}`;
+  };
+
 
   if (isLoading) {
     return (
