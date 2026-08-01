@@ -167,10 +167,12 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-16">#</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Capacity</TableHead>
+                  <TableHead>Sales Period</TableHead>
                   <TableHead>Status</TableHead>
                   {userIsAdmin && <TableHead>ERP Code</TableHead>}
                   <TableHead className="w-[80px]"></TableHead>
