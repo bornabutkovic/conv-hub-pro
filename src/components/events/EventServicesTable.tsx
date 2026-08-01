@@ -49,6 +49,7 @@ export function EventServicesTable({ eventId, currency, eventStatus }: EventServ
         .from('event_services')
         .select('*')
         .eq('event_id', eventId)
+        .order('display_order', { ascending: true })
         .order('created_at', { ascending: true });
       
       if (error) throw error;
