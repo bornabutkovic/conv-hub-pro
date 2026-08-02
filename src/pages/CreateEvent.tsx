@@ -183,6 +183,9 @@ export default function CreateEvent() {
 
   const generateSlug = (name: string) => {
     return name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // strips combining diacritics: č→c, ć→c, š→s, ž→z
+      .replace(/[đĐ]/g, 'dj') // đ doesn't decompose via NFD, needs explicit mapping
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
