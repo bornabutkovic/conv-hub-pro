@@ -2923,6 +2923,10 @@ export type Database = {
         }[]
       }
       get_webhook_secret: { Args: { p_secret_name: string }; Returns: string }
+      increment_discount_code_usage: {
+        Args: { p_discount_code_id: string }
+        Returns: undefined
+      }
       is_admin_user: { Args: { _user_id: string }; Returns: boolean }
       jwt_institution_uuid: { Args: never; Returns: string }
       jwt_is_admin: { Args: never; Returns: boolean }
@@ -2969,6 +2973,20 @@ export type Database = {
           p_wa_id: string
         }
         Returns: Json
+      }
+      validate_discount_code: {
+        Args: { p_code: string; p_event_id: string }
+        Returns: {
+          applies_to_all_services: boolean
+          applies_to_all_tickets: boolean
+          discount_code_id: string
+          discount_type: string
+          discount_value: number
+          reason: string
+          target_event_service_ids: string[]
+          target_ticket_tier_ids: string[]
+          valid: boolean
+        }[]
       }
       validate_scanner_token: {
         Args: { p_token: string }
