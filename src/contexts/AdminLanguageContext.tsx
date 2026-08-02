@@ -121,6 +121,7 @@ const translations = {
   'eventDetails.tickets': { hr: 'Ulaznice', en: 'Tickets' },
   'eventDetails.ticketTiers': { hr: 'Cjenovni razredi', en: 'Ticket Tiers' },
   'eventDetails.services': { hr: 'Usluge', en: 'Services' },
+  'eventDetails.discountCodes': { hr: 'Kodovi za popust', en: 'Discount Codes' },
   'eventDetails.approvals': { hr: 'Odobrenja', en: 'Approvals' },
   'eventDetails.overview': { hr: 'Pregled', en: 'Overview' },
   'eventDetails.addAttendee': { hr: 'Dodaj polaznika', en: 'Add Attendee' },

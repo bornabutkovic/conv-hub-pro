@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DiscountCodesTable } from '@/components/events/DiscountCodesTable';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { EventAttendeesTable } from '@/components/events/EventAttendeesTable';
@@ -313,6 +314,7 @@ export default function EventDetails() {
           <TabsTrigger value="attendees">{t('eventDetails.attendees')}</TabsTrigger>
           <TabsTrigger value="ticket-tiers">{t('eventDetails.ticketTiers')}</TabsTrigger>
           <TabsTrigger value="services">{t('eventDetails.services')}</TabsTrigger>
+          <TabsTrigger value="discount-codes">{t('eventDetails.discountCodes')}</TabsTrigger>
           {userIsAdmin && (
             <TabsTrigger value="approvals" className="relative">
               <ShieldCheck className="h-4 w-4 mr-1" />
@@ -346,6 +348,12 @@ export default function EventDetails() {
             eventId={event.id} 
             currency={event.currency || 'EUR'}
             eventStatus={event.status}
+          />
+        </TabsContent>
+        <TabsContent value="discount-codes" className="mt-4">
+          <DiscountCodesTable
+            eventId={event.id}
+            currency={event.currency || 'EUR'}
           />
         </TabsContent>
         {userIsAdmin && (
