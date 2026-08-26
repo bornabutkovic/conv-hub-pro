@@ -37,6 +37,7 @@ import { toast } from 'sonner';
 
 const discountCodeSchema = z.object({
   code: z.string().min(1, 'Code is required').max(50),
+  description: z.string().max(255).optional().nullable(),
   discount_type: z.enum(['percentage', 'fixed_amount']),
   discount_value: z.coerce.number().positive('Must be greater than 0'),
   sales_start: z.date().optional().nullable(),
@@ -91,6 +92,7 @@ export function DiscountCodeModal({
     resolver: zodResolver(discountCodeSchema),
     defaultValues: {
       code: '',
+      description: '',
       discount_type: 'percentage',
       discount_value: 0,
       sales_start: null,
@@ -149,6 +151,7 @@ export function DiscountCodeModal({
     if (discountCode) {
       form.reset({
         code: discountCode.code || '',
+        description: discountCode?.description || '',
         discount_type: (discountCode.discount_type as 'percentage' | 'fixed_amount') || 'percentage',
         discount_value: Number(discountCode.discount_value) || 0,
         sales_start: discountCode.sales_start ? new Date(discountCode.sales_start) : null,
@@ -166,6 +169,7 @@ export function DiscountCodeModal({
     } else {
       form.reset({
         code: '',
+        description: '',
         discount_type: 'percentage',
         discount_value: 0,
         sales_start: null,
@@ -190,6 +194,7 @@ export function DiscountCodeModal({
       const payload = {
         event_id: eventId,
         code: data.code.trim(),
+        description: data.description?.trim() || null,
         discount_type: data.discount_type,
         discount_value: data.discount_value,
         applies_to_all_tickets: data.applies_to_all_tickets,
@@ -313,6 +318,28 @@ export function DiscountCodeModal({
                       onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Opis / naziv koda</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Npr. Popust za organizatore EFM"
+                      maxLength={255}
+                      {...field}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Interna napomena za administratore — nikad se ne prikazuje sudionicima.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
