@@ -414,6 +414,57 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
               />
             </div>
 
+            {formData.payerType === 'company' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="companyOib">OIB / VAT ID</Label>
+                  <Input
+                    id="companyOib"
+                    value={formData.companyOib}
+                    onChange={(e) => updateFormData({ ...formData, companyOib: e.target.value })}
+                    placeholder="e.g. 12345678901"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="payerAddress">Street Address</Label>
+                  <Input
+                    id="payerAddress"
+                    value={formData.payerAddress}
+                    onChange={(e) => updateFormData({ ...formData, payerAddress: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="payerCity">City</Label>
+                    <Input
+                      id="payerCity"
+                      value={formData.payerCity}
+                      onChange={(e) => updateFormData({ ...formData, payerCity: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="payerPostalCode">Postal Code</Label>
+                    <Input
+                      id="payerPostalCode"
+                      value={formData.payerPostalCode}
+                      onChange={(e) => updateFormData({ ...formData, payerPostalCode: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="poNumber">PO Number (Optional)</Label>
+                  <Input
+                    id="poNumber"
+                    value={formData.poNumber}
+                    onChange={(e) => updateFormData({ ...formData, poNumber: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="billingEmail">Email za račun</Label>
               <Input
