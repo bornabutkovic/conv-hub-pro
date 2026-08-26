@@ -669,7 +669,13 @@ export function EventAttendeesTable({
       const fullName = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase();
       const email = (a.email || '').toLowerCase();
       const payer = (a.payer_name || '').toLowerCase();
-      if (!fullName.includes(term) && !email.includes(term) && !payer.includes(term)) return false;
+      const quoteNumber = (a.bc_quote_number || '').toLowerCase();
+      if (
+        !fullName.includes(term) &&
+        !email.includes(term) &&
+        !payer.includes(term) &&
+        !quoteNumber.includes(term)
+      ) return false;
     }
     return true;
   });
@@ -845,7 +851,7 @@ export function EventAttendeesTable({
             <Input
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Pretraži ime, email, tvrtku..."
+              placeholder="Pretraži ime, email, tvrtku, broj ponude..."
               className="w-64"
             />
           </div>
