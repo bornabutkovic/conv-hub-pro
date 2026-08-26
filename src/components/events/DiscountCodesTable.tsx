@@ -148,6 +148,11 @@ export function DiscountCodesTable({ eventId, currency }: DiscountCodesTableProp
                           <Copy className="h-3.5 w-3.5" />
                         </Button>
                       </div>
+                      {code.description && (
+                        <div className="text-xs text-muted-foreground font-sans font-normal mt-0.5">
+                          {code.description}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>{formatDiscount(code.discount_type, code.discount_value)}</TableCell>
                     <TableCell>
