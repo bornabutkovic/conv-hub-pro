@@ -296,7 +296,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     e.preventDefault();
     if (!formData.firstName.trim()) return toast.error('First name is required');
     if (!formData.lastName.trim()) return toast.error('Last name is required');
-    if (!formData.phone.trim()) return toast.error('Phone number is required');
+    if (!formData.email.trim()) return toast.error('Email is required');
     if (!formData.ticketTierId) return toast.error('Odaberite kotizaciju');
     if (formData.payerType === 'company' && !formData.payerName.trim()) {
       return toast.error('Naziv platitelja je obavezan za tvrtku');
