@@ -113,23 +113,42 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
       const lastName = formData.lastName.trim();
       const email = formData.email.trim() || null;
 
-      // Step 1: profile lookup / create
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone', phone)
-        .maybeSingle();
-
+      // Step 1: profile lookup by EMAIL / create
       let profileId: string;
+      let matchedExisting = false;
 
-      if (existingProfile) {
-        profileId = existingProfile.id;
-        const updateData: Record<string, string> = {};
-        if (firstName) updateData.first_name = firstName;
-        if (lastName) updateData.last_name = lastName;
-        if (email) updateData.email = email;
-        if (Object.keys(updateData).length > 0) {
-          await supabase.from('profiles').update(updateData).eq('id', profileId);
+      if (email) {
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, phone')
+          .eq('email', email)
+          .maybeSingle();
+
+        if (existingProfile) {
+          matchedExisting = true;
+          profileId = existingProfile.id;
+          // Only fill in fields that are currently empty — never rename an existing profile
+          const updateData: Record<string, string> = {};
+          if (!existingProfile.first_name && firstName) updateData.first_name = firstName;
+          if (!existingProfile.last_name && lastName) updateData.last_name = lastName;
+          if (!existingProfile.phone && phone) updateData.phone = phone;
+          if (Object.keys(updateData).length > 0) {
+            await supabase.from('profiles').update(updateData).eq('id', profileId);
+          }
+        } else {
+          const { data: newProfile, error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              first_name: firstName,
+              last_name: lastName,
+              phone: phone || null,
+              email,
+              role: 'user',
+            })
+            .select('id')
+            .single();
+          if (profileError) throw profileError;
+          profileId = newProfile.id;
         }
       } else {
         const { data: newProfile, error: profileError } = await supabase
@@ -137,8 +156,8 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
           .insert({
             first_name: firstName,
             last_name: lastName,
-            phone,
-            email,
+            phone: phone || null,
+            email: null,
             role: 'user',
           })
           .select('id')
@@ -147,15 +166,17 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
         profileId = newProfile.id;
       }
 
-      // Step 2: duplicate check
-      const { data: existingAttendee } = await supabase
-        .from('attendees')
-        .select('id')
-        .eq('event_id', eventId)
-        .eq('profile_id', profileId)
-        .maybeSingle();
-      if (existingAttendee) {
-        throw new Error('User is already registered for this event.');
+      // Step 2: duplicate check (keyed off email-matched profile)
+      if (matchedExisting) {
+        const { data: existingAttendee } = await supabase
+          .from('attendees')
+          .select('id')
+          .eq('event_id', eventId)
+          .eq('profile_id', profileId)
+          .maybeSingle();
+        if (existingAttendee) {
+          throw new Error('Ovaj email je već registriran za ovaj event.');
+        }
       }
 
       // Step 3: selected tier
