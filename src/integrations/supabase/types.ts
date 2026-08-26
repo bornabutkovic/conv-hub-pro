@@ -515,6 +515,7 @@ export type Database = {
           code: string
           created_at: string
           created_by: string | null
+          description: string | null
           discount_type: string
           discount_value: number
           event_id: string
@@ -531,6 +532,7 @@ export type Database = {
           code: string
           created_at?: string
           created_by?: string | null
+          description?: string | null
           discount_type: string
           discount_value: number
           event_id: string
@@ -547,6 +549,7 @@ export type Database = {
           code?: string
           created_at?: string
           created_by?: string | null
+          description?: string | null
           discount_type?: string
           discount_value?: number
           event_id?: string
