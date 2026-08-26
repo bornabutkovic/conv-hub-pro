@@ -356,7 +356,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email (Optional)</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
