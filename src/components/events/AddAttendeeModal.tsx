@@ -51,6 +51,13 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     pricePaid: 0,
     payerType: 'individual' as PayerType,
     payerName: '',
+    companyOib: '',
+    payerAddress: '',
+    payerCity: '',
+    payerPostalCode: '',
+    payerCountryCode: 'HR',
+    payerCountryName: 'Croatia',
+    poNumber: '',
     billingEmail: '',
     paymentMethod: 'invoice' as PaymentMethod,
     lang: 'hr' as Lang,
@@ -106,23 +113,42 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
       const lastName = formData.lastName.trim();
       const email = formData.email.trim() || null;
 
-      // Step 1: profile lookup / create
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone', phone)
-        .maybeSingle();
-
+      // Step 1: profile lookup by EMAIL / create
       let profileId: string;
+      let matchedExisting = false;
 
-      if (existingProfile) {
-        profileId = existingProfile.id;
-        const updateData: Record<string, string> = {};
-        if (firstName) updateData.first_name = firstName;
-        if (lastName) updateData.last_name = lastName;
-        if (email) updateData.email = email;
-        if (Object.keys(updateData).length > 0) {
-          await supabase.from('profiles').update(updateData).eq('id', profileId);
+      if (email) {
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, phone')
+          .eq('email', email)
+          .maybeSingle();
+
+        if (existingProfile) {
+          matchedExisting = true;
+          profileId = existingProfile.id;
+          // Only fill in fields that are currently empty — never rename an existing profile
+          const updateData: Record<string, string> = {};
+          if (!existingProfile.first_name && firstName) updateData.first_name = firstName;
+          if (!existingProfile.last_name && lastName) updateData.last_name = lastName;
+          if (!existingProfile.phone && phone) updateData.phone = phone;
+          if (Object.keys(updateData).length > 0) {
+            await supabase.from('profiles').update(updateData).eq('id', profileId);
+          }
+        } else {
+          const { data: newProfile, error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              first_name: firstName,
+              last_name: lastName,
+              phone: phone || null,
+              email,
+              role: 'user',
+            })
+            .select('id')
+            .single();
+          if (profileError) throw profileError;
+          profileId = newProfile.id;
         }
       } else {
         const { data: newProfile, error: profileError } = await supabase
@@ -130,8 +156,8 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
           .insert({
             first_name: firstName,
             last_name: lastName,
-            phone,
-            email,
+            phone: phone || null,
+            email: null,
             role: 'user',
           })
           .select('id')
@@ -140,15 +166,17 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
         profileId = newProfile.id;
       }
 
-      // Step 2: duplicate check
-      const { data: existingAttendee } = await supabase
-        .from('attendees')
-        .select('id')
-        .eq('event_id', eventId)
-        .eq('profile_id', profileId)
-        .maybeSingle();
-      if (existingAttendee) {
-        throw new Error('User is already registered for this event.');
+      // Step 2: duplicate check (keyed off email-matched profile)
+      if (matchedExisting) {
+        const { data: existingAttendee } = await supabase
+          .from('attendees')
+          .select('id')
+          .eq('event_id', eventId)
+          .eq('profile_id', profileId)
+          .maybeSingle();
+        if (existingAttendee) {
+          throw new Error('Ovaj email je već registriran za ovaj event.');
+        }
       }
 
       // Step 3: selected tier
@@ -197,6 +225,13 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
             lang: formData.lang,
             payer_type: formData.payerType,
             payer_name: formData.payerName.trim() || `${firstName} ${lastName}`.trim(),
+            payer_oib: formData.payerType === 'company' ? (formData.companyOib.trim() || null) : null,
+            payer_address: formData.payerAddress.trim() || null,
+            payer_city: formData.payerCity.trim() || null,
+            payer_postal_code: formData.payerPostalCode.trim() || null,
+            payer_country_code: formData.payerCountryCode,
+            payer_country_name: formData.payerCountryName,
+            po_number: formData.poNumber.trim() || null,
             billing_email: formData.billingEmail.trim() || null,
             contact_name: `${firstName} ${lastName}`.trim(),
             contact_email: email,
@@ -268,7 +303,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     e.preventDefault();
     if (!formData.firstName.trim()) return toast.error('First name is required');
     if (!formData.lastName.trim()) return toast.error('Last name is required');
-    if (!formData.phone.trim()) return toast.error('Phone number is required');
+    if (!formData.email.trim()) return toast.error('Email is required');
     if (!formData.ticketTierId) return toast.error('Odaberite kotizaciju');
     if (formData.payerType === 'company' && !formData.payerName.trim()) {
       return toast.error('Naziv platitelja je obavezan za tvrtku');
@@ -309,7 +344,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number *</Label>
+              <Label htmlFor="phone">Phone Number (Optional)</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -321,7 +356,7 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email (Optional)</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
@@ -385,6 +420,57 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                 placeholder={formData.payerType === 'company' ? 'Naziv tvrtke d.o.o.' : ''}
               />
             </div>
+
+            {formData.payerType === 'company' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="companyOib">OIB / VAT ID</Label>
+                  <Input
+                    id="companyOib"
+                    value={formData.companyOib}
+                    onChange={(e) => updateFormData({ ...formData, companyOib: e.target.value })}
+                    placeholder="e.g. 12345678901"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="payerAddress">Street Address</Label>
+                  <Input
+                    id="payerAddress"
+                    value={formData.payerAddress}
+                    onChange={(e) => updateFormData({ ...formData, payerAddress: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="payerCity">City</Label>
+                    <Input
+                      id="payerCity"
+                      value={formData.payerCity}
+                      onChange={(e) => updateFormData({ ...formData, payerCity: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="payerPostalCode">Postal Code</Label>
+                    <Input
+                      id="payerPostalCode"
+                      value={formData.payerPostalCode}
+                      onChange={(e) => updateFormData({ ...formData, payerPostalCode: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="poNumber">PO Number (Optional)</Label>
+                  <Input
+                    id="poNumber"
+                    value={formData.poNumber}
+                    onChange={(e) => updateFormData({ ...formData, poNumber: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="billingEmail">Email za račun</Label>
