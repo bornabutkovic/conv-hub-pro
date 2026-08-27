@@ -51,7 +51,7 @@ type PayerType = 'individual' | 'company';
 type PaymentMethod = 'invoice' | 'stripe';
 type Lang = 'hr' | 'en';
 
-const ATTACHABLE_STATUSES = ['draft', 'issued', 'overdue', 'deferred'];
+const ATTACHABLE_STATUSES = ['draft', 'issued', 'overdue', 'deferred'] as const;
 
 export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeModalProps) {
   const queryClient = useQueryClient();
