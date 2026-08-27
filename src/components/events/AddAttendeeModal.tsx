@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -30,6 +31,16 @@ interface TicketTier {
   erp_code: string | null;
 }
 
+interface ExistingOrder {
+  id: string;
+  order_number: number;
+  payer_name: string;
+  billing_email: string | null;
+  total_amount: number | null;
+  status: string;
+  bc_quote_number: string | null;
+}
+
 interface AddAttendeeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -39,6 +50,8 @@ interface AddAttendeeModalProps {
 type PayerType = 'individual' | 'company';
 type PaymentMethod = 'invoice' | 'stripe';
 type Lang = 'hr' | 'en';
+
+const ATTACHABLE_STATUSES = ['draft', 'issued', 'overdue', 'deferred'];
 
 export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeModalProps) {
   const queryClient = useQueryClient();
@@ -62,6 +75,8 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     paymentMethod: 'invoice' as PaymentMethod,
     lang: 'hr' as Lang,
     markPaid: false,
+    attachMode: false,
+    existingOrderId: '',
   };
   const { restoredData, saveDraft, clearDraft } = useStateDraft(`add_attendee_${eventId}`, initialData, { enabled: open });
   const [formData, setFormData] = useState(restoredData);
@@ -71,18 +86,16 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     saveDraft(newData);
   };
 
-  // Auto-fill payer name for individuals
   useEffect(() => {
-    if (formData.payerType === 'individual') {
+    if (formData.payerType === 'individual' && !formData.attachMode) {
       const auto = `${formData.firstName} ${formData.lastName}`.trim();
       if (formData.payerName !== auto) {
         updateFormData({ ...formData, payerName: auto });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.firstName, formData.lastName, formData.payerType]);
+  }, [formData.firstName, formData.lastName, formData.payerType, formData.attachMode]);
 
-  // Fetch ticket tiers
   const { data: ticketTiers } = useQuery({
     queryKey: ['ticket-tiers', eventId],
     queryFn: async () => {
@@ -96,6 +109,23 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     },
     enabled: open && !!eventId,
   });
+
+  const { data: existingOrders, isFetching: isFetchingOrders } = useQuery({
+    queryKey: ['attachable-orders', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, order_number, payer_name, billing_email, total_amount, status, bc_quote_number')
+        .eq('event_id', eventId)
+        .in('status', ATTACHABLE_STATUSES)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as ExistingOrder[];
+    },
+    enabled: open && !!eventId && formData.attachMode,
+  });
+
+  const selectedExistingOrder = existingOrders?.find(o => o.id === formData.existingOrderId) || null;
 
   const handleTicketTierChange = (tierId: string) => {
     const tier = ticketTiers?.find(t => t.id === tierId);
@@ -113,7 +143,10 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
       const lastName = formData.lastName.trim();
       const email = formData.email.trim() || null;
 
-      // Step 1: profile lookup by EMAIL / create
+      if (formData.attachMode && !formData.existingOrderId) {
+        throw new Error('Odaberi narudžbu na koju dodaješ polaznika.');
+      }
+
       let profileId: string;
       let matchedExisting = false;
 
@@ -127,7 +160,6 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
         if (existingProfile) {
           matchedExisting = true;
           profileId = existingProfile.id;
-          // Only fill in fields that are currently empty — never rename an existing profile
           const updateData: Record<string, string> = {};
           if (!existingProfile.first_name && firstName) updateData.first_name = firstName;
           if (!existingProfile.last_name && lastName) updateData.last_name = lastName;
@@ -166,7 +198,6 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
         profileId = newProfile.id;
       }
 
-      // Step 2: duplicate check (keyed off email-matched profile)
       if (matchedExisting) {
         const { data: existingAttendee } = await supabase
           .from('attendees')
@@ -179,11 +210,9 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
         }
       }
 
-      // Step 3: selected tier
       const selectedTier = ticketTiers?.find(t => t.id === formData.ticketTierId) || null;
       const pricePaid = formData.pricePaid;
 
-      // Step 4: attendee insert (always approved)
       const { data: newAttendee, error: attendeeError } = await supabase
         .from('attendees')
         .insert({
@@ -204,16 +233,57 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
       if (attendeeError) throw attendeeError;
       const attendeeId = newAttendee.id;
 
+      let createdOrderId: string | null = null;
+      let createdOrderItemId: string | null = null;
+
       try {
-        // Step 5: fetch VAT rate
         const { data: eventRow } = await supabase
           .from('events')
           .select('vat_rate')
           .eq('id', eventId)
           .single();
         const vatRate = Number(eventRow?.vat_rate ?? 25);
+        const vatAmount = Number((pricePaid * vatRate / (100 + vatRate)).toFixed(2));
 
-        // Step 6: insert order (issued — never 'paid' on insert)
+        if (formData.attachMode) {
+          if (!selectedExistingOrder) {
+            throw new Error('Odabrana narudžba više nije dostupna. Osvježi i pokušaj ponovno.');
+          }
+
+          const { data: newItem, error: itemError } = await supabase
+            .from('order_items')
+            .insert({
+              order_id: selectedExistingOrder.id,
+              attendee_id: attendeeId,
+              ticket_type_id: formData.ticketTierId,
+              description: selectedTier?.name || 'Ticket',
+              quantity: 1,
+              unit_price: pricePaid,
+              total_price: pricePaid,
+              price_at_purchase: pricePaid,
+              vat_amount: vatAmount,
+              erp_code: selectedTier?.erp_code || null,
+              item_type: 'ticket',
+            })
+            .select('id')
+            .single();
+          if (itemError) throw itemError;
+          createdOrderItemId = newItem.id;
+
+          const newTotal = Number(selectedExistingOrder.total_amount || 0) + pricePaid;
+          const { error: orderUpdateError } = await supabase
+            .from('orders')
+            .update({ total_amount: newTotal, is_group_order: true })
+            .eq('id', selectedExistingOrder.id);
+          if (orderUpdateError) throw orderUpdateError;
+
+          return {
+            orderNumber: selectedExistingOrder.order_number,
+            markedPaid: false,
+            attachedToExisting: true,
+          };
+        }
+
         const { data: newOrder, error: orderError } = await supabase
           .from('orders')
           .insert({
@@ -242,26 +312,28 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
           .select('id, order_number')
           .single();
         if (orderError) throw orderError;
+        createdOrderId = newOrder.id;
 
-        const vatAmount = Number((pricePaid * vatRate / (100 + vatRate)).toFixed(2));
-
-        // Step 7: order_items
-        const { error: itemError } = await supabase.from('order_items').insert({
-          order_id: newOrder.id,
-          attendee_id: attendeeId,
-          ticket_type_id: formData.ticketTierId,
-          description: selectedTier?.name || 'Ticket',
-          quantity: 1,
-          unit_price: pricePaid,
-          total_price: pricePaid,
-          price_at_purchase: pricePaid,
-          vat_amount: vatAmount,
-          erp_code: selectedTier?.erp_code || null,
-          item_type: 'ticket',
-        });
+        const { data: newItem, error: itemError } = await supabase
+          .from('order_items')
+          .insert({
+            order_id: newOrder.id,
+            attendee_id: attendeeId,
+            ticket_type_id: formData.ticketTierId,
+            description: selectedTier?.name || 'Ticket',
+            quantity: 1,
+            unit_price: pricePaid,
+            total_price: pricePaid,
+            price_at_purchase: pricePaid,
+            vat_amount: vatAmount,
+            erp_code: selectedTier?.erp_code || null,
+            item_type: 'ticket',
+          })
+          .select('id')
+          .single();
         if (itemError) throw itemError;
+        createdOrderItemId = newItem.id;
 
-        // Step 8: optional mark paid (triggers ticket email)
         if (formData.markPaid) {
           const { error: paidError } = await supabase
             .from('orders')
@@ -270,14 +342,21 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
           if (paidError) throw paidError;
         }
 
-        return { orderNumber: newOrder.order_number, markedPaid: formData.markPaid };
+        return { orderNumber: newOrder.order_number, markedPaid: formData.markPaid, attachedToExisting: false };
       } catch (err) {
-        // Best-effort cleanup
+        try {
+          if (createdOrderItemId) {
+            await supabase.from('order_items').delete().eq('id', createdOrderItemId);
+          }
+        } catch { /* swallow */ }
+        try {
+          if (createdOrderId) {
+            await supabase.from('orders').delete().eq('id', createdOrderId);
+          }
+        } catch { /* swallow */ }
         try {
           await supabase.from('attendees').delete().eq('id', attendeeId);
-        } catch {
-          // swallow
-        }
+        } catch { /* swallow */ }
         throw err;
       }
     },
@@ -286,7 +365,10 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
       queryClient.invalidateQueries({ queryKey: ['event-memberships', eventId] });
       queryClient.invalidateQueries({ queryKey: ['event-revenue-stats', eventId] });
-      if (result?.markedPaid) {
+      queryClient.invalidateQueries({ queryKey: ['attachable-orders', eventId] });
+      if (result?.attachedToExisting) {
+        toast.success(`Polaznik dodan na narudžbu #${result?.orderNumber ?? ''}`);
+      } else if (result?.markedPaid) {
         toast.success('Polaznik dodan — ulaznica se šalje na email');
       } else {
         toast.success(`Polaznik dodan (narudžba #${result?.orderNumber ?? ''}, čeka uplatu)`);
@@ -305,7 +387,9 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
     if (!formData.lastName.trim()) return toast.error('Last name is required');
     if (!formData.email.trim()) return toast.error('Email is required');
     if (!formData.ticketTierId) return toast.error('Odaberite kotizaciju');
-    if (formData.payerType === 'company' && !formData.payerName.trim()) {
+    if (formData.attachMode) {
+      if (!formData.existingOrderId) return toast.error('Odaberi narudžbu na koju dodaješ polaznika');
+    } else if (formData.payerType === 'company' && !formData.payerName.trim()) {
       return toast.error('Naziv platitelja je obavezan za tvrtku');
     }
     addAttendeeMutation.mutate();
@@ -322,6 +406,55 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
+            <div className="flex items-start gap-2 rounded-md border p-3 bg-muted/30">
+              <Checkbox
+                id="attachMode"
+                checked={formData.attachMode}
+                onCheckedChange={(v) => updateFormData({ ...formData, attachMode: v === true, existingOrderId: '' })}
+              />
+              <div className="grid gap-1 leading-none">
+                <Label htmlFor="attachMode" className="cursor-pointer">
+                  Dodaj na postojeću narudžbu (grupna prijava)
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Koristi kad više osoba dijeli istu ponudu/fakturu — dodaje se kao nova stavka na postojeću narudžbu umjesto nove narudžbe.
+                </p>
+              </div>
+            </div>
+
+            {formData.attachMode && (
+              <div className="space-y-2">
+                <Label htmlFor="existingOrder">Narudžba *</Label>
+                <Select
+                  value={formData.existingOrderId}
+                  onValueChange={(v) => updateFormData({ ...formData, existingOrderId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={isFetchingOrders ? 'Učitavanje...' : 'Odaberi narudžbu'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {existingOrders?.map((o) => (
+                      <SelectItem key={o.id} value={o.id}>
+                        #{o.order_number} — {o.payer_name} — {(o.total_amount ?? 0).toFixed(2)} EUR
+                      </SelectItem>
+                    ))}
+                    {existingOrders?.length === 0 && (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                        Nema otvorenih narudžbi za ovaj event
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+                {selectedExistingOrder?.bc_quote_number && (
+                  <Alert variant="destructive" className="py-2">
+                    <AlertDescription className="text-xs">
+                      Ova narudžba već ima BC ponudu ({selectedExistingOrder.bc_quote_number}). Dodavanjem polaznika mijenja se iznos u Conwayu, ali BC ponuda se NE regenerira automatski — javi Silviji da zatraži novu verziju ponude.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name *</Label>
@@ -395,137 +528,147 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
               <p className="text-xs text-muted-foreground">Auto-filled from tier, can be adjusted if needed</p>
             </div>
 
-            <div className="space-y-2">
-              <Label>Tko plaća</Label>
-              <Select
-                value={formData.payerType}
-                onValueChange={(v: PayerType) => updateFormData({ ...formData, payerType: v })}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="individual">Fizička osoba</SelectItem>
-                  <SelectItem value="company">Tvrtka</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="payerName">
-                Naziv platitelja {formData.payerType === 'company' && '*'}
-              </Label>
-              <Input
-                id="payerName"
-                value={formData.payerName}
-                onChange={(e) => updateFormData({ ...formData, payerName: e.target.value })}
-                placeholder={formData.payerType === 'company' ? 'Naziv tvrtke d.o.o.' : ''}
-              />
-            </div>
-
-            {formData.payerType === 'company' && (
+            {!formData.attachMode && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="companyOib">OIB / VAT ID</Label>
+                  <Label>Tko plaća</Label>
+                  <Select
+                    value={formData.payerType}
+                    onValueChange={(v: PayerType) => updateFormData({ ...formData, payerType: v })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="individual">Fizička osoba</SelectItem>
+                      <SelectItem value="company">Tvrtka</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="payerName">
+                    Naziv platitelja {formData.payerType === 'company' && '*'}
+                  </Label>
                   <Input
-                    id="companyOib"
-                    value={formData.companyOib}
-                    onChange={(e) => updateFormData({ ...formData, companyOib: e.target.value })}
-                    placeholder="e.g. 12345678901"
+                    id="payerName"
+                    value={formData.payerName}
+                    onChange={(e) => updateFormData({ ...formData, payerName: e.target.value })}
+                    placeholder={formData.payerType === 'company' ? 'Naziv tvrtke d.o.o.' : ''}
+                  />
+                </div>
+
+                {formData.payerType === 'company' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="companyOib">OIB / VAT ID</Label>
+                      <Input
+                        id="companyOib"
+                        value={formData.companyOib}
+                        onChange={(e) => updateFormData({ ...formData, companyOib: e.target.value })}
+                        placeholder="e.g. 12345678901"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="payerAddress">Street Address</Label>
+                      <Input
+                        id="payerAddress"
+                        value={formData.payerAddress}
+                        onChange={(e) => updateFormData({ ...formData, payerAddress: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="payerCity">City</Label>
+                        <Input
+                          id="payerCity"
+                          value={formData.payerCity}
+                          onChange={(e) => updateFormData({ ...formData, payerCity: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="payerPostalCode">Postal Code</Label>
+                        <Input
+                          id="payerPostalCode"
+                          value={formData.payerPostalCode}
+                          onChange={(e) => updateFormData({ ...formData, payerPostalCode: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="poNumber">PO Number (Optional)</Label>
+                      <Input
+                        id="poNumber"
+                        value={formData.poNumber}
+                        onChange={(e) => updateFormData({ ...formData, poNumber: e.target.value })}
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="billingEmail">Email za račun</Label>
+                  <Input
+                    id="billingEmail"
+                    type="email"
+                    value={formData.billingEmail}
+                    onChange={(e) => updateFormData({ ...formData, billingEmail: e.target.value })}
+                    placeholder={formData.email || 'racuni@primjer.hr'}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="payerAddress">Street Address</Label>
-                  <Input
-                    id="payerAddress"
-                    value={formData.payerAddress}
-                    onChange={(e) => updateFormData({ ...formData, payerAddress: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="payerCity">City</Label>
-                    <Input
-                      id="payerCity"
-                      value={formData.payerCity}
-                      onChange={(e) => updateFormData({ ...formData, payerCity: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="payerPostalCode">Postal Code</Label>
-                    <Input
-                      id="payerPostalCode"
-                      value={formData.payerPostalCode}
-                      onChange={(e) => updateFormData({ ...formData, payerPostalCode: e.target.value })}
-                    />
-                  </div>
+                  <Label>Način plaćanja</Label>
+                  <Select
+                    value={formData.paymentMethod}
+                    onValueChange={(v: PaymentMethod) => updateFormData({ ...formData, paymentMethod: v })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="invoice">Virman</SelectItem>
+                      <SelectItem value="stripe">Kartica</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="poNumber">PO Number (Optional)</Label>
-                  <Input
-                    id="poNumber"
-                    value={formData.poNumber}
-                    onChange={(e) => updateFormData({ ...formData, poNumber: e.target.value })}
+                  <Label>Jezik komunikacije</Label>
+                  <Select
+                    value={formData.lang}
+                    onValueChange={(v: Lang) => updateFormData({ ...formData, lang: v })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hr">Hrvatski</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-start gap-2 rounded-md border p-3">
+                  <Checkbox
+                    id="markPaid"
+                    checked={formData.markPaid}
+                    onCheckedChange={(v) => updateFormData({ ...formData, markPaid: v === true })}
                   />
+                  <div className="grid gap-1 leading-none">
+                    <Label htmlFor="markPaid" className="cursor-pointer">
+                      Uplata zaprimljena — označi kao plaćeno
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Ako je označeno, polazniku se automatski šalje ulaznica na email.
+                    </p>
+                  </div>
                 </div>
               </>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="billingEmail">Email za račun</Label>
-              <Input
-                id="billingEmail"
-                type="email"
-                value={formData.billingEmail}
-                onChange={(e) => updateFormData({ ...formData, billingEmail: e.target.value })}
-                placeholder={formData.email || 'racuni@primjer.hr'}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Način plaćanja</Label>
-              <Select
-                value={formData.paymentMethod}
-                onValueChange={(v: PaymentMethod) => updateFormData({ ...formData, paymentMethod: v })}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="invoice">Virman</SelectItem>
-                  <SelectItem value="stripe">Kartica</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Jezik komunikacije</Label>
-              <Select
-                value={formData.lang}
-                onValueChange={(v: Lang) => updateFormData({ ...formData, lang: v })}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hr">Hrvatski</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-start gap-2 rounded-md border p-3">
-              <Checkbox
-                id="markPaid"
-                checked={formData.markPaid}
-                onCheckedChange={(v) => updateFormData({ ...formData, markPaid: v === true })}
-              />
-              <div className="grid gap-1 leading-none">
-                <Label htmlFor="markPaid" className="cursor-pointer">
-                  Uplata zaprimljena — označi kao plaćeno
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Ako je označeno, polazniku se automatski šalje ulaznica na email.
-                </p>
-              </div>
-            </div>
+            {formData.attachMode && (
+              <p className="text-xs text-muted-foreground border rounded-md p-3 bg-muted/30">
+                Platitelj, način plaćanja i status ostaju kao na odabranoj narudžbi. Status plaćanja/ulaznica za pojedinačnog polaznika uređuje se naknadno preko "Uredi polaznika".
+              </p>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
