@@ -95,27 +95,27 @@ type SortKey =
 function getPaymentBadge(status: string | null) {
   switch (status) {
     case 'paid':
-      return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15">Plaćeno</Badge>;
+      return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15 text-sm">Plaćeno</Badge>;
     case 'pending':
-      return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15">Nije plaćeno</Badge>;
+      return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15 text-sm">Nije plaćeno</Badge>;
     case 'deferred':
-      return <Badge className="bg-indigo-500/15 text-indigo-700 border-indigo-500/20 hover:bg-indigo-500/15">Plaćanje po ugovoru</Badge>;
+      return <Badge className="bg-indigo-500/15 text-indigo-700 border-indigo-500/20 hover:bg-indigo-500/15 text-sm">Plaćanje po ugovoru</Badge>;
     case 'overdue':
-      return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15">Kasni</Badge>;
+      return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15 text-sm">Kasni</Badge>;
     case 'refunded':
-      return <Badge className="bg-purple-500/15 text-purple-700 border-purple-500/20 hover:bg-purple-500/15">Refundirano</Badge>;
+      return <Badge className="bg-purple-500/15 text-purple-700 border-purple-500/20 hover:bg-purple-500/15 text-sm">Refundirano</Badge>;
     case 'cancelled':
-      return <Badge variant="secondary">Otkazano</Badge>;
+      return <Badge variant="secondary" className="text-sm">Otkazano</Badge>;
     default:
-      return <span className="text-muted-foreground text-xs">—</span>;
+      return <span className="text-muted-foreground text-sm">—</span>;
   }
 }
 
 function getCheckinBadge(checkedIn: boolean | null) {
   if (checkedIn) {
-    return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20">Prijavljen</Badge>;
+    return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 text-sm">Prijavljen</Badge>;
   }
-  return <Badge variant="outline" className="text-muted-foreground">Nije prijavljen</Badge>;
+  return <Badge variant="outline" className="text-muted-foreground text-sm">Nije prijavljen</Badge>;
 }
 
 function getPaymentMethodLabel(
