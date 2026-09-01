@@ -95,27 +95,27 @@ type SortKey =
 function getPaymentBadge(status: string | null) {
   switch (status) {
     case 'paid':
-      return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15">Plaćeno</Badge>;
+      return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/15 text-sm">Plaćeno</Badge>;
     case 'pending':
-      return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15">Nije plaćeno</Badge>;
+      return <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 hover:bg-amber-500/15 text-sm">Nije plaćeno</Badge>;
     case 'deferred':
-      return <Badge className="bg-indigo-500/15 text-indigo-700 border-indigo-500/20 hover:bg-indigo-500/15">Plaćanje po ugovoru</Badge>;
+      return <Badge className="bg-indigo-500/15 text-indigo-700 border-indigo-500/20 hover:bg-indigo-500/15 text-sm">Plaćanje po ugovoru</Badge>;
     case 'overdue':
-      return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15">Kasni</Badge>;
+      return <Badge className="bg-red-500/15 text-red-700 border-red-500/20 hover:bg-red-500/15 text-sm">Kasni</Badge>;
     case 'refunded':
-      return <Badge className="bg-purple-500/15 text-purple-700 border-purple-500/20 hover:bg-purple-500/15">Refundirano</Badge>;
+      return <Badge className="bg-purple-500/15 text-purple-700 border-purple-500/20 hover:bg-purple-500/15 text-sm">Refundirano</Badge>;
     case 'cancelled':
-      return <Badge variant="secondary">Otkazano</Badge>;
+      return <Badge variant="secondary" className="text-sm">Otkazano</Badge>;
     default:
-      return <span className="text-muted-foreground text-xs">—</span>;
+      return <span className="text-muted-foreground text-sm">—</span>;
   }
 }
 
 function getCheckinBadge(checkedIn: boolean | null) {
   if (checkedIn) {
-    return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20">Prijavljen</Badge>;
+    return <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/20 text-sm">Prijavljen</Badge>;
   }
-  return <Badge variant="outline" className="text-muted-foreground">Nije prijavljen</Badge>;
+  return <Badge variant="outline" className="text-muted-foreground text-sm">Nije prijavljen</Badge>;
 }
 
 function getPaymentMethodLabel(
@@ -772,7 +772,7 @@ export function EventAttendeesTable({
     align?: 'left' | 'right';
   }) => (
     <TableHead
-      className={`py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors ${className}`}
+      className={`py-2.5 px-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors ${className}`}
       onClick={() => handleSort(sortKeyName)}
     >
       <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'justify-end w-full' : ''}`}>
@@ -875,7 +875,7 @@ export function EventAttendeesTable({
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="h-10">
+                  <TableRow className="h-12">
                     <SortableHead label="Narudžba #" sortKeyName="order_number" className="w-20" />
                     <SortableHead label="Ime i prezime" sortKeyName="name" />
                     <SortableHead label="Email" sortKeyName="email" />
@@ -899,54 +899,54 @@ export function EventAttendeesTable({
                     return (
                       <TableRow
                         key={attendee.attendee_id}
-                        className="h-10 cursor-pointer hover:bg-muted/40 text-xs"
+                        className="h-14 cursor-pointer hover:bg-muted/40 text-base"
                         onClick={() => setSelectedAttendee(attendee)}
                       >
-                        <TableCell className="py-2 px-3 text-xs font-mono">
+                        <TableCell className="py-2.5 px-3 text-base font-mono">
                           {attendee.order_number ? `#${attendee.order_number}` : '—'}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs font-medium whitespace-nowrap">
+                        <TableCell className="py-2.5 px-3 text-base font-medium whitespace-nowrap">
                           {`${attendee.first_name || ''} ${attendee.last_name || ''}`.trim() || '—'}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">
+                        <TableCell className="py-2.5 px-3 text-base text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[160px]">
                           {attendee.email || '—'}
                         </TableCell>
                         <TableCell
-                          className="py-2 px-3 text-sm text-muted-foreground max-w-[140px] truncate"
+                          className="py-2.5 px-3 text-base text-muted-foreground max-w-[180px] truncate"
                           title={attendee.payer_type === 'company' ? (attendee.payer_name || '') : ''}
                         >
                           {attendee.payer_type === 'company' ? (attendee.payer_name || '—') : '—'}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
+                        <TableCell className="py-2.5 px-3 text-base whitespace-nowrap">
                           {formatDate(attendee.registered_at)}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
+                        <TableCell className="py-2.5 px-3 text-base whitespace-nowrap">
                           {deadline}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs font-mono">
+                        <TableCell className="py-2.5 px-3 text-base font-mono">
                           {attendee.bc_quote_number || '—'}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
+                        <TableCell className="py-2.5 px-3 text-base whitespace-nowrap">
                           {formatDate(attendee.paid_at)}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs font-mono">
+                        <TableCell className="py-2.5 px-3 text-base font-mono">
                           {attendee.fiscal_invoice_number || '—'}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap text-right font-mono">
+                        <TableCell className="py-2.5 px-3 text-base whitespace-nowrap text-right font-mono">
                           {formatAmount(attendee.price_paid)}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs whitespace-nowrap">
+                        <TableCell className="py-2.5 px-3 text-base whitespace-nowrap">
                           {getPaymentMethodLabel(attendee.payment_method, attendee.card_brand, attendee.card_wallet)}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs">
+                        <TableCell className="py-2.5 px-3 text-base">
                           {getPaymentBadge(attendee.payment_status)}
                         </TableCell>
-                        <TableCell className="py-2 px-3 text-xs">
+                        <TableCell className="py-2.5 px-3 text-base">
                           {getCheckinBadge(attendee.checked_in)}
                         </TableCell>
                         <TableCell
                           onClick={e => { e.stopPropagation(); setEditAttendee(attendee); }}
-                          className="py-2 px-3 text-right"
+                          className="py-2.5 px-3 text-right"
                         >
                           <Button variant="ghost" size="icon" className="h-7 w-7">
                             <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
