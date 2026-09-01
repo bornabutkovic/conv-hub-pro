@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -165,6 +165,7 @@ export type Database = {
           profile_id: string | null
           requires_invoice: boolean | null
           scanned_at: string | null
+          specialty: string | null
           status: Database["public"]["Enums"]["registration_status"] | null
           ticket_send_claimed_at: string | null
           ticket_send_fail_reason: string | null
@@ -195,6 +196,7 @@ export type Database = {
           profile_id?: string | null
           requires_invoice?: boolean | null
           scanned_at?: string | null
+          specialty?: string | null
           status?: Database["public"]["Enums"]["registration_status"] | null
           ticket_send_claimed_at?: string | null
           ticket_send_fail_reason?: string | null
@@ -225,6 +227,7 @@ export type Database = {
           profile_id?: string | null
           requires_invoice?: boolean | null
           scanned_at?: string | null
+          specialty?: string | null
           status?: Database["public"]["Enums"]["registration_status"] | null
           ticket_send_claimed_at?: string | null
           ticket_send_fail_reason?: string | null
@@ -796,9 +799,11 @@ export type Database = {
           cancellation_policy: string | null
           created_at: string | null
           currency: string | null
+          custom_consent_text: string | null
           default_lang: string | null
           description: string | null
           early_bird_deadline: string | null
+          enabled_channels: string[]
           end_date: string | null
           event_id: string | null
           event_type: string | null
@@ -809,6 +814,7 @@ export type Database = {
           location_city: string | null
           location_country: string | null
           location_postal_code: string | null
+          meeting_url: string | null
           name: string
           notification_sender_email: string | null
           notification_sender_name: string | null
@@ -816,6 +822,7 @@ export type Database = {
           payment_due_days: number | null
           price: number | null
           rejection_reason: string | null
+          required_attendee_fields: string[] | null
           short_name: string | null
           slug: string
           start_date: string | null
@@ -849,9 +856,11 @@ export type Database = {
           cancellation_policy?: string | null
           created_at?: string | null
           currency?: string | null
+          custom_consent_text?: string | null
           default_lang?: string | null
           description?: string | null
           early_bird_deadline?: string | null
+          enabled_channels?: string[]
           end_date?: string | null
           event_id?: string | null
           event_type?: string | null
@@ -862,6 +871,7 @@ export type Database = {
           location_city?: string | null
           location_country?: string | null
           location_postal_code?: string | null
+          meeting_url?: string | null
           name: string
           notification_sender_email?: string | null
           notification_sender_name?: string | null
@@ -869,6 +879,7 @@ export type Database = {
           payment_due_days?: number | null
           price?: number | null
           rejection_reason?: string | null
+          required_attendee_fields?: string[] | null
           short_name?: string | null
           slug: string
           start_date?: string | null
@@ -902,9 +913,11 @@ export type Database = {
           cancellation_policy?: string | null
           created_at?: string | null
           currency?: string | null
+          custom_consent_text?: string | null
           default_lang?: string | null
           description?: string | null
           early_bird_deadline?: string | null
+          enabled_channels?: string[]
           end_date?: string | null
           event_id?: string | null
           event_type?: string | null
@@ -915,6 +928,7 @@ export type Database = {
           location_city?: string | null
           location_country?: string | null
           location_postal_code?: string | null
+          meeting_url?: string | null
           name?: string
           notification_sender_email?: string | null
           notification_sender_name?: string | null
@@ -922,6 +936,7 @@ export type Database = {
           payment_due_days?: number | null
           price?: number | null
           rejection_reason?: string | null
+          required_attendee_fields?: string[] | null
           short_name?: string | null
           slug?: string
           start_date?: string | null
