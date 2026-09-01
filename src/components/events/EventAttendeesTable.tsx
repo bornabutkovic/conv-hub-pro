@@ -772,7 +772,7 @@ export function EventAttendeesTable({
     align?: 'left' | 'right';
   }) => (
     <TableHead
-      className={`py-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors ${className}`}
+      className={`py-2.5 px-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors ${className}`}
       onClick={() => handleSort(sortKeyName)}
     >
       <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'justify-end w-full' : ''}`}>
