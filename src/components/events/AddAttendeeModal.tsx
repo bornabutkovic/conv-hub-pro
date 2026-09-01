@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useStateDraft } from '@/hooks/useFormDraft';
+import { COUNTRIES, getCountryName } from '@/lib/countries';
 
 interface TicketTier {
   id: string;
@@ -575,6 +576,27 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
                         value={formData.payerAddress}
                         onChange={(e) => updateFormData({ ...formData, payerAddress: e.target.value })}
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="payerCountry">Država</Label>
+                      <Select
+                        value={formData.payerCountryCode}
+                        onValueChange={(v) =>
+                          updateFormData({ ...formData, payerCountryCode: v, payerCountryName: getCountryName(v) })
+                        }
+                      >
+                        <SelectTrigger id="payerCountry">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COUNTRIES.map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
