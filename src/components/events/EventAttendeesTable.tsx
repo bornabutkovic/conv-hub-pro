@@ -575,6 +575,16 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                 placeholder="re_..."
               />
             </div>
+
+            <div className="space-y-1.5">
+              <Label>Broj odobrenja (ako je već poznat)</Label>
+              <Input
+                value={refundCreditNoteNumber}
+                onChange={e => setRefundCreditNoteNumber(e.target.value)}
+                placeholder="npr. ODO-2026-0001"
+              />
+            </div>
+
           </div>
 
           <DialogFooter>
