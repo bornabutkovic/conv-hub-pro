@@ -567,16 +567,65 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                 )}
               </Button>
             </div>
+
+            {attendee.attendee_id && refundsList.length > 0 && (
+              <div className="space-y-2 pt-2 border-t">
+                <h3 className="text-sm font-semibold">Povrati</h3>
+                {refundsList.map(r => (
+                  <div key={r.id} className="rounded-md border p-3 space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-mono">{Number(r.amount ?? 0).toFixed(2)} EUR</span>
+                      <span className="text-muted-foreground">{formatDate(r.created_at)}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{r.reason || '—'}</div>
+                    <div className="flex items-end gap-2">
+                      <div className="space-y-1.5 flex-1">
+                        <Label className="text-xs">Broj odobrenja</Label>
+                        <Input
+                          value={creditNoteDrafts[r.id] ?? ''}
+                          onChange={e =>
+                            setCreditNoteDrafts(prev => ({ ...prev, [r.id]: e.target.value }))
+                          }
+                          placeholder="npr. ODO-2026-0001"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={savingCreditNoteId === r.id}
+                        onClick={() => handleSaveCreditNote(r.id)}
+                      >
+                        {savingCreditNoteId === r.id ? '...' : 'Spremi'}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {needsGroupConfirm && (
+              <label className="flex items-start gap-2 text-sm cursor-pointer pt-2 border-t">
+                <Checkbox
+                  checked={groupChangeConfirmed}
+                  onCheckedChange={v => setGroupChangeConfirmed(v === true)}
+                />
+                <span>
+                  Razumijem da se ova promjena primjenjuje na cijelu narudžbu #{attendee.order_number}
+                </span>
+              </label>
+            )}
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
               Odustani
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
+            <Button onClick={handleSave} disabled={isSaving || (needsGroupConfirm && !groupChangeConfirmed)}>
               {isSaving ? 'Spremanje...' : 'Spremi'}
             </Button>
           </DialogFooter>
+
         </DialogContent>
       </Dialog>
 
