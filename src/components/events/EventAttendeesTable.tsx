@@ -290,6 +290,14 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   useEffect(() => {
     if (!open) return;
 
+    setGroupChangeConfirmed(false);
+    setOrderSnapshot({
+      paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
+      fiscal_invoice_number: attendee.fiscal_invoice_number || '',
+      payment_method: attendee.payment_method || '',
+      order_status: (attendee.order_status as string) || 'draft',
+    });
+
     (async () => {
       if (attendee.order_id) {
         const { data } = await supabase
@@ -299,13 +307,16 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           .maybeSingle();
         const st = (data?.status as string) || 'draft';
         setForm(f => ({ ...f, order_status: st }));
+        setOrderSnapshot(s => ({ ...s, order_status: st }));
         setOriginalOrderStatus(st);
       }
     })();
 
     fetchTicketStatus();
+    fetchRefunds();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, attendee.attendee_id, attendee.order_id]);
+
 
   const handleOrderStatusChange = async (v: string) => {
     if (v === 'refunded' && originalOrderStatus !== 'refunded') {
