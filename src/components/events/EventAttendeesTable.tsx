@@ -29,6 +29,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
 import { Textarea } from '@/components/ui/textarea';
 import { AddAttendeeModal } from './AddAttendeeModal';
 import { AttendeeDetailModal } from './AttendeeDetailModal';
@@ -65,6 +67,12 @@ export interface InvoiceAttendee {
   paid_at: string | null;
   payment_due_days: number | null;
   price_paid: number | null;
+  phone: string | null;
+  institution: string | null;
+  oib: string | null;
+  specialty: string | null;
+  requires_invoice: boolean | null;
+
 }
 
 interface EventAttendeesTableProps {
@@ -184,11 +192,44 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   const [form, setForm] = useState({
     first_name: attendee.first_name || '',
     last_name: attendee.last_name || '',
+    email: attendee.email || '',
+    phone: attendee.phone || '',
+    oib: attendee.oib || '',
+    institution: attendee.institution || '',
+    specialty: attendee.specialty || '',
+    requires_invoice: attendee.requires_invoice === true,
     paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
     fiscal_invoice_number: attendee.fiscal_invoice_number || '',
     payment_method: attendee.payment_method || '',
     order_status: (attendee.order_status as string) || 'draft',
   });
+
+  const [orderSnapshot, setOrderSnapshot] = useState({
+    paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
+    fiscal_invoice_number: attendee.fiscal_invoice_number || '',
+    payment_method: attendee.payment_method || '',
+    order_status: (attendee.order_status as string) || 'draft',
+  });
+  const [groupChangeConfirmed, setGroupChangeConfirmed] = useState(false);
+
+  const orderFieldsChanged =
+    form.paid_at !== orderSnapshot.paid_at ||
+    form.fiscal_invoice_number !== orderSnapshot.fiscal_invoice_number ||
+    form.payment_method !== orderSnapshot.payment_method ||
+    form.order_status !== orderSnapshot.order_status;
+
+  const needsGroupConfirm = attendee.is_group_order === true && orderFieldsChanged;
+
+  const [refundsList, setRefundsList] = useState<{
+    id: string;
+    amount: number | null;
+    reason: string | null;
+    credit_note_number: string | null;
+    credit_note_issued_at: string | null;
+    created_at: string | null;
+  }[]>([]);
+  const [creditNoteDrafts, setCreditNoteDrafts] = useState<Record<string, string>>({});
+  const [savingCreditNoteId, setSavingCreditNoteId] = useState<string | null>(null);
 
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [refundItems, setRefundItems] = useState<{
@@ -201,7 +242,40 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   const [selectedRefundItemIds, setSelectedRefundItemIds] = useState<string[]>([]);
   const [refundReason, setRefundReason] = useState('');
   const [refundStripeId, setRefundStripeId] = useState('');
+  const [refundCreditNoteNumber, setRefundCreditNoteNumber] = useState('');
   const [isProcessingRefund, setIsProcessingRefund] = useState(false);
+
+  const fetchRefunds = async () => {
+    if (!attendee.attendee_id) return;
+    const { data } = await supabase
+      .from('refunds')
+      .select('id, amount, reason, credit_note_number, credit_note_issued_at, created_at')
+      .eq('attendee_id', attendee.attendee_id)
+      .order('created_at', { ascending: false });
+    const rows = (data || []) as any[];
+    setRefundsList(rows);
+    setCreditNoteDrafts(
+      Object.fromEntries(rows.map(r => [r.id, r.credit_note_number || '']))
+    );
+  };
+
+  const handleSaveCreditNote = async (refundId: string) => {
+    setSavingCreditNoteId(refundId);
+    try {
+      const { error } = await supabase.rpc('set_refund_credit_note' as any, {
+        p_refund_id: refundId,
+        p_credit_note_number: creditNoteDrafts[refundId] || null,
+      });
+      if (error) throw error;
+      toast.success('Broj odobrenja spremljen');
+      await fetchRefunds();
+    } catch (err: any) {
+      toast.error('Spremanje nije uspjelo: ' + (err?.message ?? 'nepoznata greška'));
+    } finally {
+      setSavingCreditNoteId(null);
+    }
+  };
+
 
   const fetchTicketStatus = async () => {
     if (!attendee.attendee_id) return;
@@ -216,6 +290,14 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   useEffect(() => {
     if (!open) return;
 
+    setGroupChangeConfirmed(false);
+    setOrderSnapshot({
+      paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
+      fiscal_invoice_number: attendee.fiscal_invoice_number || '',
+      payment_method: attendee.payment_method || '',
+      order_status: (attendee.order_status as string) || 'draft',
+    });
+
     (async () => {
       if (attendee.order_id) {
         const { data } = await supabase
@@ -225,13 +307,16 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           .maybeSingle();
         const st = (data?.status as string) || 'draft';
         setForm(f => ({ ...f, order_status: st }));
+        setOrderSnapshot(s => ({ ...s, order_status: st }));
         setOriginalOrderStatus(st);
       }
     })();
 
     fetchTicketStatus();
+    fetchRefunds();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, attendee.attendee_id, attendee.order_id]);
+
 
   const handleOrderStatusChange = async (v: string) => {
     if (v === 'refunded' && originalOrderStatus !== 'refunded') {
@@ -259,6 +344,8 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
       setSelectedRefundItemIds(defaultSelected.length ? defaultSelected : items.map(i => i.id));
       setRefundReason('');
       setRefundStripeId('');
+      setRefundCreditNoteNumber('');
+
       setRefundDialogOpen(true);
       return;
     }
@@ -287,7 +374,8 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
         p_reason: refundReason || null,
         p_stripe_refund_id: refundStripeId || null,
         p_refunded_by: userData?.user?.email || null,
-      });
+        p_credit_note_number: refundCreditNoteNumber || null,
+      } as any);
 
       if (error) throw error;
 
@@ -299,8 +387,12 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
       );
 
       setRefundDialogOpen(false);
+      setRefundReason('');
+      setRefundStripeId('');
+      setRefundCreditNoteNumber('');
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
       onOpenChange(false);
+
     } catch (err: any) {
       toast.error('Refund nije uspio: ' + (err?.message ?? 'nepoznata greška'));
     } finally {
@@ -317,7 +409,14 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
         .update({
           first_name: form.first_name,
           last_name: form.last_name,
+          email: form.email || null,
+          phone: form.phone || null,
+          oib: form.oib || null,
+          institution: form.institution || null,
+          specialty: form.specialty || null,
+          requires_invoice: form.requires_invoice,
         })
+
         .eq('id', attendee.attendee_id);
 
       if (attError) throw attError;
@@ -380,22 +479,82 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold">Podaci sudionika</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Ime</Label>
+                  <Input
+                    value={form.first_name}
+                    onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Prezime</Label>
+                  <Input
+                    value={form.last_name}
+                    onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
+                  />
+                </div>
+              </div>
               <div className="space-y-1.5">
-                <Label>Ime</Label>
+                <Label>Email</Label>
                 <Input
-                  value={form.first_name}
-                  onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+                  type="email"
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Telefon</Label>
+                  <Input
+                    value={form.phone}
+                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>OIB</Label>
+                  <Input
+                    value={form.oib}
+                    onChange={e => setForm(f => ({ ...f, oib: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Institucija / Tvrtka</Label>
+                <Input
+                  value={form.institution}
+                  onChange={e => setForm(f => ({ ...f, institution: e.target.value }))}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Prezime</Label>
+                <Label>Specijalnost</Label>
                 <Input
-                  value={form.last_name}
-                  onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
+                  value={form.specialty}
+                  onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))}
                 />
               </div>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <Checkbox
+                  checked={form.requires_invoice}
+                  onCheckedChange={v => setForm(f => ({ ...f, requires_invoice: v === true }))}
+                />
+                Traži račun
+              </label>
             </div>
+
+            <div className="pt-2 border-t space-y-1.5">
+              <h3 className="text-sm font-semibold">Podaci narudžbe</h3>
+              {attendee.is_group_order && (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    Ova narudžba (#{attendee.order_number}) dijeli više sudionika. Promjena ovih polja vrijedi za CIJELU narudžbu, ne samo za {attendee.first_name} {attendee.last_name}.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+
 
             {!attendee.order_id && (
               <p className="text-xs text-muted-foreground">
@@ -507,16 +666,65 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                 )}
               </Button>
             </div>
+
+            {attendee.attendee_id && refundsList.length > 0 && (
+              <div className="space-y-2 pt-2 border-t">
+                <h3 className="text-sm font-semibold">Povrati</h3>
+                {refundsList.map(r => (
+                  <div key={r.id} className="rounded-md border p-3 space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-mono">{Number(r.amount ?? 0).toFixed(2)} EUR</span>
+                      <span className="text-muted-foreground">{formatDate(r.created_at)}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{r.reason || '—'}</div>
+                    <div className="flex items-end gap-2">
+                      <div className="space-y-1.5 flex-1">
+                        <Label className="text-xs">Broj odobrenja</Label>
+                        <Input
+                          value={creditNoteDrafts[r.id] ?? ''}
+                          onChange={e =>
+                            setCreditNoteDrafts(prev => ({ ...prev, [r.id]: e.target.value }))
+                          }
+                          placeholder="npr. ODO-2026-0001"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={savingCreditNoteId === r.id}
+                        onClick={() => handleSaveCreditNote(r.id)}
+                      >
+                        {savingCreditNoteId === r.id ? '...' : 'Spremi'}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {needsGroupConfirm && (
+              <label className="flex items-start gap-2 text-sm cursor-pointer pt-2 border-t">
+                <Checkbox
+                  checked={groupChangeConfirmed}
+                  onCheckedChange={v => setGroupChangeConfirmed(v === true)}
+                />
+                <span>
+                  Razumijem da se ova promjena primjenjuje na cijelu narudžbu #{attendee.order_number}
+                </span>
+              </label>
+            )}
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
               Odustani
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
+            <Button onClick={handleSave} disabled={isSaving || (needsGroupConfirm && !groupChangeConfirmed)}>
               {isSaving ? 'Spremanje...' : 'Spremi'}
             </Button>
           </DialogFooter>
+
         </DialogContent>
       </Dialog>
 
@@ -575,6 +783,16 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                 placeholder="re_..."
               />
             </div>
+
+            <div className="space-y-1.5">
+              <Label>Broj odobrenja (ako je već poznat)</Label>
+              <Input
+                value={refundCreditNoteNumber}
+                onChange={e => setRefundCreditNoteNumber(e.target.value)}
+                placeholder="npr. ODO-2026-0001"
+              />
+            </div>
+
           </div>
 
           <DialogFooter>

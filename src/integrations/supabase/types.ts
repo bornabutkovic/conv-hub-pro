@@ -1680,6 +1680,8 @@ export type Database = {
           amount: number
           attendee_id: string | null
           created_at: string
+          credit_note_issued_at: string | null
+          credit_note_number: string | null
           id: string
           institution_uuid: string
           order_id: string
@@ -1692,6 +1694,8 @@ export type Database = {
           amount: number
           attendee_id?: string | null
           created_at?: string
+          credit_note_issued_at?: string | null
+          credit_note_number?: string | null
           id?: string
           institution_uuid: string
           order_id: string
@@ -1704,6 +1708,8 @@ export type Database = {
           amount?: number
           attendee_id?: string | null
           created_at?: string
+          credit_note_issued_at?: string | null
+          credit_note_number?: string | null
           id?: string
           institution_uuid?: string
           order_id?: string
@@ -2495,8 +2501,10 @@ export type Database = {
           event_id: string | null
           first_name: string | null
           fiscal_invoice_number: string | null
+          institution: string | null
           is_group_order: boolean | null
           last_name: string | null
+          oib: string | null
           order_id: string | null
           order_number: number | null
           order_status: Database["public"]["Enums"]["payment_status"] | null
@@ -2506,11 +2514,14 @@ export type Database = {
           payment_due_days: number | null
           payment_method: string | null
           payment_status: string | null
+          phone: string | null
           price_paid: number | null
           registered_at: string | null
           registration_status:
             | Database["public"]["Enums"]["registration_status"]
             | null
+          requires_invoice: boolean | null
+          specialty: string | null
           ticket_tier_id: string | null
           total_amount: number | null
         }
@@ -2759,13 +2770,6 @@ export type Database = {
           },
           {
             foreignKeyName: "events_institution_uuid_fkey"
-            columns: ["institution_id"]
-            isOneToOne: false
-            referencedRelation: "institutions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "events_institution_uuid_fkey"
             columns: ["institution_uuid"]
             isOneToOne: false
             referencedRelation: "institutions"
@@ -2774,13 +2778,20 @@ export type Database = {
           {
             foreignKeyName: "events_institution_uuid_fkey"
             columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_institution_uuid_fkey"
+            columns: ["institution_uuid"]
             isOneToOne: false
             referencedRelation: "institutions_public"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "events_institution_uuid_fkey"
-            columns: ["institution_uuid"]
+            columns: ["institution_id"]
             isOneToOne: false
             referencedRelation: "institutions_public"
             referencedColumns: ["id"]
@@ -2952,6 +2963,8 @@ export type Database = {
       normalize_phone_to_waid: { Args: { phone: string }; Returns: string }
       process_order_refund: {
         Args: {
+          p_credit_note_issued_at?: string
+          p_credit_note_number?: string
           p_order_id: string
           p_order_item_ids?: string[]
           p_reason?: string
@@ -2973,6 +2986,14 @@ export type Database = {
         Returns: undefined
       }
       run_data_retention_cleanup: { Args: { dry_run?: boolean }; Returns: Json }
+      set_refund_credit_note: {
+        Args: {
+          p_credit_note_issued_at?: string
+          p_credit_note_number: string
+          p_refund_id: string
+        }
+        Returns: Json
+      }
       unaccent: { Args: { "": string }; Returns: string }
       update_completed_events: { Args: never; Returns: undefined }
       upsert_wa_session: {
@@ -3041,12 +3062,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -3070,11 +3091,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -3095,11 +3116,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -3120,11 +3141,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -3137,11 +3158,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
