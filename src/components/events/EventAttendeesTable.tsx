@@ -374,7 +374,8 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
         p_reason: refundReason || null,
         p_stripe_refund_id: refundStripeId || null,
         p_refunded_by: userData?.user?.email || null,
-      });
+        p_credit_note_number: refundCreditNoteNumber || null,
+      } as any);
 
       if (error) throw error;
 
@@ -386,8 +387,12 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
       );
 
       setRefundDialogOpen(false);
+      setRefundReason('');
+      setRefundStripeId('');
+      setRefundCreditNoteNumber('');
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
       onOpenChange(false);
+
     } catch (err: any) {
       toast.error('Refund nije uspio: ' + (err?.message ?? 'nepoznata greška'));
     } finally {
