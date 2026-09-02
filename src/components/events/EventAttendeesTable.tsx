@@ -409,7 +409,14 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
         .update({
           first_name: form.first_name,
           last_name: form.last_name,
+          email: form.email || null,
+          phone: form.phone || null,
+          oib: form.oib || null,
+          institution: form.institution || null,
+          specialty: form.specialty || null,
+          requires_invoice: form.requires_invoice,
         })
+
         .eq('id', attendee.attendee_id);
 
       if (attError) throw attError;
