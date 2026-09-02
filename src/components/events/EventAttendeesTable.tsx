@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format, addDays } from 'date-fns';
-import { Pencil, UserPlus, Download, Send, Loader2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { Pencil, UserPlus, Users, Download, Send, Loader2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -33,6 +33,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { Textarea } from '@/components/ui/textarea';
 import { AddAttendeeModal } from './AddAttendeeModal';
+import { GroupRegistrationModal } from './GroupRegistrationModal';
+import { COUNTRIES, getCountryName } from '@/lib/countries';
 import { AttendeeDetailModal } from './AttendeeDetailModal';
 import { useAdminLanguage } from '@/contexts/AdminLanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -202,21 +204,50 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     fiscal_invoice_number: attendee.fiscal_invoice_number || '',
     payment_method: attendee.payment_method || '',
     order_status: (attendee.order_status as string) || 'draft',
+    payer_type: 'individual',
+    payer_name: '',
+    payer_oib: '',
+    payer_address: '',
+    payer_city: '',
+    payer_postal_code: '',
+    payer_country_code: 'HR',
+    payer_country_name: 'Croatia',
+    billing_email: '',
+    po_number: '',
+    lang: 'hr',
   });
 
-  const [orderSnapshot, setOrderSnapshot] = useState({
+  const emptyOrderSnapshot = {
     paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
     fiscal_invoice_number: attendee.fiscal_invoice_number || '',
     payment_method: attendee.payment_method || '',
     order_status: (attendee.order_status as string) || 'draft',
-  });
+    payer_type: 'individual',
+    payer_name: '',
+    payer_oib: '',
+    payer_address: '',
+    payer_city: '',
+    payer_postal_code: '',
+    payer_country_code: 'HR',
+    payer_country_name: 'Croatia',
+    billing_email: '',
+    po_number: '',
+    lang: 'hr',
+  };
+
+  const [orderSnapshot, setOrderSnapshot] = useState(emptyOrderSnapshot);
   const [groupChangeConfirmed, setGroupChangeConfirmed] = useState(false);
 
-  const orderFieldsChanged =
-    form.paid_at !== orderSnapshot.paid_at ||
-    form.fiscal_invoice_number !== orderSnapshot.fiscal_invoice_number ||
-    form.payment_method !== orderSnapshot.payment_method ||
-    form.order_status !== orderSnapshot.order_status;
+  const ORDER_FIELD_KEYS = [
+    'paid_at', 'fiscal_invoice_number', 'payment_method', 'order_status',
+    'payer_type', 'payer_name', 'payer_oib', 'payer_address', 'payer_city',
+    'payer_postal_code', 'payer_country_code', 'payer_country_name',
+    'billing_email', 'po_number', 'lang',
+  ] as const;
+
+  const orderFieldsChanged = ORDER_FIELD_KEYS.some(
+    k => (form as Record<string, unknown>)[k] !== (orderSnapshot as Record<string, unknown>)[k]
+  );
 
   const needsGroupConfirm = attendee.is_group_order === true && orderFieldsChanged;
 
@@ -291,23 +322,33 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     if (!open) return;
 
     setGroupChangeConfirmed(false);
-    setOrderSnapshot({
-      paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
-      fiscal_invoice_number: attendee.fiscal_invoice_number || '',
-      payment_method: attendee.payment_method || '',
-      order_status: (attendee.order_status as string) || 'draft',
-    });
+    setOrderSnapshot(emptyOrderSnapshot);
 
     (async () => {
       if (attendee.order_id) {
         const { data } = await supabase
           .from('orders')
-          .select('status')
+          .select('status, payer_type, payer_name, payer_oib, payer_address, payer_city, payer_postal_code, payer_country_code, payer_country_name, billing_email, po_number, lang')
           .eq('id', attendee.order_id)
           .maybeSingle();
-        const st = (data?.status as string) || 'draft';
-        setForm(f => ({ ...f, order_status: st }));
-        setOrderSnapshot(s => ({ ...s, order_status: st }));
+        const o = (data || {}) as Record<string, any>;
+        const st = (o.status as string) || 'draft';
+        const patch = {
+          order_status: st,
+          payer_type: (o.payer_type as string) || 'individual',
+          payer_name: o.payer_name || '',
+          payer_oib: o.payer_oib || '',
+          payer_address: o.payer_address || '',
+          payer_city: o.payer_city || '',
+          payer_postal_code: o.payer_postal_code || '',
+          payer_country_code: o.payer_country_code || 'HR',
+          payer_country_name: o.payer_country_name || 'Croatia',
+          billing_email: o.billing_email || '',
+          po_number: o.po_number || '',
+          lang: (o.lang as string) || 'hr',
+        };
+        setForm(f => ({ ...f, ...patch }));
+        setOrderSnapshot(s => ({ ...s, ...patch }));
         setOriginalOrderStatus(st);
       }
     })();
@@ -429,6 +470,17 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
             fiscal_invoice_number: form.fiscal_invoice_number || null,
             payment_method: form.payment_method || null,
             status: form.order_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded' | 'deferred',
+            payer_type: form.payer_type as 'individual' | 'company' | 'sponsor',
+            payer_name: form.payer_name,
+            payer_oib: form.payer_type === 'company' ? (form.payer_oib || null) : null,
+            payer_address: form.payer_type === 'company' ? (form.payer_address || null) : null,
+            payer_city: form.payer_type === 'company' ? (form.payer_city || null) : null,
+            payer_postal_code: form.payer_type === 'company' ? (form.payer_postal_code || null) : null,
+            payer_country_code: form.payer_country_code || null,
+            payer_country_name: form.payer_country_name || null,
+            billing_email: form.billing_email || null,
+            po_number: form.po_number || null,
+            lang: form.lang,
           })
           .eq('id', attendee.order_id);
 
@@ -626,6 +678,123 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
               )}
             </div>
 
+            <div className="space-y-1.5">
+              <Label>Platitelj</Label>
+              <Select
+                value={form.payer_type}
+                onValueChange={v => setForm(f => ({ ...f, payer_type: v }))}
+                disabled={!attendee.order_id}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="individual">Fizička osoba</SelectItem>
+                  <SelectItem value="company">Tvrtka</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Naziv platitelja</Label>
+              <Input
+                value={form.payer_name}
+                disabled={!attendee.order_id}
+                onChange={e => setForm(f => ({ ...f, payer_name: e.target.value }))}
+              />
+            </div>
+
+            {form.payer_type === 'company' && (
+              <>
+                <div className="space-y-1.5">
+                  <Label>OIB / VAT</Label>
+                  <Input
+                    value={form.payer_oib}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, payer_oib: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Adresa</Label>
+                  <Input
+                    value={form.payer_address}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, payer_address: e.target.value }))}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Grad</Label>
+                    <Input
+                      value={form.payer_city}
+                      disabled={!attendee.order_id}
+                      onChange={e => setForm(f => ({ ...f, payer_city: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Poštanski broj</Label>
+                    <Input
+                      value={form.payer_postal_code}
+                      disabled={!attendee.order_id}
+                      onChange={e => setForm(f => ({ ...f, payer_postal_code: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Država</Label>
+                  <Select
+                    value={form.payer_country_code}
+                    onValueChange={v => setForm(f => ({ ...f, payer_country_code: v, payer_country_name: getCountryName(v) }))}
+                    disabled={!attendee.order_id}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map(c => (
+                        <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            <div className="space-y-1.5">
+              <Label>Email za račun</Label>
+              <Input
+                type="email"
+                value={form.billing_email}
+                disabled={!attendee.order_id}
+                onChange={e => setForm(f => ({ ...f, billing_email: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>PO broj</Label>
+              <Input
+                value={form.po_number}
+                disabled={!attendee.order_id}
+                onChange={e => setForm(f => ({ ...f, po_number: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Jezik komunikacije</Label>
+              <Select
+                value={form.lang}
+                onValueChange={v => setForm(f => ({ ...f, lang: v }))}
+                disabled={!attendee.order_id}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hr">Hrvatski</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+
+
             <div className="space-y-2 pt-2 border-t">
               <div className="text-sm">
                 {ticketSentAt ? (
@@ -822,6 +991,7 @@ export function EventAttendeesTable({
   eventName,
 }: EventAttendeesTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [selectedAttendee, setSelectedAttendee] = useState<InvoiceAttendee | null>(null);
   const [editAttendee, setEditAttendee] = useState<InvoiceAttendee | null>(null);
   const [paymentFilter, setPaymentFilter] = useState<PaymentStatusFilter>('all');
@@ -1029,6 +1199,10 @@ export function EventAttendeesTable({
                 <UserPlus className="h-4 w-4 mr-1.5" />
                 Dodaj polaznika
               </Button>
+              <Button size="sm" onClick={() => setIsGroupModalOpen(true)}>
+                <Users className="h-4 w-4 mr-1.5" />
+                Grupna prijava
+              </Button>
             </div>
           </div>
 
@@ -1183,6 +1357,12 @@ export function EventAttendeesTable({
       <AddAttendeeModal
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
+        eventId={eventId}
+      />
+
+      <GroupRegistrationModal
+        open={isGroupModalOpen}
+        onOpenChange={setIsGroupModalOpen}
         eventId={eventId}
       />
 
