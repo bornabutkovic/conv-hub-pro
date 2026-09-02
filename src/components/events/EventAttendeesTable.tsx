@@ -67,6 +67,12 @@ export interface InvoiceAttendee {
   paid_at: string | null;
   payment_due_days: number | null;
   price_paid: number | null;
+  phone: string | null;
+  institution: string | null;
+  oib: string | null;
+  specialty: string | null;
+  requires_invoice: boolean | null;
+
 }
 
 interface EventAttendeesTableProps {
