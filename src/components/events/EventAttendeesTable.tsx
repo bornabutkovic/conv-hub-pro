@@ -344,6 +344,8 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
       setSelectedRefundItemIds(defaultSelected.length ? defaultSelected : items.map(i => i.id));
       setRefundReason('');
       setRefundStripeId('');
+      setRefundCreditNoteNumber('');
+
       setRefundDialogOpen(true);
       return;
     }
