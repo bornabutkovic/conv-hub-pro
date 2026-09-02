@@ -380,22 +380,82 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold">Podaci sudionika</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Ime</Label>
+                  <Input
+                    value={form.first_name}
+                    onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Prezime</Label>
+                  <Input
+                    value={form.last_name}
+                    onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
+                  />
+                </div>
+              </div>
               <div className="space-y-1.5">
-                <Label>Ime</Label>
+                <Label>Email</Label>
                 <Input
-                  value={form.first_name}
-                  onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+                  type="email"
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Telefon</Label>
+                  <Input
+                    value={form.phone}
+                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>OIB</Label>
+                  <Input
+                    value={form.oib}
+                    onChange={e => setForm(f => ({ ...f, oib: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Institucija / Tvrtka</Label>
+                <Input
+                  value={form.institution}
+                  onChange={e => setForm(f => ({ ...f, institution: e.target.value }))}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Prezime</Label>
+                <Label>Specijalnost</Label>
                 <Input
-                  value={form.last_name}
-                  onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
+                  value={form.specialty}
+                  onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))}
                 />
               </div>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <Checkbox
+                  checked={form.requires_invoice}
+                  onCheckedChange={v => setForm(f => ({ ...f, requires_invoice: v === true }))}
+                />
+                Traži račun
+              </label>
             </div>
+
+            <div className="pt-2 border-t space-y-1.5">
+              <h3 className="text-sm font-semibold">Podaci narudžbe</h3>
+              {attendee.is_group_order && (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    Ova narudžba (#{attendee.order_number}) dijeli više sudionika. Promjena ovih polja vrijedi za CIJELU narudžbu, ne samo za {attendee.first_name} {attendee.last_name}.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+
 
             {!attendee.order_id && (
               <p className="text-xs text-muted-foreground">
