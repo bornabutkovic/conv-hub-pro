@@ -192,11 +192,44 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   const [form, setForm] = useState({
     first_name: attendee.first_name || '',
     last_name: attendee.last_name || '',
+    email: attendee.email || '',
+    phone: attendee.phone || '',
+    oib: attendee.oib || '',
+    institution: attendee.institution || '',
+    specialty: attendee.specialty || '',
+    requires_invoice: attendee.requires_invoice === true,
     paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
     fiscal_invoice_number: attendee.fiscal_invoice_number || '',
     payment_method: attendee.payment_method || '',
     order_status: (attendee.order_status as string) || 'draft',
   });
+
+  const [orderSnapshot, setOrderSnapshot] = useState({
+    paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
+    fiscal_invoice_number: attendee.fiscal_invoice_number || '',
+    payment_method: attendee.payment_method || '',
+    order_status: (attendee.order_status as string) || 'draft',
+  });
+  const [groupChangeConfirmed, setGroupChangeConfirmed] = useState(false);
+
+  const orderFieldsChanged =
+    form.paid_at !== orderSnapshot.paid_at ||
+    form.fiscal_invoice_number !== orderSnapshot.fiscal_invoice_number ||
+    form.payment_method !== orderSnapshot.payment_method ||
+    form.order_status !== orderSnapshot.order_status;
+
+  const needsGroupConfirm = attendee.is_group_order === true && orderFieldsChanged;
+
+  const [refundsList, setRefundsList] = useState<{
+    id: string;
+    amount: number | null;
+    reason: string | null;
+    credit_note_number: string | null;
+    credit_note_issued_at: string | null;
+    created_at: string | null;
+  }[]>([]);
+  const [creditNoteDrafts, setCreditNoteDrafts] = useState<Record<string, string>>({});
+  const [savingCreditNoteId, setSavingCreditNoteId] = useState<string | null>(null);
 
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [refundItems, setRefundItems] = useState<{
@@ -209,7 +242,40 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   const [selectedRefundItemIds, setSelectedRefundItemIds] = useState<string[]>([]);
   const [refundReason, setRefundReason] = useState('');
   const [refundStripeId, setRefundStripeId] = useState('');
+  const [refundCreditNoteNumber, setRefundCreditNoteNumber] = useState('');
   const [isProcessingRefund, setIsProcessingRefund] = useState(false);
+
+  const fetchRefunds = async () => {
+    if (!attendee.attendee_id) return;
+    const { data } = await supabase
+      .from('refunds')
+      .select('id, amount, reason, credit_note_number, credit_note_issued_at, created_at')
+      .eq('attendee_id', attendee.attendee_id)
+      .order('created_at', { ascending: false });
+    const rows = (data || []) as any[];
+    setRefundsList(rows);
+    setCreditNoteDrafts(
+      Object.fromEntries(rows.map(r => [r.id, r.credit_note_number || '']))
+    );
+  };
+
+  const handleSaveCreditNote = async (refundId: string) => {
+    setSavingCreditNoteId(refundId);
+    try {
+      const { error } = await supabase.rpc('set_refund_credit_note' as any, {
+        p_refund_id: refundId,
+        p_credit_note_number: creditNoteDrafts[refundId] || null,
+      });
+      if (error) throw error;
+      toast.success('Broj odobrenja spremljen');
+      await fetchRefunds();
+    } catch (err: any) {
+      toast.error('Spremanje nije uspjelo: ' + (err?.message ?? 'nepoznata greška'));
+    } finally {
+      setSavingCreditNoteId(null);
+    }
+  };
+
 
   const fetchTicketStatus = async () => {
     if (!attendee.attendee_id) return;
