@@ -169,14 +169,33 @@ export function AddAttendeeModal({ open, onOpenChange, eventId }: AddAttendeeMod
       }
 
       if (matchedExisting) {
-        const { data: existingAttendee } = await supabase
+        const { data: existingAttendees } = await supabase
           .from('attendees')
           .select('id')
           .eq('event_id', eventId)
-          .eq('profile_id', profileId)
-          .maybeSingle();
-        if (existingAttendee) {
-          throw new Error('Ovaj email je već registriran za ovaj event.');
+          .eq('profile_id', profileId);
+
+        const attendeeIds = (existingAttendees || []).map(a => a.id);
+
+        if (attendeeIds.length > 0) {
+          const { data: items } = await supabase
+            .from('order_items')
+            .select('order_id')
+            .in('attendee_id', attendeeIds);
+
+          const orderIds = [...new Set((items || []).map(i => i.order_id).filter(Boolean))];
+
+          if (orderIds.length > 0) {
+            const { data: activeOrders } = await supabase
+              .from('orders')
+              .select('id')
+              .in('id', orderIds)
+              .neq('status', 'cancelled');
+
+            if (activeOrders && activeOrders.length > 0) {
+              throw new Error('Ovaj email je već registriran za ovaj event (postoji aktivna narudžba).');
+            }
+          }
         }
       }
 
