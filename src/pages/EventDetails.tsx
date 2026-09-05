@@ -334,6 +334,7 @@ export default function EventDetails() {
             eventId={event.id}
             currency={event.currency || 'EUR'}
             eventName={event.name}
+            requiredAttendeeFields={(event as any).required_attendee_fields ?? null}
           />
         </TabsContent>
         <TabsContent value="ticket-tiers" className="mt-4">

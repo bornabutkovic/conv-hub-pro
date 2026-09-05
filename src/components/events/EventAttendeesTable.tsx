@@ -83,6 +83,7 @@ interface EventAttendeesTableProps {
   eventId: string;
   currency?: string;
   eventName?: string;
+  requiredAttendeeFields?: string[] | null;
 }
 
 type PaymentStatusFilter = 'all' | 'paid' | 'pending' | 'overdue' | 'refunded' | 'cancelled' | 'deferred';
@@ -989,6 +990,7 @@ export function EventAttendeesTable({
   eventId,
   currency = 'EUR',
   eventName,
+  requiredAttendeeFields,
 }: EventAttendeesTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
@@ -1001,6 +1003,8 @@ export function EventAttendeesTable({
   const [sortKey, setSortKey] = useState<SortKey>('paid_at');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const { t } = useAdminLanguage();
+
+  const showExtraFields = Array.isArray(requiredAttendeeFields) && requiredAttendeeFields.length > 0;
 
   const formatAmount = (n: number | null | undefined) =>
     n == null ? '—' : `${n.toFixed(2).replace('.', ',')} ${currency}`;
@@ -1092,6 +1096,7 @@ export function EventAttendeesTable({
         'Ime i prezime',
         'Email',
         'Tvrtka/Organizacija',
+        ...(showExtraFields ? ['OIB', 'Specijalnost', 'Ustanova'] : []),
         'Datum registracije',
         'Rok plaćanja',
         'Broj ponude',
@@ -1110,6 +1115,7 @@ export function EventAttendeesTable({
           csvText(`${a.first_name || ''} ${a.last_name || ''}`.trim()),
           csvText(a.email || '—'),
           csvText(a.payer_type === 'company' ? (a.payer_name || '—') : '—'),
+          ...(showExtraFields ? [csvText(a.oib || '—'), csvText(a.specialty || '—'), csvText(a.institution || '—')] : []),
           csvText(formatDate(a.registered_at)),
           csvText(deadline),
           csvText(a.bc_quote_number || '—'),
@@ -1281,6 +1287,13 @@ export function EventAttendeesTable({
                     <SortableHead label="Plaćanje" sortKeyName="payment_method" />
                     <SortableHead label="Status" sortKeyName="payment_status" />
                     <SortableHead label="Check-in" sortKeyName="checked_in" />
+                    {showExtraFields && (
+                      <>
+                        <TableHead className="py-2.5 px-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">OIB</TableHead>
+                        <TableHead className="py-2.5 px-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Specijalnost</TableHead>
+                        <TableHead className="py-2.5 px-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Ustanova</TableHead>
+                      </>
+                    )}
                     <TableHead className="py-2 px-3 w-10"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -1336,6 +1349,19 @@ export function EventAttendeesTable({
                         <TableCell className="py-2.5 px-3 text-base">
                           {getCheckinBadge(attendee.checked_in)}
                         </TableCell>
+                        {showExtraFields && (
+                          <>
+                            <TableCell className="py-2.5 px-3 text-base font-mono whitespace-nowrap">
+                              {attendee.oib || '—'}
+                            </TableCell>
+                            <TableCell className="py-2.5 px-3 text-base whitespace-nowrap max-w-[160px] truncate" title={attendee.specialty || ''}>
+                              {attendee.specialty || '—'}
+                            </TableCell>
+                            <TableCell className="py-2.5 px-3 text-base whitespace-nowrap max-w-[180px] truncate" title={attendee.institution || ''}>
+                              {attendee.institution || '—'}
+                            </TableCell>
+                          </>
+                        )}
                         <TableCell
                           onClick={e => { e.stopPropagation(); setEditAttendee(attendee); }}
                           className="py-2.5 px-3 text-right"
