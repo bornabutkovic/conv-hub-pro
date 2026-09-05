@@ -1287,6 +1287,13 @@ export function EventAttendeesTable({
                     <SortableHead label="Plaćanje" sortKeyName="payment_method" />
                     <SortableHead label="Status" sortKeyName="payment_status" />
                     <SortableHead label="Check-in" sortKeyName="checked_in" />
+                    {showExtraFields && (
+                      <>
+                        <TableHead className="py-2.5 px-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">OIB</TableHead>
+                        <TableHead className="py-2.5 px-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Specijalnost</TableHead>
+                        <TableHead className="py-2.5 px-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">Ustanova</TableHead>
+                      </>
+                    )}
                     <TableHead className="py-2 px-3 w-10"></TableHead>
                   </TableRow>
                 </TableHeader>
