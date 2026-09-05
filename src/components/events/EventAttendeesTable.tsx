@@ -1349,6 +1349,19 @@ export function EventAttendeesTable({
                         <TableCell className="py-2.5 px-3 text-base">
                           {getCheckinBadge(attendee.checked_in)}
                         </TableCell>
+                        {showExtraFields && (
+                          <>
+                            <TableCell className="py-2.5 px-3 text-base font-mono whitespace-nowrap">
+                              {attendee.oib || '—'}
+                            </TableCell>
+                            <TableCell className="py-2.5 px-3 text-base whitespace-nowrap max-w-[160px] truncate" title={attendee.specialty || ''}>
+                              {attendee.specialty || '—'}
+                            </TableCell>
+                            <TableCell className="py-2.5 px-3 text-base whitespace-nowrap max-w-[180px] truncate" title={attendee.institution || ''}>
+                              {attendee.institution || '—'}
+                            </TableCell>
+                          </>
+                        )}
                         <TableCell
                           onClick={e => { e.stopPropagation(); setEditAttendee(attendee); }}
                           className="py-2.5 px-3 text-right"
