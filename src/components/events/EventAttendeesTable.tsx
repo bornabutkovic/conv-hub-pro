@@ -83,6 +83,7 @@ interface EventAttendeesTableProps {
   eventId: string;
   currency?: string;
   eventName?: string;
+  requiredAttendeeFields?: string[] | null;
 }
 
 type PaymentStatusFilter = 'all' | 'paid' | 'pending' | 'overdue' | 'refunded' | 'cancelled' | 'deferred';
