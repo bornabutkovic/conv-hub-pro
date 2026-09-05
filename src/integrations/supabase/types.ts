@@ -810,6 +810,7 @@ export type Database = {
           id: string
           institution_id: string | null
           institution_uuid: string | null
+          is_unlisted: boolean
           location_address: string | null
           location_city: string | null
           location_country: string | null
@@ -867,6 +868,7 @@ export type Database = {
           id?: string
           institution_id?: string | null
           institution_uuid?: string | null
+          is_unlisted?: boolean
           location_address?: string | null
           location_city?: string | null
           location_country?: string | null
@@ -924,6 +926,7 @@ export type Database = {
           id?: string
           institution_id?: string | null
           institution_uuid?: string | null
+          is_unlisted?: boolean
           location_address?: string | null
           location_city?: string | null
           location_country?: string | null
@@ -2306,6 +2309,7 @@ export type Database = {
           event_name: string | null
           event_slug: string | null
           first_name: string | null
+          institution_field: string | null
           lang: string | null
           language: string | null
           last_ai_message: string | null
@@ -2316,6 +2320,7 @@ export type Database = {
           last_name: string | null
           last_user_message: string | null
           next_action: string | null
+          oib: string | null
           participants_count: number | null
           payer_city: string | null
           payer_country_code: string | null
@@ -2325,6 +2330,7 @@ export type Database = {
           payment_method: string | null
           po_number: string | null
           registration_type: string | null
+          specialty: string | null
           step: string | null
           updated_at: string | null
           wa_id: string
@@ -2353,6 +2359,7 @@ export type Database = {
           event_name?: string | null
           event_slug?: string | null
           first_name?: string | null
+          institution_field?: string | null
           lang?: string | null
           language?: string | null
           last_ai_message?: string | null
@@ -2363,6 +2370,7 @@ export type Database = {
           last_name?: string | null
           last_user_message?: string | null
           next_action?: string | null
+          oib?: string | null
           participants_count?: number | null
           payer_city?: string | null
           payer_country_code?: string | null
@@ -2372,6 +2380,7 @@ export type Database = {
           payment_method?: string | null
           po_number?: string | null
           registration_type?: string | null
+          specialty?: string | null
           step?: string | null
           updated_at?: string | null
           wa_id: string
@@ -2400,6 +2409,7 @@ export type Database = {
           event_name?: string | null
           event_slug?: string | null
           first_name?: string | null
+          institution_field?: string | null
           lang?: string | null
           language?: string | null
           last_ai_message?: string | null
@@ -2410,6 +2420,7 @@ export type Database = {
           last_name?: string | null
           last_user_message?: string | null
           next_action?: string | null
+          oib?: string | null
           participants_count?: number | null
           payer_city?: string | null
           payer_country_code?: string | null
@@ -2419,6 +2430,7 @@ export type Database = {
           payment_method?: string | null
           po_number?: string | null
           registration_type?: string | null
+          specialty?: string | null
           step?: string | null
           updated_at?: string | null
           wa_id?: string
