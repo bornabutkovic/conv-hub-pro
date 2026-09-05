@@ -990,6 +990,7 @@ export function EventAttendeesTable({
   eventId,
   currency = 'EUR',
   eventName,
+  requiredAttendeeFields,
 }: EventAttendeesTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
@@ -1002,6 +1003,8 @@ export function EventAttendeesTable({
   const [sortKey, setSortKey] = useState<SortKey>('paid_at');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const { t } = useAdminLanguage();
+
+  const showExtraFields = Array.isArray(requiredAttendeeFields) && requiredAttendeeFields.length > 0;
 
   const formatAmount = (n: number | null | undefined) =>
     n == null ? '—' : `${n.toFixed(2).replace('.', ',')} ${currency}`;
