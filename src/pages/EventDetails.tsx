@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DiscountCodesTable } from '@/components/events/DiscountCodesTable';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { EventAttendeesTable } from '@/components/events/EventAttendeesTable';
+import { EventAttendeesTable, type InvoiceAttendee } from '@/components/events/EventAttendeesTable';
 import { EventServicesTable } from '@/components/events/EventServicesTable';
 import { TicketTiersTable } from '@/components/events/TicketTiersTable';
 import { ApprovalsTab } from '@/components/events/ApprovalsTab';
@@ -59,7 +59,10 @@ export default function EventDetails() {
         .or('order_status.is.null,order_status.neq.cancelled');
       
       if (error) throw error;
-      return data;
+      return (data || []).map((a: any) => ({
+        ...a,
+        bc_quote_number_history: Array.isArray(a.bc_quote_number_history) ? a.bc_quote_number_history : null,
+      })) as InvoiceAttendee[];
     },
     enabled: !!id,
   });
