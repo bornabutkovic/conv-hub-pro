@@ -217,6 +217,8 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     requires_invoice: attendee.requires_invoice === true,
     paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
     fiscal_invoice_number: attendee.fiscal_invoice_number || '',
+    credit_note_number: '',
+    credit_note_issued_at: '',
     payment_method: attendee.payment_method || '',
     order_status: (attendee.order_status as string) || 'draft',
     payer_type: 'individual',
@@ -235,6 +237,8 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   const emptyOrderSnapshot = {
     paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
     fiscal_invoice_number: attendee.fiscal_invoice_number || '',
+    credit_note_number: '',
+    credit_note_issued_at: '',
     payment_method: attendee.payment_method || '',
     order_status: (attendee.order_status as string) || 'draft',
     payer_type: 'individual',
@@ -252,9 +256,11 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
 
   const [orderSnapshot, setOrderSnapshot] = useState(emptyOrderSnapshot);
   const [groupChangeConfirmed, setGroupChangeConfirmed] = useState(false);
+  const [fiscalInvoiceHistory, setFiscalInvoiceHistory] = useState<string[]>([]);
 
   const ORDER_FIELD_KEYS = [
-    'paid_at', 'fiscal_invoice_number', 'payment_method', 'order_status',
+    'paid_at', 'fiscal_invoice_number', 'credit_note_number', 'credit_note_issued_at',
+    'payment_method', 'order_status',
     'payer_type', 'payer_name', 'payer_oib', 'payer_address', 'payer_city',
     'payer_postal_code', 'payer_country_code', 'payer_country_name',
     'billing_email', 'po_number', 'lang',
@@ -338,12 +344,13 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
 
     setGroupChangeConfirmed(false);
     setOrderSnapshot(emptyOrderSnapshot);
+    setFiscalInvoiceHistory([]);
 
     (async () => {
       if (attendee.order_id) {
         const { data } = await supabase
           .from('orders')
-          .select('status, payer_type, payer_name, payer_oib, payer_address, payer_city, payer_postal_code, payer_country_code, payer_country_name, billing_email, po_number, lang')
+          .select('status, payer_type, payer_name, payer_oib, payer_address, payer_city, payer_postal_code, payer_country_code, payer_country_name, billing_email, po_number, lang, credit_note_number, credit_note_issued_at, fiscal_invoice_number_history')
           .eq('id', attendee.order_id)
           .maybeSingle();
         const o = (data || {}) as Record<string, any>;
@@ -361,10 +368,13 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           billing_email: o.billing_email || '',
           po_number: o.po_number || '',
           lang: (o.lang as string) || 'hr',
+          credit_note_number: o.credit_note_number || '',
+          credit_note_issued_at: o.credit_note_issued_at ? String(o.credit_note_issued_at).slice(0, 10) : '',
         };
         setForm(f => ({ ...f, ...patch }));
         setOrderSnapshot(s => ({ ...s, ...patch }));
         setOriginalOrderStatus(st);
+        setFiscalInvoiceHistory(Array.isArray(o.fiscal_invoice_number_history) ? o.fiscal_invoice_number_history : []);
       }
     })();
 
@@ -475,11 +485,20 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     if (attError) throw attError;
 
     if (attendee.order_id) {
+      if (form.fiscal_invoice_number !== orderSnapshot.fiscal_invoice_number && orderSnapshot.fiscal_invoice_number) {
+        const { error: histError } = await supabase.rpc('record_fiscal_invoice_history' as any, {
+          p_order_id: attendee.order_id,
+          p_old_invoice_number: orderSnapshot.fiscal_invoice_number,
+        });
+        if (histError) throw histError;
+      }
       const { error: orderError } = await supabase
         .from('orders')
         .update({
           paid_at: form.paid_at ? new Date(form.paid_at).toISOString() : null,
           fiscal_invoice_number: form.fiscal_invoice_number || null,
+          credit_note_number: form.credit_note_number || null,
+          credit_note_issued_at: form.credit_note_issued_at ? new Date(form.credit_note_issued_at).toISOString() : null,
           payment_method: form.payment_method || null,
           status: form.order_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded' | 'deferred',
           payer_type: form.payer_type as 'individual' | 'company' | 'sponsor',
@@ -585,13 +604,34 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Uredi polaznika</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-4">
+              {attendee.is_group_order && (
+                <div className="lg:col-span-3 space-y-2">
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      Ova narudžba (#{attendee.order_number}) dijeli više sudionika. Promjena polja u stupcima "Plaćanje i fiskalno" i "Platitelj i BC" vrijedi za CIJELU narudžbu, ne samo za {attendee.first_name} {attendee.last_name}.
+                    </AlertDescription>
+                  </Alert>
+                  {needsGroupConfirm && (
+                    <label className="flex items-start gap-2 text-sm cursor-pointer rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2.5">
+                      <Checkbox
+                        checked={groupChangeConfirmed}
+                        onCheckedChange={v => setGroupChangeConfirmed(v === true)}
+                      />
+                      <span>
+                        Razumijem da se ova promjena primjenjuje na cijelu narudžbu #{attendee.order_number}. Bez ovoga gumb "Spremi" ostaje neaktivan.
+                      </span>
+                    </label>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-4">
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold">Podaci sudionika</h3>
@@ -737,16 +777,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
               </div>
 
               <div className="space-y-4">
-                <div className="pt-2 border-t space-y-1.5">
-                  <h3 className="text-sm font-semibold">Podaci narudžbe</h3>
-                  {attendee.is_group_order && (
-                    <Alert variant="destructive">
-                      <AlertDescription>
-                        Ova narudžba (#{attendee.order_number}) dijeli više sudionika. Promjena ovih polja vrijedi za CIJELU narudžbu, ne samo za {attendee.first_name} {attendee.last_name}.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
+                <h3 className="text-sm font-semibold">Plaćanje i fiskalno</h3>
 
 
                 {!attendee.order_id && (
@@ -772,6 +803,34 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                     value={form.fiscal_invoice_number}
                     disabled={!attendee.order_id}
                     onChange={e => setForm(f => ({ ...f, fiscal_invoice_number: e.target.value }))}
+                  />
+                  {fiscalInvoiceHistory.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      Prijašnji brojevi: {fiscalInvoiceHistory.join(', ')}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Broj odobrenja (fiskalna korekcija)</Label>
+                  <Input
+                    placeholder="npr. ODO-2026-0001"
+                    value={form.credit_note_number}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, credit_note_number: e.target.value }))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Za ručnu fiskalnu korekciju (storno starog + izdavanje novog računa). Ovo je odvojeno od "Broj odobrenja" u sekciji Povrati, koje je vezano uz stvarni novčani refund.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Datum odobrenja</Label>
+                  <Input
+                    type="date"
+                    value={form.credit_note_issued_at}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, credit_note_issued_at: e.target.value }))}
                   />
                 </div>
 
@@ -818,6 +877,10 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                     </p>
                   )}
                 </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold">Platitelj i Business Central</h3>
 
                 <div className="space-y-1.5">
                   <Label>Platitelj</Label>
@@ -1007,18 +1070,6 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                 </div>
               </div>
             </div>
-
-            {needsGroupConfirm && (
-              <label className="flex items-start gap-2 text-sm cursor-pointer pt-2 border-t">
-                <Checkbox
-                  checked={groupChangeConfirmed}
-                  onCheckedChange={v => setGroupChangeConfirmed(v === true)}
-                />
-                <span>
-                  Razumijem da se ova promjena primjenjuje na cijelu narudžbu #{attendee.order_number}
-                </span>
-              </label>
-            )}
           </div>
 
           <DialogFooter>

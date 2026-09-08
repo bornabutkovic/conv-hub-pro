@@ -144,6 +144,10 @@ export type Database = {
       }
       attendees: {
         Row: {
+          az_confirmation_claimed_at: string | null
+          az_confirmation_fail_reason: string | null
+          az_confirmation_failed_at: string | null
+          az_confirmation_sent_at: string | null
           badge_printed: boolean | null
           cancellation_email_claimed_at: string | null
           cancellation_email_sent_at: string | null
@@ -175,6 +179,10 @@ export type Database = {
           whatsapp_id: string | null
         }
         Insert: {
+          az_confirmation_claimed_at?: string | null
+          az_confirmation_fail_reason?: string | null
+          az_confirmation_failed_at?: string | null
+          az_confirmation_sent_at?: string | null
           badge_printed?: boolean | null
           cancellation_email_claimed_at?: string | null
           cancellation_email_sent_at?: string | null
@@ -206,6 +214,10 @@ export type Database = {
           whatsapp_id?: string | null
         }
         Update: {
+          az_confirmation_claimed_at?: string | null
+          az_confirmation_fail_reason?: string | null
+          az_confirmation_failed_at?: string | null
+          az_confirmation_sent_at?: string | null
           badge_printed?: boolean | null
           cancellation_email_claimed_at?: string | null
           cancellation_email_sent_at?: string | null
@@ -1063,7 +1075,7 @@ export type Database = {
           facebook_url: string | null
           id: string | null
           instagram_url: string | null
-          invoice_email: string
+          invoice_email: string | null
           linkedin_url: string | null
           name: string
           oib: string
@@ -1084,7 +1096,7 @@ export type Database = {
           facebook_url?: string | null
           id?: string | null
           instagram_url?: string | null
-          invoice_email: string
+          invoice_email?: string | null
           linkedin_url?: string | null
           name: string
           oib: string
@@ -1105,7 +1117,7 @@ export type Database = {
           facebook_url?: string | null
           id?: string | null
           instagram_url?: string | null
-          invoice_email?: string
+          invoice_email?: string | null
           linkedin_url?: string | null
           name?: string
           oib?: string
@@ -1341,10 +1353,13 @@ export type Database = {
           contact_name: string | null
           contact_phone: string | null
           created_at: string | null
+          credit_note_issued_at: string | null
+          credit_note_number: string | null
           customer_posting_group: string | null
           due_date: string | null
           event_id: string | null
           fiscal_invoice_number: string | null
+          fiscal_invoice_number_history: Json
           gdpr_consent_at: string | null
           gdpr_consent_given: boolean | null
           gen_bus_posting_group: string | null
@@ -1392,10 +1407,13 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          credit_note_issued_at?: string | null
+          credit_note_number?: string | null
           customer_posting_group?: string | null
           due_date?: string | null
           event_id?: string | null
           fiscal_invoice_number?: string | null
+          fiscal_invoice_number_history?: Json
           gdpr_consent_at?: string | null
           gdpr_consent_given?: boolean | null
           gen_bus_posting_group?: string | null
@@ -1443,10 +1461,13 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          credit_note_issued_at?: string | null
+          credit_note_number?: string | null
           customer_posting_group?: string | null
           due_date?: string | null
           event_id?: string | null
           fiscal_invoice_number?: string | null
+          fiscal_invoice_number_history?: Json
           gdpr_consent_at?: string | null
           gdpr_consent_given?: boolean | null
           gen_bus_posting_group?: string | null
@@ -2997,6 +3018,10 @@ export type Database = {
       }
       record_bc_quote_history: {
         Args: { p_old_quote_number: string; p_order_id: string }
+        Returns: undefined
+      }
+      record_fiscal_invoice_history: {
+        Args: { p_old_invoice_number: string; p_order_id: string }
         Returns: undefined
       }
       record_whatsapp_consent: {
