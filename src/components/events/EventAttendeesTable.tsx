@@ -777,16 +777,7 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
               </div>
 
               <div className="space-y-4">
-                <div className="pt-2 border-t space-y-1.5">
-                  <h3 className="text-sm font-semibold">Podaci narudžbe</h3>
-                  {attendee.is_group_order && (
-                    <Alert variant="destructive">
-                      <AlertDescription>
-                        Ova narudžba (#{attendee.order_number}) dijeli više sudionika. Promjena ovih polja vrijedi za CIJELU narudžbu, ne samo za {attendee.first_name} {attendee.last_name}.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
+                <h3 className="text-sm font-semibold">Plaćanje i fiskalno</h3>
 
 
                 {!attendee.order_id && (
@@ -812,6 +803,34 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                     value={form.fiscal_invoice_number}
                     disabled={!attendee.order_id}
                     onChange={e => setForm(f => ({ ...f, fiscal_invoice_number: e.target.value }))}
+                  />
+                  {fiscalInvoiceHistory.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      Prijašnji brojevi: {fiscalInvoiceHistory.join(', ')}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Broj odobrenja (fiskalna korekcija)</Label>
+                  <Input
+                    placeholder="npr. ODO-2026-0001"
+                    value={form.credit_note_number}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, credit_note_number: e.target.value }))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Za ručnu fiskalnu korekciju (storno starog + izdavanje novog računa). Ovo je odvojeno od "Broj odobrenja" u sekciji Povrati, koje je vezano uz stvarni novčani refund.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Datum odobrenja</Label>
+                  <Input
+                    type="date"
+                    value={form.credit_note_issued_at}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, credit_note_issued_at: e.target.value }))}
                   />
                 </div>
 
@@ -858,6 +877,10 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                     </p>
                   )}
                 </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold">Platitelj i Business Central</h3>
 
                 <div className="space-y-1.5">
                   <Label>Platitelj</Label>
@@ -1047,18 +1070,6 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                 </div>
               </div>
             </div>
-
-            {needsGroupConfirm && (
-              <label className="flex items-start gap-2 text-sm cursor-pointer pt-2 border-t">
-                <Checkbox
-                  checked={groupChangeConfirmed}
-                  onCheckedChange={v => setGroupChangeConfirmed(v === true)}
-                />
-                <span>
-                  Razumijem da se ova promjena primjenjuje na cijelu narudžbu #{attendee.order_number}
-                </span>
-              </label>
-            )}
           </div>
 
           <DialogFooter>
