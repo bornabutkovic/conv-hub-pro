@@ -2078,6 +2078,7 @@ export type Database = {
           gdpr_consent_given: boolean | null
           gdpr_disclosure_version: string | null
           id: string
+          institution: string | null
           lang: string | null
           last_name: string | null
           oib: string | null
@@ -2088,6 +2089,7 @@ export type Database = {
           payment_url: string | null
           profile_id: string | null
           retell_call_id: string | null
+          specialty: string | null
           status: string | null
           submit_error: string | null
           ticket_tier_id: string | null
@@ -2112,6 +2114,7 @@ export type Database = {
           gdpr_consent_given?: boolean | null
           gdpr_disclosure_version?: string | null
           id?: string
+          institution?: string | null
           lang?: string | null
           last_name?: string | null
           oib?: string | null
@@ -2122,6 +2125,7 @@ export type Database = {
           payment_url?: string | null
           profile_id?: string | null
           retell_call_id?: string | null
+          specialty?: string | null
           status?: string | null
           submit_error?: string | null
           ticket_tier_id?: string | null
@@ -2146,6 +2150,7 @@ export type Database = {
           gdpr_consent_given?: boolean | null
           gdpr_disclosure_version?: string | null
           id?: string
+          institution?: string | null
           lang?: string | null
           last_name?: string | null
           oib?: string | null
@@ -2156,6 +2161,7 @@ export type Database = {
           payment_url?: string | null
           profile_id?: string | null
           retell_call_id?: string | null
+          specialty?: string | null
           status?: string | null
           submit_error?: string | null
           ticket_tier_id?: string | null
