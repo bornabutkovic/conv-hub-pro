@@ -217,6 +217,8 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     requires_invoice: attendee.requires_invoice === true,
     paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
     fiscal_invoice_number: attendee.fiscal_invoice_number || '',
+    credit_note_number: '',
+    credit_note_issued_at: '',
     payment_method: attendee.payment_method || '',
     order_status: (attendee.order_status as string) || 'draft',
     payer_type: 'individual',
@@ -235,6 +237,8 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   const emptyOrderSnapshot = {
     paid_at: attendee.paid_at ? attendee.paid_at.slice(0, 10) : '',
     fiscal_invoice_number: attendee.fiscal_invoice_number || '',
+    credit_note_number: '',
+    credit_note_issued_at: '',
     payment_method: attendee.payment_method || '',
     order_status: (attendee.order_status as string) || 'draft',
     payer_type: 'individual',
@@ -252,9 +256,11 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
 
   const [orderSnapshot, setOrderSnapshot] = useState(emptyOrderSnapshot);
   const [groupChangeConfirmed, setGroupChangeConfirmed] = useState(false);
+  const [fiscalInvoiceHistory, setFiscalInvoiceHistory] = useState<string[]>([]);
 
   const ORDER_FIELD_KEYS = [
-    'paid_at', 'fiscal_invoice_number', 'payment_method', 'order_status',
+    'paid_at', 'fiscal_invoice_number', 'credit_note_number', 'credit_note_issued_at',
+    'payment_method', 'order_status',
     'payer_type', 'payer_name', 'payer_oib', 'payer_address', 'payer_city',
     'payer_postal_code', 'payer_country_code', 'payer_country_name',
     'billing_email', 'po_number', 'lang',
@@ -338,12 +344,13 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
 
     setGroupChangeConfirmed(false);
     setOrderSnapshot(emptyOrderSnapshot);
+    setFiscalInvoiceHistory([]);
 
     (async () => {
       if (attendee.order_id) {
         const { data } = await supabase
           .from('orders')
-          .select('status, payer_type, payer_name, payer_oib, payer_address, payer_city, payer_postal_code, payer_country_code, payer_country_name, billing_email, po_number, lang')
+          .select('status, payer_type, payer_name, payer_oib, payer_address, payer_city, payer_postal_code, payer_country_code, payer_country_name, billing_email, po_number, lang, credit_note_number, credit_note_issued_at, fiscal_invoice_number_history')
           .eq('id', attendee.order_id)
           .maybeSingle();
         const o = (data || {}) as Record<string, any>;
@@ -361,10 +368,13 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
           billing_email: o.billing_email || '',
           po_number: o.po_number || '',
           lang: (o.lang as string) || 'hr',
+          credit_note_number: o.credit_note_number || '',
+          credit_note_issued_at: o.credit_note_issued_at ? String(o.credit_note_issued_at).slice(0, 10) : '',
         };
         setForm(f => ({ ...f, ...patch }));
         setOrderSnapshot(s => ({ ...s, ...patch }));
         setOriginalOrderStatus(st);
+        setFiscalInvoiceHistory(Array.isArray(o.fiscal_invoice_number_history) ? o.fiscal_invoice_number_history : []);
       }
     })();
 
@@ -475,11 +485,20 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     if (attError) throw attError;
 
     if (attendee.order_id) {
+      if (form.fiscal_invoice_number !== orderSnapshot.fiscal_invoice_number && orderSnapshot.fiscal_invoice_number) {
+        const { error: histError } = await supabase.rpc('record_fiscal_invoice_history' as any, {
+          p_order_id: attendee.order_id,
+          p_old_invoice_number: orderSnapshot.fiscal_invoice_number,
+        });
+        if (histError) throw histError;
+      }
       const { error: orderError } = await supabase
         .from('orders')
         .update({
           paid_at: form.paid_at ? new Date(form.paid_at).toISOString() : null,
           fiscal_invoice_number: form.fiscal_invoice_number || null,
+          credit_note_number: form.credit_note_number || null,
+          credit_note_issued_at: form.credit_note_issued_at ? new Date(form.credit_note_issued_at).toISOString() : null,
           payment_method: form.payment_method || null,
           status: form.order_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded' | 'deferred',
           payer_type: form.payer_type as 'individual' | 'company' | 'sponsor',
