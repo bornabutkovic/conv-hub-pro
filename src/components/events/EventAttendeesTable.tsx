@@ -28,6 +28,17 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -55,6 +66,7 @@ export interface InvoiceAttendee {
   order_id: string | null;
   order_number: number | null;
   bc_quote_number: string | null;
+  bc_quote_number_history: string[] | null;
   bc_invoice_id: string | null;
   bc_customer_no: string | null;
   fiscal_invoice_number: string | null;
@@ -530,6 +542,21 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     }
   };
 
+  const handleRecreateBcQuote = async () => {
+    if (!attendee.order_id || !attendee.bc_quote_number) return;
+    try {
+      const { error: historyError } = await supabase.rpc('record_bc_quote_history' as any, {
+        p_order_id: attendee.order_id,
+        p_old_quote_number: attendee.bc_quote_number,
+      });
+      if (historyError) throw historyError;
+    } catch (err: any) {
+      toast.error('Greška pri spremanju povijesti ponude: ' + (err?.message ?? 'nepoznata greška'));
+      return;
+    }
+    await handleCreateBcQuote();
+  };
+
   const handleResendTicket = async () => {
     if (!attendee.attendee_id) return;
     setIsResending(true);
@@ -910,8 +937,48 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
                 <div className="space-y-1.5 pt-2 border-t">
                   <Label>Ponuda u Business Centralu</Label>
                   {attendee.bc_quote_number ? (
-                    <div className="text-sm font-mono rounded-md border px-3 py-2 bg-muted/40">
-                      {attendee.bc_quote_number}
+                    <div className="space-y-2">
+                      <div className="text-sm font-mono rounded-md border px-3 py-2 bg-muted/40">
+                        {attendee.bc_quote_number}
+                      </div>
+                      {Array.isArray(attendee.bc_quote_number_history) && attendee.bc_quote_number_history.length > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Prijašnje ponude (ostaju otvorene u BC-u dok ih netko ručno ne obriše/otkaže): {attendee.bc_quote_number_history.join(', ')}
+                        </p>
+                      )}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={isCreatingQuote || quoteRequested}
+                          >
+                            {isCreatingQuote ? 'Slanje...' : quoteRequested ? 'Zahtjev poslan — čeka se novi broj' : 'Ponovno kreiraj ponudu'}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Ponovno kreirati ponudu?</AlertDialogTitle>
+                            <AlertDialogDescription asChild>
+                              <div className="space-y-2">
+                                <p>
+                                  Ovo kreira POTPUNO NOVU ponudu u Business Centralu s trenutnim podacima narudžbe (ako si nešto mijenjao/la u formi, spremi prvo klikom na "Spremi", ili će ići stari podaci iz baze).
+                                </p>
+                                <p>
+                                  Postojeća ponuda {attendee.bc_quote_number} se NEĆE automatski obrisati ni otkazati u BC-u — ako više nije potrebna, netko je mora ručno maknuti direktno u Business Centralu.
+                                </p>
+                              </div>
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Odustani</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleRecreateBcQuote}>
+                              Da, kreiraj novu ponudu
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   ) : (
                     <>
