@@ -558,352 +558,388 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Uredi polaznika</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold">Podaci sudionika</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Ime</Label>
-                  <Input
-                    value={form.first_name}
-                    onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Prezime</Label>
-                  <Input
-                    value={form.last_name}
-                    onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Telefon</Label>
-                  <Input
-                    value={form.phone}
-                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>OIB</Label>
-                  <Input
-                    value={form.oib}
-                    onChange={e => setForm(f => ({ ...f, oib: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Institucija / Tvrtka</Label>
-                <Input
-                  value={form.institution}
-                  onChange={e => setForm(f => ({ ...f, institution: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Specijalnost</Label>
-                <Input
-                  value={form.specialty}
-                  onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))}
-                />
-              </div>
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <Checkbox
-                  checked={form.requires_invoice}
-                  onCheckedChange={v => setForm(f => ({ ...f, requires_invoice: v === true }))}
-                />
-                Traži račun
-              </label>
-            </div>
-
-            <div className="pt-2 border-t space-y-1.5">
-              <h3 className="text-sm font-semibold">Podaci narudžbe</h3>
-              {attendee.is_group_order && (
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    Ova narudžba (#{attendee.order_number}) dijeli više sudionika. Promjena ovih polja vrijedi za CIJELU narudžbu, ne samo za {attendee.first_name} {attendee.last_name}.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-
-
-            {!attendee.order_id && (
-              <p className="text-xs text-muted-foreground">
-                Polaznik nema narudžbu — financijske podatke nije moguće uređivati.
-              </p>
-            )}
-
-            <div className="space-y-1.5">
-              <Label>Datum plaćanja</Label>
-              <Input
-                type="date"
-                value={form.paid_at}
-                disabled={!attendee.order_id}
-                onChange={e => setForm(f => ({ ...f, paid_at: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Broj računa</Label>
-              <Input
-                placeholder="npr. 2026-01-0001"
-                value={form.fiscal_invoice_number}
-                disabled={!attendee.order_id}
-                onChange={e => setForm(f => ({ ...f, fiscal_invoice_number: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Način plaćanja</Label>
-              <Select
-                value={form.payment_method}
-                onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}
-                disabled={!attendee.order_id}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Odaberi" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="stripe">Kreditna kartica</SelectItem>
-                  <SelectItem value="invoice">Bankovna transakcija</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Status plaćanja</Label>
-              <Select
-                value={form.order_status}
-                onValueChange={handleOrderStatusChange}
-                disabled={!attendee.order_id}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Skica</SelectItem>
-                  <SelectItem value="issued">Izdano (čeka uplatu)</SelectItem>
-                  <SelectItem value="deferred">Plaćanje po ugovoru</SelectItem>
-                  <SelectItem value="paid">Plaćeno</SelectItem>
-                  <SelectItem value="overdue">Kasni</SelectItem>
-                  <SelectItem value="refunded">Refundirano</SelectItem>
-                  <SelectItem value="cancelled">Otkazano</SelectItem>
-                </SelectContent>
-              </Select>
-              {attendee.is_group_order && (
-                <p className="text-xs text-muted-foreground">
-                  Ovo je grupna narudžba. Odabir "Refundirano" otvara poseban dijalog gdje biraš koje sudionike/stavke refundiraš — ostali ostaju nepromijenjeni.
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Platitelj</Label>
-              <Select
-                value={form.payer_type}
-                onValueChange={v => setForm(f => ({ ...f, payer_type: v }))}
-                disabled={!attendee.order_id}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="individual">Fizička osoba</SelectItem>
-                  <SelectItem value="company">Tvrtka</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Naziv platitelja</Label>
-              <Input
-                value={form.payer_name}
-                disabled={!attendee.order_id}
-                onChange={e => setForm(f => ({ ...f, payer_name: e.target.value }))}
-              />
-            </div>
-
-            {form.payer_type === 'company' && (
-              <>
-                <div className="space-y-1.5">
-                  <Label>OIB / VAT</Label>
-                  <Input
-                    value={form.payer_oib}
-                    disabled={!attendee.order_id}
-                    onChange={e => setForm(f => ({ ...f, payer_oib: e.target.value }))}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label>Adresa</Label>
-                  <Input
-                    value={form.payer_address}
-                    disabled={!attendee.order_id}
-                    onChange={e => setForm(f => ({ ...f, payer_address: e.target.value }))}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold">Podaci sudionika</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label>Ime</Label>
+                      <Input
+                        value={form.first_name}
+                        onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Prezime</Label>
+                      <Input
+                        value={form.last_name}
+                        onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-1.5">
-                    <Label>Grad</Label>
+                    <Label>Email</Label>
                     <Input
-                      value={form.payer_city}
-                      disabled={!attendee.order_id}
-                      onChange={e => setForm(f => ({ ...f, payer_city: e.target.value }))}
+                      type="email"
+                      value={form.email}
+                      onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label>Telefon</Label>
+                      <Input
+                        value={form.phone}
+                        onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>OIB</Label>
+                      <Input
+                        value={form.oib}
+                        onChange={e => setForm(f => ({ ...f, oib: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Institucija / Tvrtka</Label>
+                    <Input
+                      value={form.institution}
+                      onChange={e => setForm(f => ({ ...f, institution: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Poštanski broj</Label>
+                    <Label>Specijalnost</Label>
                     <Input
-                      value={form.payer_postal_code}
-                      disabled={!attendee.order_id}
-                      onChange={e => setForm(f => ({ ...f, payer_postal_code: e.target.value }))}
+                      value={form.specialty}
+                      onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))}
                     />
                   </div>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={form.requires_invoice}
+                      onCheckedChange={v => setForm(f => ({ ...f, requires_invoice: v === true }))}
+                    />
+                    Traži račun
+                  </label>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t">
+                  <div className="text-sm">
+                    {ticketSentAt ? (
+                      <span className="text-emerald-600">
+                        Ulaznica poslana {(() => {
+                          try { return format(new Date(ticketSentAt), 'dd.MM.yyyy. HH:mm'); }
+                          catch { return ticketSentAt; }
+                        })()}
+                      </span>
+                    ) : ticketFailedAt ? (
+                      <div>
+                        <div className="text-red-600">Slanje nije uspjelo</div>
+                        {ticketFailReason && (
+                          <div className="text-xs text-muted-foreground mt-0.5">{ticketFailReason}</div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">Ulaznica nije poslana</span>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResendTicket}
+                    disabled={isResending || !attendee.attendee_id}
+                  >
+                    {isResending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                        Slanje...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-1.5" />
+                        {ticketSentAt ? 'Ponovno pošalji ulaznicu' : 'Pošalji ulaznicu'}
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {attendee.attendee_id && refundsList.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t">
+                    <h3 className="text-sm font-semibold">Povrati</h3>
+                    {refundsList.map(r => (
+                      <div key={r.id} className="rounded-md border p-3 space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-mono">{Number(r.amount ?? 0).toFixed(2)} EUR</span>
+                          <span className="text-muted-foreground">{formatDate(r.created_at)}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">{r.reason || '—'}</div>
+                        <div className="flex items-end gap-2">
+                          <div className="space-y-1.5 flex-1">
+                            <Label className="text-xs">Broj odobrenja</Label>
+                            <Input
+                              value={creditNoteDrafts[r.id] ?? ''}
+                              onChange={e =>
+                                setCreditNoteDrafts(prev => ({ ...prev, [r.id]: e.target.value }))
+                              }
+                              placeholder="npr. ODO-2026-0001"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            disabled={savingCreditNoteId === r.id}
+                            onClick={() => handleSaveCreditNote(r.id)}
+                          >
+                            {savingCreditNoteId === r.id ? '...' : 'Spremi'}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <div className="pt-2 border-t space-y-1.5">
+                  <h3 className="text-sm font-semibold">Podaci narudžbe</h3>
+                  {attendee.is_group_order && (
+                    <Alert variant="destructive">
+                      <AlertDescription>
+                        Ova narudžba (#{attendee.order_number}) dijeli više sudionika. Promjena ovih polja vrijedi za CIJELU narudžbu, ne samo za {attendee.first_name} {attendee.last_name}.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+
+                {!attendee.order_id && (
+                  <p className="text-xs text-muted-foreground">
+                    Polaznik nema narudžbu — financijske podatke nije moguće uređivati.
+                  </p>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label>Datum plaćanja</Label>
+                  <Input
+                    type="date"
+                    value={form.paid_at}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, paid_at: e.target.value }))}
+                  />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label>Država</Label>
+                  <Label>Broj računa</Label>
+                  <Input
+                    placeholder="npr. 2026-01-0001"
+                    value={form.fiscal_invoice_number}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, fiscal_invoice_number: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Način plaćanja</Label>
                   <Select
-                    value={form.payer_country_code}
-                    onValueChange={v => setForm(f => ({ ...f, payer_country_code: v, payer_country_name: getCountryName(v) }))}
+                    value={form.payment_method}
+                    onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}
+                    disabled={!attendee.order_id}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Odaberi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="stripe">Kreditna kartica</SelectItem>
+                      <SelectItem value="invoice">Bankovna transakcija</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Status plaćanja</Label>
+                  <Select
+                    value={form.order_status}
+                    onValueChange={handleOrderStatusChange}
+                    disabled={!attendee.order_id}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Skica</SelectItem>
+                      <SelectItem value="issued">Izdano (čeka uplatu)</SelectItem>
+                      <SelectItem value="deferred">Plaćanje po ugovoru</SelectItem>
+                      <SelectItem value="paid">Plaćeno</SelectItem>
+                      <SelectItem value="overdue">Kasni</SelectItem>
+                      <SelectItem value="refunded">Refundirano</SelectItem>
+                      <SelectItem value="cancelled">Otkazano</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {attendee.is_group_order && (
+                    <p className="text-xs text-muted-foreground">
+                      Ovo je grupna narudžba. Odabir "Refundirano" otvara poseban dijalog gdje biraš koje sudionike/stavke refundiraš — ostali ostaju nepromijenjeni.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Platitelj</Label>
+                  <Select
+                    value={form.payer_type}
+                    onValueChange={v => setForm(f => ({ ...f, payer_type: v }))}
                     disabled={!attendee.order_id}
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {COUNTRIES.map(c => (
-                        <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
-                      ))}
+                      <SelectItem value="individual">Fizička osoba</SelectItem>
+                      <SelectItem value="company">Tvrtka</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              </>
-            )}
 
-            <div className="space-y-1.5">
-              <Label>Email za račun</Label>
-              <Input
-                type="email"
-                value={form.billing_email}
-                disabled={!attendee.order_id}
-                onChange={e => setForm(f => ({ ...f, billing_email: e.target.value }))}
-              />
-            </div>
+                <div className="space-y-1.5">
+                  <Label>Naziv platitelja</Label>
+                  <Input
+                    value={form.payer_name}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, payer_name: e.target.value }))}
+                  />
+                </div>
 
-            <div className="space-y-1.5">
-              <Label>PO broj</Label>
-              <Input
-                value={form.po_number}
-                disabled={!attendee.order_id}
-                onChange={e => setForm(f => ({ ...f, po_number: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Jezik komunikacije</Label>
-              <Select
-                value={form.lang}
-                onValueChange={v => setForm(f => ({ ...f, lang: v }))}
-                disabled={!attendee.order_id}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hr">Hrvatski</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-
-
-            <div className="space-y-2 pt-2 border-t">
-              <div className="text-sm">
-                {ticketSentAt ? (
-                  <span className="text-emerald-600">
-                    Ulaznica poslana {(() => {
-                      try { return format(new Date(ticketSentAt), 'dd.MM.yyyy. HH:mm'); }
-                      catch { return ticketSentAt; }
-                    })()}
-                  </span>
-                ) : ticketFailedAt ? (
-                  <div>
-                    <div className="text-red-600">Slanje nije uspjelo</div>
-                    {ticketFailReason && (
-                      <div className="text-xs text-muted-foreground mt-0.5">{ticketFailReason}</div>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground">Ulaznica nije poslana</span>
-                )}
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleResendTicket}
-                disabled={isResending || !attendee.attendee_id}
-              >
-                {isResending ? (
+                {form.payer_type === 'company' && (
                   <>
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                    Slanje...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4 mr-1.5" />
-                    {ticketSentAt ? 'Ponovno pošalji ulaznicu' : 'Pošalji ulaznicu'}
-                  </>
-                )}
-              </Button>
-            </div>
-
-            {attendee.attendee_id && refundsList.length > 0 && (
-              <div className="space-y-2 pt-2 border-t">
-                <h3 className="text-sm font-semibold">Povrati</h3>
-                {refundsList.map(r => (
-                  <div key={r.id} className="rounded-md border p-3 space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-mono">{Number(r.amount ?? 0).toFixed(2)} EUR</span>
-                      <span className="text-muted-foreground">{formatDate(r.created_at)}</span>
+                    <div className="space-y-1.5">
+                      <Label>OIB / VAT</Label>
+                      <Input
+                        value={form.payer_oib}
+                        disabled={!attendee.order_id}
+                        onChange={e => setForm(f => ({ ...f, payer_oib: e.target.value }))}
+                      />
                     </div>
-                    <div className="text-xs text-muted-foreground">{r.reason || '—'}</div>
-                    <div className="flex items-end gap-2">
-                      <div className="space-y-1.5 flex-1">
-                        <Label className="text-xs">Broj odobrenja</Label>
+
+                    <div className="space-y-1.5">
+                      <Label>Adresa</Label>
+                      <Input
+                        value={form.payer_address}
+                        disabled={!attendee.order_id}
+                        onChange={e => setForm(f => ({ ...f, payer_address: e.target.value }))}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label>Grad</Label>
                         <Input
-                          value={creditNoteDrafts[r.id] ?? ''}
-                          onChange={e =>
-                            setCreditNoteDrafts(prev => ({ ...prev, [r.id]: e.target.value }))
-                          }
-                          placeholder="npr. ODO-2026-0001"
+                          value={form.payer_city}
+                          disabled={!attendee.order_id}
+                          onChange={e => setForm(f => ({ ...f, payer_city: e.target.value }))}
                         />
                       </div>
+                      <div className="space-y-1.5">
+                        <Label>Poštanski broj</Label>
+                        <Input
+                          value={form.payer_postal_code}
+                          disabled={!attendee.order_id}
+                          onChange={e => setForm(f => ({ ...f, payer_postal_code: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label>Država</Label>
+                      <Select
+                        value={form.payer_country_code}
+                        onValueChange={v => setForm(f => ({ ...f, payer_country_code: v, payer_country_name: getCountryName(v) }))}
+                        disabled={!attendee.order_id}
+                      >
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {COUNTRIES.map(c => (
+                            <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label>Email za račun</Label>
+                  <Input
+                    type="email"
+                    value={form.billing_email}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, billing_email: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>PO broj</Label>
+                  <Input
+                    value={form.po_number}
+                    disabled={!attendee.order_id}
+                    onChange={e => setForm(f => ({ ...f, po_number: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Jezik komunikacije</Label>
+                  <Select
+                    value={form.lang}
+                    onValueChange={v => setForm(f => ({ ...f, lang: v }))}
+                    disabled={!attendee.order_id}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hr">Hrvatski</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5 pt-2 border-t">
+                  <Label>Ponuda u Business Centralu</Label>
+                  {attendee.bc_quote_number ? (
+                    <div className="text-sm font-mono rounded-md border px-3 py-2 bg-muted/40">
+                      {attendee.bc_quote_number}
+                    </div>
+                  ) : (
+                    <>
                       <Button
                         type="button"
-                        size="sm"
                         variant="outline"
-                        disabled={savingCreditNoteId === r.id}
-                        onClick={() => handleSaveCreditNote(r.id)}
+                        size="sm"
+                        disabled={
+                          isCreatingQuote ||
+                          quoteRequested ||
+                          !attendee.order_id ||
+                          form.payer_type !== 'company' ||
+                          form.payment_method !== 'invoice'
+                        }
+                        onClick={handleCreateBcQuote}
                       >
-                        {savingCreditNoteId === r.id ? '...' : 'Spremi'}
+                        {isCreatingQuote ? 'Slanje...' : quoteRequested ? 'Zahtjev poslan — čeka se broj ponude' : 'Kreiraj ponudu u BC-u'}
                       </Button>
-                    </div>
-                  </div>
-                ))}
+                      {(form.payer_type !== 'company' || form.payment_method !== 'invoice') && (
+                        <p className="text-xs text-muted-foreground">
+                          Dostupno samo kad je platitelj Tvrtka i način plaćanja Bankovna transakcija.
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
 
             {needsGroupConfirm && (
               <label className="flex items-start gap-2 text-sm cursor-pointer pt-2 border-t">
