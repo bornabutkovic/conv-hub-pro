@@ -1329,6 +1329,7 @@ export type Database = {
           bc_invoice_id: string | null
           bc_invoice_number: string | null
           bc_quote_number: string | null
+          bc_quote_number_history: Json
           billing_email: string | null
           card_brand: string | null
           card_country: string | null
@@ -1379,6 +1380,7 @@ export type Database = {
           bc_invoice_id?: string | null
           bc_invoice_number?: string | null
           bc_quote_number?: string | null
+          bc_quote_number_history?: Json
           billing_email?: string | null
           card_brand?: string | null
           card_country?: string | null
@@ -1429,6 +1431,7 @@ export type Database = {
           bc_invoice_id?: string | null
           bc_invoice_number?: string | null
           bc_quote_number?: string | null
+          bc_quote_number_history?: Json
           billing_email?: string | null
           card_brand?: string | null
           card_country?: string | null
@@ -2511,6 +2514,7 @@ export type Database = {
           bc_customer_no: string | null
           bc_invoice_id: string | null
           bc_quote_number: string | null
+          bc_quote_number_history: Json | null
           card_brand: string | null
           card_last4: string | null
           card_wallet: string | null
@@ -2990,6 +2994,10 @@ export type Database = {
           p_stripe_refund_id?: string
         }
         Returns: Json
+      }
+      record_bc_quote_history: {
+        Args: { p_old_quote_number: string; p_order_id: string }
+        Returns: undefined
       }
       record_whatsapp_consent: {
         Args: {
