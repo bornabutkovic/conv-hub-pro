@@ -444,52 +444,55 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
     }
   };
 
+  const saveOrderChanges = async (): Promise<boolean> => {
+    if (!attendee.attendee_id) return false;
+    const { error: attError } = await supabase
+      .from('attendees')
+      .update({
+        first_name: form.first_name,
+        last_name: form.last_name,
+        email: form.email || null,
+        phone: form.phone || null,
+        oib: form.oib || null,
+        institution: form.institution || null,
+        specialty: form.specialty || null,
+        requires_invoice: form.requires_invoice,
+      })
+      .eq('id', attendee.attendee_id);
+
+    if (attError) throw attError;
+
+    if (attendee.order_id) {
+      const { error: orderError } = await supabase
+        .from('orders')
+        .update({
+          paid_at: form.paid_at ? new Date(form.paid_at).toISOString() : null,
+          fiscal_invoice_number: form.fiscal_invoice_number || null,
+          payment_method: form.payment_method || null,
+          status: form.order_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded' | 'deferred',
+          payer_type: form.payer_type as 'individual' | 'company' | 'sponsor',
+          payer_name: form.payer_name,
+          payer_oib: form.payer_type === 'company' ? (form.payer_oib || null) : null,
+          payer_address: form.payer_type === 'company' ? (form.payer_address || null) : null,
+          payer_city: form.payer_type === 'company' ? (form.payer_city || null) : null,
+          payer_postal_code: form.payer_type === 'company' ? (form.payer_postal_code || null) : null,
+          payer_country_code: form.payer_country_code || null,
+          payer_country_name: form.payer_country_name || null,
+          billing_email: form.billing_email || null,
+          po_number: form.po_number || null,
+          lang: form.lang,
+        })
+        .eq('id', attendee.order_id);
+
+      if (orderError) throw orderError;
+    }
+    return true;
+  };
+
   const handleSave = async () => {
-    if (!attendee.attendee_id) return;
     setIsSaving(true);
     try {
-      const { error: attError } = await supabase
-        .from('attendees')
-        .update({
-          first_name: form.first_name,
-          last_name: form.last_name,
-          email: form.email || null,
-          phone: form.phone || null,
-          oib: form.oib || null,
-          institution: form.institution || null,
-          specialty: form.specialty || null,
-          requires_invoice: form.requires_invoice,
-        })
-
-        .eq('id', attendee.attendee_id);
-
-      if (attError) throw attError;
-
-      if (attendee.order_id) {
-        const { error: orderError } = await supabase
-          .from('orders')
-          .update({
-            paid_at: form.paid_at ? new Date(form.paid_at).toISOString() : null,
-            fiscal_invoice_number: form.fiscal_invoice_number || null,
-            payment_method: form.payment_method || null,
-            status: form.order_status as 'cancelled' | 'draft' | 'issued' | 'overdue' | 'paid' | 'refunded' | 'deferred',
-            payer_type: form.payer_type as 'individual' | 'company' | 'sponsor',
-            payer_name: form.payer_name,
-            payer_oib: form.payer_type === 'company' ? (form.payer_oib || null) : null,
-            payer_address: form.payer_type === 'company' ? (form.payer_address || null) : null,
-            payer_city: form.payer_type === 'company' ? (form.payer_city || null) : null,
-            payer_postal_code: form.payer_type === 'company' ? (form.payer_postal_code || null) : null,
-            payer_country_code: form.payer_country_code || null,
-            payer_country_name: form.payer_country_name || null,
-            billing_email: form.billing_email || null,
-            po_number: form.po_number || null,
-            lang: form.lang,
-          })
-          .eq('id', attendee.order_id);
-
-        if (orderError) throw orderError;
-      }
-
+      await saveOrderChanges();
       toast.success('Promjene su spremljene');
       queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
       onOpenChange(false);
@@ -497,6 +500,33 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
       toast.error(err.message || 'Greška pri spremanju');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleCreateBcQuote = async () => {
+    if (!attendee.order_id || !eventId) return;
+    setIsCreatingQuote(true);
+    try {
+      await saveOrderChanges();
+      const { data, error } = await supabase.functions.invoke('create-invoice-registration', {
+        body: {
+          order_id: attendee.order_id,
+          event_id: eventId,
+          payer_type: 'company',
+        },
+      });
+      if (error || data?.success === false) {
+        throw new Error(data?.error || error?.message || 'nepoznata greška');
+      }
+      setQuoteRequested(true);
+      toast.success('Zahtjev poslan u Business Central. Broj ponude će se pojaviti za par sekundi.');
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
+      }, 6000);
+    } catch (err: any) {
+      toast.error('Kreiranje ponude nije uspjelo: ' + (err?.message ?? 'nepoznata greška'));
+    } finally {
+      setIsCreatingQuote(false);
     }
   };
 
