@@ -604,13 +604,34 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Uredi polaznika</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-4">
+              {attendee.is_group_order && (
+                <div className="lg:col-span-3 space-y-2">
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      Ova narudžba (#{attendee.order_number}) dijeli više sudionika. Promjena polja u stupcima "Plaćanje i fiskalno" i "Platitelj i BC" vrijedi za CIJELU narudžbu, ne samo za {attendee.first_name} {attendee.last_name}.
+                    </AlertDescription>
+                  </Alert>
+                  {needsGroupConfirm && (
+                    <label className="flex items-start gap-2 text-sm cursor-pointer rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2.5">
+                      <Checkbox
+                        checked={groupChangeConfirmed}
+                        onCheckedChange={v => setGroupChangeConfirmed(v === true)}
+                      />
+                      <span>
+                        Razumijem da se ova promjena primjenjuje na cijelu narudžbu #{attendee.order_number}. Bez ovoga gumb "Spremi" ostaje neaktivan.
+                      </span>
+                    </label>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-4">
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold">Podaci sudionika</h3>
