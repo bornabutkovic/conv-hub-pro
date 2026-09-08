@@ -190,6 +190,8 @@ function EditAttendeeModal({ attendee, open, onOpenChange, eventId }: EditModalP
   const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [isCreatingQuote, setIsCreatingQuote] = useState(false);
+  const [quoteRequested, setQuoteRequested] = useState(false);
   const [ticketStatus, setTicketStatus] = useState<TicketStatus | null>(null);
   const [originalOrderStatus, setOriginalOrderStatus] = useState<string>(attendee.order_status || 'draft');
   const [form, setForm] = useState({
