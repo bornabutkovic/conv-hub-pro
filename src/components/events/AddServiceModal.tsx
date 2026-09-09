@@ -200,15 +200,6 @@ export function AddServiceModal({ open, onOpenChange, eventId, currency, editSer
           toast.info('New service submitted for review. It will appear once approved.');
         }
       }
-
-      // Auto-translate after save
-      try {
-        await supabase.functions.invoke('translate-content', {
-          body: { type: 'event_service', id: savedId, source_lang: 'hr' },
-        });
-      } catch (e) {
-        console.warn('Auto-translate failed:', e);
-      }
     },
     onSuccess: () => {
       clearDraft();
