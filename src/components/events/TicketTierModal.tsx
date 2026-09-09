@@ -198,15 +198,6 @@ export function TicketTierModal({ open, onOpenChange, eventId, tier, eventStatus
           toast.info('New ticket type submitted for review. It will appear on sale once approved.');
         }
       }
-
-      // Auto-translate after save
-      try {
-        await supabase.functions.invoke('translate-content', {
-          body: { type: 'ticket_tier', id: savedId, source_lang: 'hr' },
-        });
-      } catch (e) {
-        console.warn('Auto-translate failed:', e);
-      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket-tiers', eventId] });
