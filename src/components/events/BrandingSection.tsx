@@ -244,6 +244,58 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
               Leave empty to use responsive default (300px mobile / 400px desktop)
             </p>
           </div>
+
+          {/* Mobile Banner */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">
+              Mobile Banner (portrait, npr. 1080×1920px) — opcionalno, prikazuje se na ekranima užim od 768px
+            </Label>
+            {values.branding_banner_mobile_url ? (
+              <div className="relative rounded-md border border-border overflow-hidden bg-muted">
+                <img
+                  src={values.branding_banner_mobile_url}
+                  alt="Mobile Banner"
+                  className="w-full h-24 object-cover"
+                />
+                <button
+                  type="button"
+                  className="absolute top-1 right-1 rounded-full bg-destructive text-destructive-foreground h-5 w-5 flex items-center justify-center"
+                  onClick={() => updateField('branding_banner_mobile_url', null)}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="h-16 flex-1 rounded-md border border-dashed border-border flex items-center justify-center bg-muted/50">
+                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                </div>
+              </div>
+            )}
+            <input
+              ref={bannerMobileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) =>
+                handleFileSelect(e, 'banners', setUploadingBannerMobile, 'branding_banner_mobile_url')
+              }
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={uploadingBannerMobile}
+              onClick={() => bannerMobileInputRef.current?.click()}
+            >
+              {uploadingBannerMobile ? (
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+              ) : (
+                <Upload className="h-3 w-3 mr-1" />
+              )}
+              Upload Mobile Banner
+            </Button>
+          </div>
         </div>
       </div>
 
