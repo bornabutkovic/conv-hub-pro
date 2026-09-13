@@ -246,7 +246,7 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
 
         {/* Banner */}
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Banner (recommended 1200×200px)</Label>
+          <Label className="text-xs text-muted-foreground">Banner (recommended 2048×341px)</Label>
           {values.branding_banner_url ? (
             <div className="relative rounded-md border border-border overflow-auto bg-muted" style={{ maxHeight: '20rem' }}>
               <img
