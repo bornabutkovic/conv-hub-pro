@@ -43,7 +43,7 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
     file: File,
     folder: 'logos' | 'banners',
     setLoading: (v: boolean) => void,
-    urlKey: 'branding_logo_url' | 'branding_banner_url'
+    urlKey: 'branding_logo_url' | 'branding_banner_url' | 'branding_banner_mobile_url'
   ) => {
     setLoading(true);
     try {
