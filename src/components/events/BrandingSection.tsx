@@ -73,7 +73,7 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
     e: React.ChangeEvent<HTMLInputElement>,
     folder: 'logos' | 'banners',
     setLoading: (v: boolean) => void,
-    urlKey: 'branding_logo_url' | 'branding_banner_url'
+    urlKey: 'branding_logo_url' | 'branding_banner_url' | 'branding_banner_mobile_url'
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
