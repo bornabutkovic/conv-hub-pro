@@ -27,8 +27,10 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
   const uploadPrefix = eventId || `temp-${Date.now()}`;
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingBannerMobile, setUploadingBannerMobile] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const bannerMobileInputRef = useRef<HTMLInputElement>(null);
 
   const updateField = useCallback(
     <K extends keyof BrandingValues>(key: K, value: BrandingValues[K]) => {
