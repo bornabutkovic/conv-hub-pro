@@ -24,11 +24,19 @@ interface BrandingSectionProps {
   onChange: (values: BrandingValues) => void;
 }
 
+interface BannerDimensions {
+  width: number;
+  height: number;
+  computedHeight: number;
+}
+
 export function BrandingSection({ eventId, values, onChange }: BrandingSectionProps) {
   const uploadPrefix = eventId || `temp-${Date.now()}`;
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadingBannerMobile, setUploadingBannerMobile] = useState(false);
+  const [bannerDimensions, setBannerDimensions] = useState<BannerDimensions | null>(null);
+  const [mobileBannerDimensions, setMobileBannerDimensions] = useState<BannerDimensions | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const bannerMobileInputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +47,21 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
     },
     [values, onChange]
   );
+
+  const getImageDimensions = (file: File): Promise<{ naturalWidth: number; naturalHeight: number }> =>
+    new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({ naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Failed to load image'));
+      };
+      img.src = url;
+    });
 
   const uploadFile = async (
     file: File,
@@ -62,6 +85,31 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
         .getPublicUrl(path);
 
       updateField(urlKey, publicUrlData.publicUrl);
+
+      if (folder === 'banners') {
+        try {
+          const { naturalWidth, naturalHeight } = await getImageDimensions(file);
+          const computedHeight = Math.round(600 * naturalHeight / naturalWidth);
+          updateField('branding_banner_height', computedHeight);
+
+          const dims = { width: naturalWidth, height: naturalHeight, computedHeight };
+          if (urlKey === 'branding_banner_mobile_url') {
+            setMobileBannerDimensions(dims);
+          } else {
+            setBannerDimensions(dims);
+          }
+
+          const ratio = naturalWidth / naturalHeight;
+          if (ratio > 8 || ratio < 1) {
+            toast.warning(
+              `Ova slika ima neuobičajen omjer stranica za banner (${naturalWidth}×${naturalHeight}). Provjeri kako izgleda u pregledu prije spremanja.`
+            );
+          }
+        } catch {
+          // If dimension detection fails, the upload itself still succeeded.
+        }
+      }
+
       toast.success(`${folder === 'logos' ? 'Logo' : 'Banner'} uploaded`);
     } catch (err: any) {
       toast.error(err.message || 'Upload failed');
@@ -200,16 +248,19 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
         <div className="space-y-2">
           <Label className="text-xs text-muted-foreground">Banner (recommended 1200×400px)</Label>
           {values.branding_banner_url ? (
-            <div className="relative rounded-md border border-border overflow-hidden bg-muted">
+            <div className="relative rounded-md border border-border overflow-auto bg-muted" style={{ maxHeight: '20rem' }}>
               <img
                 src={values.branding_banner_url}
                 alt="Banner"
-                className="w-full h-24 object-cover"
+                className="w-full h-auto"
               />
               <button
                 type="button"
                 className="absolute top-1 right-1 rounded-full bg-destructive text-destructive-foreground h-5 w-5 flex items-center justify-center"
-                onClick={() => updateField('branding_banner_url', null)}
+                onClick={() => {
+                  updateField('branding_banner_url', null);
+                  setBannerDimensions(null);
+                }}
               >
                 <X className="h-3 w-3" />
               </button>
@@ -243,26 +294,17 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
             Upload Banner
           </Button>
 
-          {/* Banner Height */}
+          {/* Detected Banner Size */}
           <div className="space-y-1.5 pt-2">
-            <Label className="text-xs text-muted-foreground">Banner Height (px)</Label>
-            <Input
-              type="number"
-              min={100}
-              max={1000}
-              step={10}
-              placeholder="e.g. 400"
-              value={values.branding_banner_height ?? ''}
-              onChange={(e) =>
-                updateField(
-                  'branding_banner_height',
-                  e.target.value ? parseInt(e.target.value) : null
-                )
-              }
-            />
-            <p className="text-xs text-muted-foreground">
-              Leave empty to use responsive default (300px mobile / 400px desktop)
-            </p>
+            {bannerDimensions ? (
+              <p className="text-xs text-muted-foreground">
+                Detected size: {bannerDimensions.width}×{bannerDimensions.height}px → will render at {bannerDimensions.computedHeight}px height (600px wide)
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Banner height is detected automatically from the uploaded image.
+              </p>
+            )}
           </div>
 
           {/* Mobile Banner */}
@@ -271,16 +313,19 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
               Mobile Banner (portrait, npr. 1080×1920px) — opcionalno, prikazuje se na ekranima užim od 768px
             </Label>
             {values.branding_banner_mobile_url ? (
-              <div className="relative rounded-md border border-border overflow-hidden bg-muted">
+              <div className="relative rounded-md border border-border overflow-auto bg-muted" style={{ maxHeight: '20rem' }}>
                 <img
                   src={values.branding_banner_mobile_url}
                   alt="Mobile Banner"
-                  className="w-full h-24 object-cover"
+                  className="w-full h-auto"
                 />
                 <button
                   type="button"
                   className="absolute top-1 right-1 rounded-full bg-destructive text-destructive-foreground h-5 w-5 flex items-center justify-center"
-                  onClick={() => updateField('branding_banner_mobile_url', null)}
+                  onClick={() => {
+                    updateField('branding_banner_mobile_url', null);
+                    setMobileBannerDimensions(null);
+                  }}
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -315,6 +360,19 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
               )}
               Upload Mobile Banner
             </Button>
+
+            {/* Detected Mobile Banner Size */}
+            <div className="space-y-1.5 pt-2">
+              {mobileBannerDimensions ? (
+                <p className="text-xs text-muted-foreground">
+                  Detected size: {mobileBannerDimensions.width}×{mobileBannerDimensions.height}px → will render at {mobileBannerDimensions.computedHeight}px height (600px wide)
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Mobile banner height is detected automatically from the uploaded image.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -328,18 +386,11 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
         >
           {/* Banner preview */}
           {values.branding_banner_url ? (
-            <div
-              className="w-full overflow-hidden"
-              style={{
-                height: values.branding_banner_height
-                  ? `${Math.round(values.branding_banner_height / 6)}px`
-                  : '5rem',
-              }}
-            >
+            <div className="w-full overflow-auto" style={{ maxHeight: '20rem' }}>
               <img
                 src={values.branding_banner_url}
                 alt="Banner preview"
-                className="w-full h-full object-cover"
+                className="w-full h-auto"
               />
             </div>
           ) : (
@@ -347,9 +398,7 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
               className="w-full"
               style={{
                 backgroundColor: values.branding_primary_color,
-                height: values.branding_banner_height
-                  ? `${Math.round(values.branding_banner_height / 6)}px`
-                  : '5rem',
+                height: '5rem',
               }}
             />
           )}
