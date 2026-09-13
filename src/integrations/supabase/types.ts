@@ -802,6 +802,7 @@ export type Database = {
           bc_reference: string | null
           bc_vat_bus_posting_group: string | null
           branding_banner_height: number | null
+          branding_banner_mobile_url: string | null
           branding_banner_url: string | null
           branding_favicon_url: string | null
           branding_logo_url: string | null
@@ -819,6 +820,7 @@ export type Database = {
           end_date: string | null
           event_id: string | null
           event_type: string | null
+          hide_institution_organizer: boolean
           id: string
           institution_id: string | null
           institution_uuid: string | null
@@ -860,6 +862,7 @@ export type Database = {
           bc_reference?: string | null
           bc_vat_bus_posting_group?: string | null
           branding_banner_height?: number | null
+          branding_banner_mobile_url?: string | null
           branding_banner_url?: string | null
           branding_favicon_url?: string | null
           branding_logo_url?: string | null
@@ -877,6 +880,7 @@ export type Database = {
           end_date?: string | null
           event_id?: string | null
           event_type?: string | null
+          hide_institution_organizer?: boolean
           id?: string
           institution_id?: string | null
           institution_uuid?: string | null
@@ -918,6 +922,7 @@ export type Database = {
           bc_reference?: string | null
           bc_vat_bus_posting_group?: string | null
           branding_banner_height?: number | null
+          branding_banner_mobile_url?: string | null
           branding_banner_url?: string | null
           branding_favicon_url?: string | null
           branding_logo_url?: string | null
@@ -935,6 +940,7 @@ export type Database = {
           end_date?: string | null
           event_id?: string | null
           event_type?: string | null
+          hide_institution_organizer?: boolean
           id?: string
           institution_id?: string | null
           institution_uuid?: string | null

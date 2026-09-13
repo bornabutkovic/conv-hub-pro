@@ -263,7 +263,7 @@ export default function EditEvent() {
     enabled: !!id,
   });
 
-  const isLockedEvent = event?.status === 'active' && paidAttendeesCount > 0;
+  const isLockedEvent = event?.status === 'active' && Number(event?.price ?? 0) > 0 && paidAttendeesCount > 0;
 
   // ERP Code section data
   const { data: ticketTiers, refetch: refetchTiers } = useQuery({
