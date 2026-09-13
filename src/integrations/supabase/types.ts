@@ -805,6 +805,7 @@ export type Database = {
           branding_banner_mobile_url: string | null
           branding_banner_url: string | null
           branding_favicon_url: string | null
+          branding_logo_height: number | null
           branding_logo_url: string | null
           branding_primary_color: string | null
           branding_secondary_color: string | null
@@ -865,6 +866,7 @@ export type Database = {
           branding_banner_mobile_url?: string | null
           branding_banner_url?: string | null
           branding_favicon_url?: string | null
+          branding_logo_height?: number | null
           branding_logo_url?: string | null
           branding_primary_color?: string | null
           branding_secondary_color?: string | null
@@ -925,6 +927,7 @@ export type Database = {
           branding_banner_mobile_url?: string | null
           branding_banner_url?: string | null
           branding_favicon_url?: string | null
+          branding_logo_height?: number | null
           branding_logo_url?: string | null
           branding_primary_color?: string | null
           branding_secondary_color?: string | null

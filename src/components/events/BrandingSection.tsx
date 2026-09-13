@@ -12,6 +12,7 @@ interface BrandingValues {
   branding_secondary_color: string;
   branding_text_color: string;
   branding_logo_url: string | null;
+  branding_logo_height: number | null;
   branding_banner_url: string | null;
   branding_banner_mobile_url: string | null;
   branding_banner_height: number | null;
@@ -173,6 +174,25 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
               )}
               Upload Logo
             </Button>
+          </div>
+
+          {/* Logo Height */}
+          <div className="space-y-1.5 pt-2">
+            <Label className="text-xs text-muted-foreground">Logo Height (px)</Label>
+            <Input
+              type="number"
+              min={30}
+              max={200}
+              step={2}
+              placeholder="e.g. 56"
+              value={values.branding_logo_height ?? ''}
+              onChange={(e) =>
+                updateField('branding_logo_height', e.target.value ? parseInt(e.target.value) : null)
+              }
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty to use default (96px). Reduce for wide/wordmark-style logos that look oversized at default height.
+            </p>
           </div>
         </div>
 
