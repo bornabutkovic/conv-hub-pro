@@ -63,6 +63,14 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
       img.src = url;
     });
 
+  const persistToDb = async (fields: Record<string, string | number | null>) => {
+    if (!eventId) return; // Create Event flow — event još ne postoji u bazi
+    const { error } = await supabase.from('events').update(fields).eq('id', eventId);
+    if (error) {
+      toast.error(`Spremljeno lokalno, ali upis u bazu nije uspio: ${error.message}`);
+    }
+  };
+
   const uploadFile = async (
     file: File,
     folder: 'logos' | 'banners',
@@ -84,18 +92,22 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
         .from('event-branding')
         .getPublicUrl(path);
 
-      updateField(urlKey, publicUrlData.publicUrl);
+      const newUrl = publicUrlData.publicUrl;
+      updateField(urlKey, newUrl);
+
+      const dbUpdate: Record<string, string | number | null> = { [urlKey]: newUrl };
 
       if (folder === 'banners') {
         try {
           const { naturalWidth, naturalHeight } = await getImageDimensions(file);
           const computedHeight = Math.round(600 * naturalHeight / naturalWidth);
-          updateField('branding_banner_height', computedHeight);
 
           const dims = { width: naturalWidth, height: naturalHeight, computedHeight };
           if (urlKey === 'branding_banner_mobile_url') {
             setMobileBannerDimensions(dims);
           } else {
+            updateField('branding_banner_height', computedHeight);
+            dbUpdate.branding_banner_height = computedHeight;
             setBannerDimensions(dims);
           }
 
@@ -110,6 +122,8 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
         }
       }
 
+      await persistToDb(dbUpdate);
+
       toast.success(`${folder === 'logos' ? 'Logo' : 'Banner'} uploaded`);
     } catch (err: any) {
       toast.error(err.message || 'Upload failed');
@@ -117,6 +131,7 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
       setLoading(false);
     }
   };
+
 
   const handleFileSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -191,7 +206,10 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
                 <button
                   type="button"
                   className="absolute -top-1 -right-1 rounded-full bg-destructive text-destructive-foreground h-5 w-5 flex items-center justify-center"
-                  onClick={() => updateField('branding_logo_url', null)}
+                  onClick={() => {
+                    updateField('branding_logo_url', null);
+                    persistToDb({ branding_logo_url: null });
+                  }}
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -260,6 +278,7 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
                 onClick={() => {
                   updateField('branding_banner_url', null);
                   setBannerDimensions(null);
+                  persistToDb({ branding_banner_url: null });
                 }}
               >
                 <X className="h-3 w-3" />
@@ -325,6 +344,7 @@ export function BrandingSection({ eventId, values, onChange }: BrandingSectionPr
                   onClick={() => {
                     updateField('branding_banner_mobile_url', null);
                     setMobileBannerDimensions(null);
+                    persistToDb({ branding_banner_mobile_url: null });
                   }}
                 >
                   <X className="h-3 w-3" />
